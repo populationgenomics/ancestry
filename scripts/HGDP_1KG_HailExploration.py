@@ -11,6 +11,8 @@ from hail.plot import show
 import hail as hl
 hl.init()
 
+mt = hl.read_matrix_table("gs://gcp-public-data--gnomad/release/3.1/mt/genomes/gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt")
+
 # mt epxloration - explore rows and columns
 mt.count_rows()
 mt.count_cols()
