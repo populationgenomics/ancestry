@@ -6,7 +6,11 @@ Prioritising and assigning ancestry to populations.
 
 To connect to hail with the required gnomAD dependencies, run the following command:
 
-```hailctl dataproc start --max-age 2h --region australia-southeast1 my-cluster --packages gnomad```
+```hailctl dataproc start \
+--max-age 2h \
+--region australia-southeast1 \
+--packages gnomad \
+my-cluster```
 
 Some commands launch jobs that are computationally expensive and require more workers. For these jobs, you can modify the cluster. I specify 100 preemptible workers with the following command:
 
