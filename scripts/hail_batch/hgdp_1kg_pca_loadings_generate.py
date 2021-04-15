@@ -20,7 +20,9 @@ def query(output, rerun):
     scores_path = f'{output}/scores.ht'
     loadings_path = f'{output}/loadings.ht'
     mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
-    eigenvalues, scores, loadings = hl.hwe_normalized_pca(mt.GT, compute_loadings=True, k=20)
+    # test on 100 samples
+    mt_head = mt.head(n=mt.count_rows(),n_cols=100)
+    eigenvalues, scores, loadings = hl.hwe_normalized_pca(mt_head.GT, compute_loadings=True, k=20)
     # save the list of eigenvalues
     eigenvalues_df = pd.DataFrame(eigenvalues) 
     eigenvalues_df.to_csv(eigenvalues_path, index=False)

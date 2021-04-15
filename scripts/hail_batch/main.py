@@ -1,4 +1,4 @@
-"""Run HGDP_1KG_PCALoadingsGenerate.py using the analysis runner."""
+"""Run hgdp_1kg_pca_loadings_generate.py using the analysis runner."""
 
 import os
 import hail as hl
@@ -19,9 +19,9 @@ batch = hb.Batch(name='generate PCA loadings', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'HGDP_1KG_PCALoadingsGenerate.py --output={OUTPUT}',
-    max_age='10h',
+    max_age='15h',
     num_secondary_workers='100'
-    packages=['click', 'gnomad'],
+    packages=['click'],
     job_name='PCA-loadings',
 )
 
