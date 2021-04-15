@@ -4,6 +4,5 @@ This runs a Hail query script in Dataproc using Hail Batch in order to output th
 ```
 analysis-runner --dataset ancestry \
 --access-level full --output-dir "gs://cpg-ancestry-main/1kg_hgdp_pca/v0" \
---description “PCA loadings” main.py
+--description "PCA loadings" main.py
 ```
-
