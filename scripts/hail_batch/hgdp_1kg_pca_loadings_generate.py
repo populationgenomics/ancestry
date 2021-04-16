@@ -22,7 +22,7 @@ def query(output):
     loadings_path = f'{output}/loadings.ht'
     mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     # test on 100 samples
-    mt_head = mt.head(n=mt.count_rows(), n_cols=100)
+    mt_head = mt.head(n=mt.count_rows(), n_cols=20)
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         mt_head.GT, compute_loadings=True, k=20
     )
