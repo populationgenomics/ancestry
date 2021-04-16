@@ -2,15 +2,17 @@
 
 import click
 import pandas as pd
-from hail.methods import hwe_normalized_pca
 import hail as hl
 
-GNOMAD_HGDP_1KG_MT = 'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
+GNOMAD_HGDP_1KG_MT = (
+    'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
+    'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
+)
 
 
 @click.command()
 @click.option('--output', help='GCS output path', required=True)
-def query(output, rerun):
+def query(output):
     """Query script entry point."""
 
     hl.init(default_reference='GRCh38')

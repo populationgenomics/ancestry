@@ -6,7 +6,7 @@ Prioritising and assigning ancestry to populations.
 
 To connect to hail with the required gnomAD dependencies, run the following command:
 
-```
+```sh
 hailctl dataproc start \
 --max-age 2h \
 --region australia-southeast1 \
