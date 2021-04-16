@@ -16,11 +16,11 @@ service_backend = hb.ServiceBackend(
 
 batch = hb.Batch(name='generate PCA loadings', backend=service_backend)
 
-dataproc.hail_dataproc_job(  # pylint: disable=unexpected-keyword-arg
+dataproc.hail_dataproc_job(
     batch,
     f'HGDP_1KG_PCALoadingsGenerate.py --output={OUTPUT}',
     max_age='15h',
-    num_secondary_workers='100',
+    num_secondary_workers=100,
     packages=['click'],
     job_name='PCA-loadings',
 )
