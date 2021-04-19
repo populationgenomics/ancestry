@@ -21,7 +21,7 @@ dataproc.hail_dataproc_job(
     f'hgdp_1kg_ld_prune.py --output={OUTPUT}',
     max_age='5h',
     num_secondary_workers=100,
-    packages=['click'],
+    packages=['click', 'gnomad'],
     job_name='ld-prune',
 )
 

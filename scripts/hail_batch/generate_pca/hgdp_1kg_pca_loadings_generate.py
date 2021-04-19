@@ -4,10 +4,7 @@ import click
 import pandas as pd
 import hail as hl
 
-GNOMAD_HGDP_1KG_MT = (
-    'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
-    'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
-)
+GNOMAD_HGDP_1KG_MT = 'gs://cpg-ancestry-temporary/1kg_hgdp_ld_pruning/v0/filtered_mt.mt'
 
 
 @click.command()
