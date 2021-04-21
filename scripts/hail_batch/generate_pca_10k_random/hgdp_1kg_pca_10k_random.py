@@ -22,18 +22,21 @@ def query(output):
     scores_path = f'{output}/scores_10k.ht'
     loadings_path = f'{output}/loadings_10k.ht'
 
-    # filter out variants with a call rate <0.99
-    mt_qc = hl.variant_qc(mt)
-    filt_mt = mt_qc.filter_rows(mt_qc.variant_qc.call_rate >= 0.99)
+    # test on 100 samples
+    mt_head = mt.head(None, n_cols=100)
+    # filter out variants with a call rate <0.99 and variants where there
+    # is no non-reference allele called.
+    mt_qc = hl.variant_qc(mt_head)
+    filt_mt = mt_qc.filter_rows(
+        (mt_qc.variant_qc.call_rate >= 0.99) & (mt_qc.variant_qc.n_non_ref >= 1)
+    )
     nrows = filt_mt.count_rows()
     # Downsample the dataset to approximately 10k randomly-selected rows
     # (the input must be a proportion)
     downsampled_mt = filt_mt.sample_rows(10000 / nrows)
 
-    # test on 100 samples
-    mt_head = downsampled_mt.head(None, n_cols=100)
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
-        mt_head.GT, compute_loadings=True, k=20
+        downsampled_mt.GT, compute_loadings=True, k=20
     )
     # save the list of eigenvalues
     eigenvalues_df = pd.DataFrame(eigenvalues)
