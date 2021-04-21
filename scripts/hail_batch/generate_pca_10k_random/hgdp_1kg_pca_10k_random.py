@@ -31,7 +31,7 @@ def query(output):
     downsampled_mt = filt_mt.sample_rows(10000 / nrows)
 
     # test on 100 samples
-    mt_head = downsampled_mt.head(n=downsampled_mt.count_rows(), n_cols=100)
+    mt_head = downsampled_mt.head(None, n_cols=100)
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         mt_head.GT, compute_loadings=True, k=20
     )
