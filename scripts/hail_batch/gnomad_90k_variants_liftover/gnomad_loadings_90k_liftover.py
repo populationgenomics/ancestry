@@ -19,8 +19,6 @@ def query(output):  # pylint: disable=too-many-locals
 
     # liftover and get variants
     ht_gnomad_loadings = hl.read_table(GNOMAD_V2_LOADINGS)
-    ht_gnomad_loadings.count()
-    # 94176
     rg37 = hl.get_reference('GRCh37')
     rg38 = hl.get_reference('GRCh38')
     rg37.add_liftover(
