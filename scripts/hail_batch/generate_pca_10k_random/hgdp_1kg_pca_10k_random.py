@@ -21,19 +21,18 @@ def query(output):
     eigenvalues_path = f'{output}/eigenvalues_10k.csv'
     scores_path = f'{output}/scores_10k.ht'
     loadings_path = f'{output}/loadings_10k.ht'
+    downsampled_mt_path = f'{output}/downsampled_mt.mt'
 
-    # test on 100 samples
-    mt_head = mt.head(None, n_cols=100)
     # filter out variants with a call rate <0.99 and variants where there
     # is no non-reference allele called.
-    mt_qc = hl.variant_qc(mt_head)
+    mt_qc = hl.variant_qc(mt)
     filt_mt = mt_qc.filter_rows(
         (mt_qc.variant_qc.call_rate >= 0.99) & (mt_qc.variant_qc.n_non_ref >= 1)
     )
     nrows = filt_mt.count_rows()
     # Downsample the dataset to approximately 10k randomly-selected rows
     # (the input must be a proportion)
-    downsampled_mt = filt_mt.sample_rows(10000 / nrows)
+    downsampled_mt = filt_mt.sample_rows(10000 / nrows, seed=12345)
 
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         downsampled_mt.GT, compute_loadings=True, k=20
@@ -41,9 +40,10 @@ def query(output):
     # save the list of eigenvalues
     eigenvalues_df = pd.DataFrame(eigenvalues)
     eigenvalues_df.to_csv(eigenvalues_path, index=False)
-    # save the scores and loadings as a hail table
+    # save the scores, loadings, and downsampled matrix table
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
+    downsampled_mt.write(downsampled_mt_path, overwrite=True)
 
 
 if __name__ == '__main__':
