@@ -20,9 +20,10 @@ dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_ld_prune.py --output={OUTPUT}',
     max_age='5h',
-    num_secondary_workers=300,
+    num_secondary_workers=100,
     packages=['click', 'gnomad'],
     job_name='ld-prune',
+    worker_boot_disk_size=200,
 )
 
 batch.run()
