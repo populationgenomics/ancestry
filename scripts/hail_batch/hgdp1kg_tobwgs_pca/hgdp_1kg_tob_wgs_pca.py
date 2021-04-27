@@ -10,7 +10,7 @@ GNOMAD_HGDP_1KG_MT = (
     'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
 )
 
-TOB_WGS = 'gs://cpg-tob-wgs-temporary/joint_vcf/v1/work/combiner/genomes.mt'
+TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
 
 GNOMAD_LIFTOVER_LOADINGS = 'gs://cpg-reference/gnomad/gnomad_loadings_90k_liftover.ht'
 
