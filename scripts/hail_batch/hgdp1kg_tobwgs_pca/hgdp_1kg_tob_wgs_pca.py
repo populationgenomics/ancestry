@@ -26,32 +26,22 @@ def query(output):  # pylint: disable=too-many-locals
     mt_tob_wgs = hl.read_matrix_table(TOB_WGS)
     # make keys the same between datasets
     mt_tob_wgs = mt_tob_wgs.key_rows_by('locus', 'alleles')
-    # Filter the matrix tables to rows whose keys appear in both datasets
-    join_rows_hgdp1kg_tobwgs = mt_hgdp_1kg.semi_join_rows(mt_tob_wgs.rows())
-    join_rows_tobwgs_hgdp1kg = mt_tob_wgs.semi_join_rows(mt_hgdp_1kg.rows())
-
     # add gnomad liftover loading data to both matrices
     ht_gnomad_loadings_liftover = hl.read_table(GNOMAD_LIFTOVER_LOADINGS)
-    hgdp1kg_select_variants = join_rows_hgdp1kg_tobwgs.annotate_rows(
-        rows_to_keep=ht_gnomad_loadings_liftover[join_rows_hgdp1kg_tobwgs.locus]
-    )
-    hgdp1kg_filt = hgdp1kg_select_variants.filter_rows(
-        hgdp1kg_select_variants.locus == hgdp1kg_select_variants.rows_to_keep.liftover
-    )
-    tobwgs_select_variants = join_rows_tobwgs_hgdp1kg.annotate_rows(
-        rows_to_keep=ht_gnomad_loadings_liftover[join_rows_tobwgs_hgdp1kg.locus]
-    )
-    tobwgs_filt = tobwgs_select_variants.filter_rows(
-        tobwgs_select_variants.locus == tobwgs_select_variants.rows_to_keep.liftover
-    )
+    ht_gnomad_loadings_liftover = ht_gnomad_loadings_liftover.key_by('locus', 'alleles')
+    join_rows_hgdp1kg_liftover = mt_hgdp_1kg.semi_join_rows(ht_gnomad_loadings_liftover)
+    join_rows_tobwgs_liftover = mt_tob_wgs.semi_join_rows(ht_gnomad_loadings_liftover)
 
     # Join datasets by merging columns
     # Entries and columns must be identical
-    change_lgt_to_gt = tobwgs_filt.annotate_entries(
-        GT=lgt_to_gt(tobwgs_filt.LGT, tobwgs_filt.LA)
+    change_lgt_to_gt = join_rows_tobwgs_liftover.annotate_entries(
+        GT=lgt_to_gt(join_rows_tobwgs_liftover.LGT, join_rows_tobwgs_liftover.LA)
     )
-    select_entries_hgdp1kg = hgdp1kg_filt.select_entries(hgdp1kg_filt.GT)
+    select_entries_hgdp1kg = join_rows_hgdp1kg_liftover.select_entries(
+        join_rows_hgdp1kg_liftover.GT
+    )
     select_entries_tobwgs = change_lgt_to_gt.select_entries(change_lgt_to_gt.GT)
+
     # Only keep columns we need
     select_columns_hgdp1kg = select_entries_hgdp1kg.select_cols(
         select_entries_hgdp1kg.sample_qc
@@ -59,7 +49,9 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp1kg_filtered = select_columns_hgdp1kg.drop('sample_qc')
     tobwgs_filtered = select_entries_tobwgs
     # Join datasets
-    hgdp1kg_tobwgs_joined = hgdp1kg_filtered.union_cols(tobwgs_filtered)
+    hgdp1kg_tobwgs_joined = hgdp1kg_filtered.union_cols(
+        tobwgs_filtered, row_join_type='inner'
+    )
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.csv'
