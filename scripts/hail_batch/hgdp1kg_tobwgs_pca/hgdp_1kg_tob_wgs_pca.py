@@ -22,15 +22,16 @@ def query(output):  # pylint: disable=too-many-locals
 
     hl.init(default_reference='GRCh38')
 
-    mt_hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
-    mt_tob_wgs = hl.read_matrix_table(TOB_WGS)
-    # make keys the same between datasets
-    mt_tob_wgs = mt_tob_wgs.key_rows_by('locus', 'alleles')
-    # add gnomad liftover loading data to both matrices
-    ht_gnomad_loadings_liftover = hl.read_table(GNOMAD_LIFTOVER_LOADINGS)
-    ht_gnomad_loadings_liftover = ht_gnomad_loadings_liftover.key_by('locus', 'alleles')
-    join_rows_hgdp1kg_liftover = mt_hgdp_1kg.semi_join_rows(ht_gnomad_loadings_liftover)
-    join_rows_tobwgs_liftover = mt_tob_wgs.semi_join_rows(ht_gnomad_loadings_liftover)
+    hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
+    tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
+    loadings = hl.read_table(GNOMAD_LIFTOVER_LOADINGS).key_by('locus', 'alleles')
+
+    # filter to loci that are contained in both tables and the loadings
+    hgdp_1kg = hgdp_1kg.filter_rows(
+        hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles'])) &
+        hl.is_defined(tob_wgs.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
+    )
+    tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg)
 
     # Join datasets by merging columns
     # Entries and columns must be identical
