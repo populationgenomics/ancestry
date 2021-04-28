@@ -22,11 +22,11 @@ def query(output):  # pylint: disable=too-many-locals
 
     hl.init(default_reference='GRCh38')
 
-    # Filter the matrix tables to rows whose keys appear in both datasets
     mt_hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     mt_tob_wgs = hl.read_matrix_table(TOB_WGS)
     # make keys the same between datasets
     mt_tob_wgs = mt_tob_wgs.key_rows_by('locus', 'alleles')
+    # Filter the matrix tables to rows whose keys appear in both datasets
     join_rows_hgdp1kg_tobwgs = mt_hgdp_1kg.semi_join_rows(mt_tob_wgs.rows())
     join_rows_tobwgs_hgdp1kg = mt_tob_wgs.semi_join_rows(mt_hgdp_1kg.rows())
 
