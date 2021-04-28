@@ -22,6 +22,9 @@ def query(output):
     # reproduce gnomAD genotype filtering
     mt = annotate_adj(mt)
     mt = mt.filter_entries(mt.adj)
+    # Filter to common variants
+    mt = hl.variant_qc(mt)
+    mt = mt.filter_rows(mt.variant_qc.AF[1] > 0.05)
     # perform ld pruning
     biallelic_mt = mt.filter_rows(hl.len(mt.alleles) == 2)
     pruned_variant_table = hl.ld_prune(biallelic_mt.GT, r2=0.2, bp_window_size=500000)
