@@ -28,38 +28,27 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in both tables and the loadings
     hgdp_1kg = hgdp_1kg.filter_rows(
-        hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles'])) &
-        hl.is_defined(tob_wgs.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
+        hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
+        & hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
     )
-    tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg)
+    tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg.rows())
 
-    # Join datasets by merging columns
     # Entries and columns must be identical
     tob_wgs = tob_wgs.select_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
     hgdp_1kg = hgdp_1kg.select_entries(hgdp_1kg.GT)
-
-    # Only keep columns we need
-    select_columns_hgdp1kg = select_entries_hgdp1kg.select_cols(
-        select_entries_hgdp1kg.sample_qc
-    )
-    hgdp1kg_filtered = select_columns_hgdp1kg.drop('sample_qc')
-    tobwgs_filtered = select_entries_tobwgs
+    hgdp_1kg = hgdp_1kg.select_cols()
+    # select the first 50 samples from each dataset as a subset to test
+    tob_wgs = tob_wgs.head(None, n_cols=50)
+    hgdp_1kg = hgdp_1kg.head(None, n_cols=50)
     # Join datasets
-    hgdp1kg_tobwgs_joined = hgdp1kg_filtered.union_cols(
-        tobwgs_filtered, row_join_type='inner'
-    )
+    hgdp1kg_tobwgs_joined = hgdp_1kg.union_cols(tob_wgs)
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.csv'
     scores_path = f'{output}/scores.ht'
     loadings_path = f'{output}/loadings.ht'
-
-    # test on 100 samples
-    mt_head = hgdp1kg_tobwgs_joined.head(
-        n=hgdp1kg_tobwgs_joined.count_rows(), n_cols=100
-    )
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
-        mt_head.GT, compute_loadings=True, k=20
+        hgdp1kg_tobwgs_joined.GT, compute_loadings=True, k=20
     )
     # save the list of eigenvalues
     eigenvalues_df = pd.DataFrame(eigenvalues)
