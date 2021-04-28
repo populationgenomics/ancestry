@@ -35,13 +35,8 @@ def query(output):  # pylint: disable=too-many-locals
 
     # Join datasets by merging columns
     # Entries and columns must be identical
-    change_lgt_to_gt = join_rows_tobwgs_liftover.annotate_entries(
-        GT=lgt_to_gt(join_rows_tobwgs_liftover.LGT, join_rows_tobwgs_liftover.LA)
-    )
-    select_entries_hgdp1kg = join_rows_hgdp1kg_liftover.select_entries(
-        join_rows_hgdp1kg_liftover.GT
-    )
-    select_entries_tobwgs = change_lgt_to_gt.select_entries(change_lgt_to_gt.GT)
+    tob_wgs = tob_wgs.select_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
+    hgdp_1kg = hgdp_1kg.select_entries(hgdp_1kg.GT)
 
     # Only keep columns we need
     select_columns_hgdp1kg = select_entries_hgdp1kg.select_cols(
