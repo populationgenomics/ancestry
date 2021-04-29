@@ -19,8 +19,8 @@ batch = hb.Batch(name='hgdp1kg tobwgs pca', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_tob_wgs_pca.py --output={OUTPUT}',
-    max_age='10h',
-    num_secondary_workers=100,
+    max_age='24h',
+    num_workers=50,
     packages=['click'],
     job_name='hgdp1kg-tobwgs-pca',
 )

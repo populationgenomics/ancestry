@@ -42,12 +42,13 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp_1kg = hgdp_1kg.head(None, n_cols=50)
     # Join datasets
     hgdp1kg_tobwgs_joined = hgdp_1kg.union_cols(tob_wgs)
+    mt_path = f'{output}/hgdp1kg_tobwgs_joined.mt'
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.checkpoint(mt_path)
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.csv'
     scores_path = f'{output}/scores.ht'
     loadings_path = f'{output}/loadings.ht'
-    mt_path = f'{output}/hgdp1kg_tobwgs_joined.mt'
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         hgdp1kg_tobwgs_joined.GT, compute_loadings=True, k=20
     )
@@ -57,7 +58,6 @@ def query(output):  # pylint: disable=too-many-locals
     # save the scores and loadings as a hail table
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
-    hgdp1kg_tobwgs_joined.write(mt_path, overwrite=True)
 
 
 if __name__ == '__main__':
