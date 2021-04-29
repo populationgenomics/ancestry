@@ -25,7 +25,6 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
     loadings = hl.read_table(GNOMAD_LIFTOVER_LOADINGS).key_by('locus', 'alleles')
-    mt_path = f'{output}/hgdp1kg_tobwgs_joined.mt'
 
     # filter to loci that are contained in both tables and the loadings
     hgdp_1kg = hgdp_1kg.filter_rows(
@@ -43,6 +42,7 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp_1kg = hgdp_1kg.head(None, n_cols=50)
     # Join datasets
     hgdp1kg_tobwgs_joined = hgdp_1kg.union_cols(tob_wgs)
+    mt_path = f'{output}/hgdp1kg_tobwgs_joined.mt'
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.checkpoint(mt_path)
 
     # Perform PCA
