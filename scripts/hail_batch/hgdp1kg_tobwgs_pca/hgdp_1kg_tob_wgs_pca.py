@@ -45,7 +45,9 @@ def query(output):  # pylint: disable=too-many-locals
         hgdp_1kg_metadata=hgdp_1kg_metadata[hgdp1kg_tobwgs_joined.s]
     )
     mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
-    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.checkpoint(mt_path)
+    if not hl.hadoop_exists(mt_path):
+        hgdp1kg_tobwgs_joined.write(mt_path)
+    hgdp1kg_tobwgs_joined = hl.read_matrix_table(mt_path)
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.csv'
