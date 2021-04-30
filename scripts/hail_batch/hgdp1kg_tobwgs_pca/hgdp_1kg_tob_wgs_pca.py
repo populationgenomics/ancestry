@@ -34,16 +34,20 @@ def query(output):  # pylint: disable=too-many-locals
     tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg.rows())
 
     # Entries and columns must be identical
-    tob_wgs = tob_wgs.select_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
-    hgdp_1kg = hgdp_1kg.select_entries(hgdp_1kg.GT)
-    hgdp_1kg = hgdp_1kg.select_cols()
-    # select the first 50 samples from each dataset as a subset to test
-    tob_wgs = tob_wgs.head(None, n_cols=50)
-    hgdp_1kg = hgdp_1kg.head(None, n_cols=50)
+    tob_wgs_select = tob_wgs.select_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
+    hgdp_1kg_select = hgdp_1kg.select_entries(hgdp_1kg.GT)
+    hgdp_1kg_select = hgdp_1kg_select.select_cols()
     # Join datasets
-    hgdp1kg_tobwgs_joined = hgdp_1kg.union_cols(tob_wgs)
-    mt_path = f'{output}/hgdp1kg_tobwgs_joined.mt'
-    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.checkpoint(mt_path)
+    hgdp1kg_tobwgs_joined = hgdp_1kg_select.union_cols(tob_wgs_select)
+    # Add in metadata information
+    hgdp_1kg_metadata = hgdp_1kg.cols()
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.annotate_cols(
+        hgdp_1kg_metadata=hgdp_1kg_metadata[hgdp1kg_tobwgs_joined.s]
+    )
+    mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
+    if not hl.hadoop_exists(mt_path):
+        hgdp1kg_tobwgs_joined.write(mt_path)
+    hgdp1kg_tobwgs_joined = hl.read_matrix_table(mt_path)
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.csv'
