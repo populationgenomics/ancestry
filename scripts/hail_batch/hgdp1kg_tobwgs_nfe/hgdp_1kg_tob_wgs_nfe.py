@@ -53,3 +53,7 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp_1kg = hgdp_1kg.semi_join_rows(gnomad_only_variants)
     hgdp_1kg_path = f'{output}/hgdp_1kg_nfe_variants.mt'
     mt.write(hgdp_1kg_path)
+
+
+if __name__ == '__main__':
+    query()  # pylint: disable=no-value-for-parameter
