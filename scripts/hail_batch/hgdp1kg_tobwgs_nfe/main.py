@@ -1,4 +1,4 @@
-"""Run hgdp_1kg_ld_prune.py using the analysis runner."""
+"""Entry point for the analysis runner."""
 
 import os
 import hail as hl

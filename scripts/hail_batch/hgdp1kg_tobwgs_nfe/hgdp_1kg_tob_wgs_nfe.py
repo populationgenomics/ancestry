@@ -25,14 +25,13 @@ def query(output):  # pylint: disable=too-many-locals
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
-    mt = mt.annotate_cols(TOB_WGS=mt.s.contains('TOB'))
     # Get NFE samples only
     mt = mt.filter_cols(
-        (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe') | (mt.TOB_WGS)
+        (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
+        | (mt.s.contains('TOB'))
     )
     mt_path = f'{output}/hgdp1kg_nfe_samples.mt'
-    if not hl.hadoop_exists(mt_path):
-        mt.write(mt_path)
+    mt = mt.checkpoint(mt_path)
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.csv'
@@ -48,11 +47,20 @@ def query(output):  # pylint: disable=too-many-locals
 
     # Get gnomAD allele frequency of variants that aren't in TOB-WGS
     loadings_gnomad = hl.read_table(GNOMAD_LIFTOVER_LOADINGS).key_by('locus', 'alleles')
-    gnomad_only_variants = loadings_gnomad.anti_join(mt.rows())
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
-    hgdp_1kg = hgdp_1kg.semi_join_rows(gnomad_only_variants)
-    hgdp_1kg_path = f'{output}/hgdp_1kg_nfe_variants.mt'
-    mt.write(hgdp_1kg_path)
+    loadings_gnomad = loadings_gnomad.annotate(
+        gnomad_AF=hgdp_1kg.rows()[
+            loadings_gnomad.locus, loadings_gnomad.alleles
+        ].gnomad_freq.AF,
+        gnomad_popmax_AF=hgdp_1kg.rows()[
+            loadings_gnomad.locus, loadings_gnomad.alleles
+        ].gnomad_popmax.AF,
+        TOB_variant=hl.is_defined(
+            mt.rows()[loadings_gnomad.locus, loadings_gnomad.alleles].gnomad_popmax.AF
+        ),
+    )
+    loadings_gnomad_path = f'{output}/gnomad_loadings_annotated_variants.mt'
+    mt.write(loadings_gnomad_path)
 
 
 if __name__ == '__main__':
