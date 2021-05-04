@@ -51,5 +51,5 @@ def query(output):  # pylint: disable=too-many-locals
     gnomad_only_variants = loadings_gnomad.anti_join(mt.rows())
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     hgdp_1kg = hgdp_1kg.semi_join_rows(gnomad_only_variants)
-    hgdp_1kg_path = f'{output}/hgdp_1kg_nfe_variants.csv'
+    hgdp_1kg_path = f'{output}/hgdp_1kg_nfe_variants.mt'
     mt.write(hgdp_1kg_path)
