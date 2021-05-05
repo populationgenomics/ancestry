@@ -68,8 +68,8 @@ def query(output):  # pylint: disable=too-many-locals
         gnomad_freq_meta=population_af_metadata
     )
     gnomad_variants = loadings_gnomad.drop('loadings')
-    gnomad_variant_path = f'{output}/gnomad_annotated_variants.mt'
-    gnomad_variants.write(gnomad_variant_path)
+    gnomad_variants_path = f'{output}/gnomad_annotated_variants.mt'
+    gnomad_variants.write(gnomad_variants_path)
 
 
 if __name__ == '__main__':
