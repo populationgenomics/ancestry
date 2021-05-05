@@ -56,19 +56,12 @@ def query(output):  # pylint: disable=too-many-locals
     # Get gnomAD allele frequency of variants that aren't in TOB-WGS
     loadings_gnomad = hl.read_table(GNOMAD_LIFTOVER_LOADINGS).key_by('locus', 'alleles')
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
+    hgdp_1kg_row = hgdp_1kg.rows()[loadings_gnomad.locus, loadings_gnomad.alleles]
+    tob_wgs_row = tob_wgs.rows()[loadings_gnomad.locus, loadings_gnomad.alleles]
     loadings_gnomad = loadings_gnomad.annotate(
-        gnomad_AF=hgdp_1kg.rows()[
-            loadings_gnomad.locus, loadings_gnomad.alleles
-        ].gnomad_freq.AF,
-        gnomad_popmax_AF=hgdp_1kg.rows()[
-            loadings_gnomad.locus, loadings_gnomad.alleles
-        ].gnomad_popmax.AF,
-        TOB_variant=hl.is_defined(
-            mt.rows()[loadings_gnomad.locus, loadings_gnomad.alleles].gnomad_popmax.AF
-        ),
-        TOB_WGS_AF=tob_wgs.rows()[
-            loadings_gnomad.locus, loadings_gnomad.alleles
-        ].gt_stats.AF,
+        gnomad_AF=hgdp_1kg_row.gnomad_freq.AF,
+        gnomad_popmax_AF=hgdp_1kg_row.gnomad_popmax.AF,
+        TOB_WGS_AF=tob_wgs_row.gt_stats.AF,
     )
     loadings_gnomad_path = f'{output}/gnomad_loadings_annotated_variants.mt'
     mt.write(loadings_gnomad_path)
