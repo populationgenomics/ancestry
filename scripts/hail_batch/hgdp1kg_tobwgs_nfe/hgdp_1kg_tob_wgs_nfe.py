@@ -47,9 +47,7 @@ def query(output):  # pylint: disable=too-many-locals
     loadings.write(loadings_path, overwrite=True)
 
     # get TOB-WGS allele frequencies
-    tob_wgs = hl.read_matrix_table(
-        'gs://cpg-tob-wgs-temporary/joint_vcf/v1/raw/genomes.mt'
-    ).key_rows_by('locus', 'alleles')
+    tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
     tob_wgs = tob_wgs.annotate_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
     tob_wgs = tob_wgs.annotate_rows(
         gt_stats=hl.agg.call_stats(tob_wgs.GT, tob_wgs.alleles)
