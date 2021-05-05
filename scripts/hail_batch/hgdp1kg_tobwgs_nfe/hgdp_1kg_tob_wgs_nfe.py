@@ -3,6 +3,7 @@
 import click
 import pandas as pd
 import hail as hl
+from hail.experimental import lgt_to_gt
 
 HGDP1KG_TOBWGS = (
     'gs://cpg-tob-wgs-analysis/1kg_hgdp_tobwgs_pca/'
@@ -15,6 +16,8 @@ GNOMAD_HGDP_1KG_MT = (
     'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
     'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
 )
+
+TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
 
 
 @click.command()
@@ -30,8 +33,6 @@ def query(output):  # pylint: disable=too-many-locals
         (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
         | (mt.s.contains('TOB'))
     )
-    mt_path = f'{output}/hgdp1kg_nfe_samples.mt'
-    mt = mt.checkpoint(mt_path)
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.csv'
@@ -44,6 +45,15 @@ def query(output):  # pylint: disable=too-many-locals
     eigenvalues_df.to_csv(eigenvalues_path, index=False)
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
+
+    # get TOB-WGS allele frequencies
+    tob_wgs = hl.read_matrix_table(
+        'gs://cpg-tob-wgs-temporary/joint_vcf/v1/raw/genomes.mt'
+    ).key_rows_by('locus', 'alleles')
+    tob_wgs = tob_wgs.annotate_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
+    tob_wgs = tob_wgs.annotate_rows(
+        gt_stats=hl.agg.call_stats(tob_wgs.GT, tob_wgs.alleles)
+    )
 
     # Get gnomAD allele frequency of variants that aren't in TOB-WGS
     loadings_gnomad = hl.read_table(GNOMAD_LIFTOVER_LOADINGS).key_by('locus', 'alleles')
@@ -58,6 +68,9 @@ def query(output):  # pylint: disable=too-many-locals
         TOB_variant=hl.is_defined(
             mt.rows()[loadings_gnomad.locus, loadings_gnomad.alleles].gnomad_popmax.AF
         ),
+        TOB_WGS_AF=tob_wgs.rows()[
+            loadings_gnomad.locus, loadings_gnomad.alleles
+        ].gt_stats.AF,
     )
     loadings_gnomad_path = f'{output}/gnomad_loadings_annotated_variants.mt'
     mt.write(loadings_gnomad_path)
