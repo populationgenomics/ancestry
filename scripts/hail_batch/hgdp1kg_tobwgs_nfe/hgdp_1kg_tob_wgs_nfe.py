@@ -63,8 +63,13 @@ def query(output):  # pylint: disable=too-many-locals
         gnomad_popmax_AF=hgdp_1kg_row.gnomad_popmax.AF,
         TOB_WGS_AF=tob_wgs_row.gt_stats.AF,
     )
-    loadings_gnomad_path = f'{output}/gnomad_loadings_annotated_variants.mt'
-    mt.write(loadings_gnomad_path)
+    population_af_metadata = hgdp_1kg.gnomad_freq_meta.collect()
+    loadings_gnomad = loadings_gnomad.annotate_globals(
+        gnomad_freq_meta=population_af_metadata
+    )
+    gnomad_variants = loadings_gnomad.drop('loadings')
+    gnomad_variant_path = f'{output}/gnomad_annotated_variants.mt'
+    gnomad_variants.write(gnomad_variant_path)
 
 
 if __name__ == '__main__':
