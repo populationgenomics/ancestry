@@ -1,4 +1,9 @@
-"""Perform pca on nfe samples from the HGDP,1KG, and tob-wgs dataset"""
+"""
+Perform pca on samples specific to a population
+from the HGDP,1KG, and tob-wgs dataset.
+
+Depends on hgdp1kg_tobwgs_pca/hgdp_1kg_tob_wgs_pca.py
+"""
 
 import click
 import pandas as pd
@@ -22,17 +27,21 @@ TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
 
 @click.command()
 @click.option('--output', help='GCS output path', required=True)
-def query(output):  # pylint: disable=too-many-locals
+@click.option('--pop', help='Population to subset from the 1KG (e.g. afr, nfe)')
+def query(output, pop):  # pylint: disable=too-many-locals
     """Query script entry point."""
 
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
-    # Get NFE samples only
-    mt = mt.filter_cols(
-        (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
-        | (mt.s.contains('TOB'))
-    )
+    if pop:
+        # Get samples from the specified population only
+        mt = mt.filter_cols(
+            (mt.hgdp_1kg_metadata.population_inference.pop == pop.lower())
+            | (mt.s.contains('TOB'))
+        )
+    else:
+        mt = mt.filter_cols(mt.s.contains('TOB'))
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.csv'
