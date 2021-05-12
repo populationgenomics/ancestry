@@ -1,0 +1,14 @@
+name: ancestry
+
+channels:
+  - conda-forge
+  - cpg
+
+dependencies:
+  - pre-commit
+  - pylint
+  - analysis-runner
+  - hail
+  - click
+  - pip:
+    - gnomad
