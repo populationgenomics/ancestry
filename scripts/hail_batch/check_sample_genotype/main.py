@@ -21,7 +21,7 @@ dataproc.hail_dataproc_job(
     f'plot_loadings_nfe.py --output={OUTPUT}',
     max_age='5h',
     num_secondary_workers=100,
-    packages=['click', 'feather'],
+    packages=['click', 'pyarrow'],
     job_name='check sample genotype',
 )
 
