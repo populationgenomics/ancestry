@@ -2,7 +2,7 @@
 
 import click
 import pandas as pd
-import feather
+from pyarrow import feather
 import hail as hl
 
 HGDP1KG_TOBWGS = (
@@ -29,7 +29,7 @@ def query(output):  # pylint: disable=too-many-locals
     amr_to_pandas = amr.rows().to_pandas()
     amr_af = pd.DataFrame(amr_to_pandas['gt_stats.AF'])
     amr_af_path = f'{output}/amr_AF.feather'
-    feather.write_dataframe(
+    feather.write_feather(
         amr_af,
         amr_af_path,
     )
