@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to perform s
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level test --output-dir "gs://cpg-tob-wgs-temporary/sample_qc/v0" \
+--access-level standard --output-dir "gs://cpg-tob-wgs-analysis/sample_qc/v1" \
 --description "get sample qc metrics" python3 main.py
 ```
