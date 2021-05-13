@@ -18,7 +18,7 @@ batch = hb.Batch(name='check sample genotype', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
-    f'plot_loadings_nfe.py --output={OUTPUT}',
+    f'check_genotype.py --output={OUTPUT}',
     max_age='5h',
     num_secondary_workers=100,
     packages=['click', 'pyarrow'],
