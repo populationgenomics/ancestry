@@ -20,7 +20,7 @@ dataproc.hail_dataproc_job(
     batch,
     f'check_genotype.py --output={OUTPUT}',
     max_age='5h',
-    num_secondary_workers=100,
+    num_workers=50,
     packages=['click', 'pyarrow'],
     job_name='check sample genotype',
 )
