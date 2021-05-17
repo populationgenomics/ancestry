@@ -4,7 +4,8 @@ import click
 import hail as hl
 
 HGDP1KG_TOBWGS = (
-    'gs://cpg-tob-wgs-analysis/1kg_hgdp_tobwgs_pca/v0/hgdp1kg_tobwgs_joined.mt/'
+    'gs://cpg-tob-wgs-analysis/1kg_hgdp_tobwgs_pca/'
+    'v1/hgdp1kg_tobwgs_joined_all_samples.mt/'
 )
 
 GNOMAD_HGDP_1KG_MT = (
@@ -21,16 +22,15 @@ def query(output):  # pylint: disable=too-many-locals
     hl.init(default_reference='GRCh38')
 
     # compute allele frequency count on amr population
-    hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
-    amr = hgdp_1kg.filter_cols(hgdp_1kg.population_inference.pop == 'amr')
+    mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
+    amr = mt.filter_cols(mt.hgdp_1kg_metadata.population_inference.pop == 'amr')
     amr = amr.annotate_rows(gt_stats=hl.agg.call_stats(amr.GT, amr.alleles))
     amr_af_path = f'{output}/amr.tsv'
     amr.gt_stats.AF.export(amr_af_path)
 
-    # get TOB-WGS LGT data for downstream manipulation
-    mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
-    mt_filt_path = f'{output}/tob_wgs_LGT.tsv'
-    mt.LGT.export(mt_filt_path)
+    # get TOB-WGS GT data for downstream manipulation
+    mt_gt_path = f'{output}/tob_wgs_GT.tsv'
+    mt.GT.export(mt_gt_path)
 
 
 if __name__ == '__main__':
