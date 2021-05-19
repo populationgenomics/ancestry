@@ -17,12 +17,9 @@ HGDP1KG_TOBWGS = (
     'v1/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
 
-LOADINGS = 'gs://cpg-tob-wgs-analysis/1kg_hgdp_nfe/v0/loadings.ht/'
-
+LOADINGS = 'gs://cpg-tob-wgs-analysis/1kg_hgdp_nfe/v0/loadings.ht'
 REPROCESSED_1KG = 'gs://cpg-tob-wgs-test/1kg_reprocessed/warp_gatk4/v0.mt'
-
-SCORES = 'gs://cpg-tob-wgs-analysis/1kg_hgdp_nfe/v0/scores.ht/'
-
+SCORES = 'gs://cpg-tob-wgs-analysis/1kg_hgdp_nfe/v0/scores.ht'
 EIGENVALUES = 'gs://cpg-tob-wgs-analysis/1kg_hgdp_nfe/v0/eigenvalues.csv'
 
 
