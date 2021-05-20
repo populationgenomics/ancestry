@@ -19,24 +19,26 @@ EIGENVALUES = 'gs://cpg-tob-wgs-analysis/1kg_hgdp_tobwgs_pca/v1/eigenvalues.csv'
 @click.command()
 @click.option('--number-of-pcs', 'number_of_pcs', help='Number of PCS', default=19)
 def main(number_of_pcs: int):  # pylint: disable=too-many-locals
+    """Query script entry point."""
+
     hl.init()
-    
+
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
     scores = hl.read_table(SCORES)
     mt = mt.annotate_cols(scores=scores[mt.s].scores)
     mt = mt.annotate_cols(TOB_WGS=mt.s.contains('TOB'))
-    
+
     # PCA plot must all come from the same object
     columns = mt.cols()
     pca_scores = columns.scores
     labels = columns.TOB_WGS
-    
+
     # get percent variance explained
     eigenvalues = pd.read_csv(EIGENVALUES)
     eigenvalues.columns = ['eigenvalue']
     variance = eigenvalues['eigenvalue'].divide(float(eigenvalues.sum())) * 100
     variance = variance.round(2)
-    
+
     print('Making PCA plots labelled by the study ID')
     for i in range(0, number_of_pcs):
         pc1 = i
@@ -51,12 +53,12 @@ def main(number_of_pcs: int):  # pylint: disable=too-many-locals
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
         )
         show(p)
-    
+
     print('Making PCA plots labelled by the continental population')
     labels = columns.hgdp_1kg_metadata.population_inference.pop
     pops = list(set(labels.collect()))
     hover_fields = dict([('s', columns.s)])
-    
+
     for i in range(0, number_of_pcs):
         pc1 = i
         pc2 = i + 1
@@ -73,11 +75,11 @@ def main(number_of_pcs: int):  # pylint: disable=too-many-locals
             hover_fields=hover_fields,
         )
         show(p)
-    
+
     print('Making PCA plots labelled by the subpopulation')
     labels = columns.hgdp_1kg_metadata.labeled_subpop
     pops = list(set(labels.collect()))
-    
+
     for i in range(0, number_of_pcs):
         pc1 = i
         pc2 = i + 1
