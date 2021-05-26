@@ -1,0 +1,9 @@
+# Densify TOB-WGS data
+
+This runs a Hail query script in Dataproc using Hail Batch in order to densify the TOB-WGS matrix. To run, use conda to install the analysis-runner, then execute the following command:
+
+```sh
+analysis-runner --dataset tob-wgs \
+--access-level standard --output-dir "gs://cpg-tob-wgs-analysis/1kg_hgdp_densify/v0" \
+--description "densify tob-wgs" python3 main.py
+```
