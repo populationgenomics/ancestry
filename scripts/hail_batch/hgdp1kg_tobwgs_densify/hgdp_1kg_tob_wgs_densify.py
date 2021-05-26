@@ -1,6 +1,5 @@
 """
 Test densify function on TOB-WGS data.
-
 """
 
 import click
