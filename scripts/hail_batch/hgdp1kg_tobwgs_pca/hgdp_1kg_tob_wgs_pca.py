@@ -26,7 +26,8 @@ def query(output):  # pylint: disable=too-many-locals
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
     loadings = hl.read_table(GNOMAD_LIFTOVER_LOADINGS).key_by('locus', 'alleles')
 
-    # filter to loci that are contained in both tables and the loadings
+    # filter to loci that are contained in both tables and the loadings after densifying
+    tob_wgs = hl.experimental.densify(tob_wgs)
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
         & hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
@@ -44,15 +45,15 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.annotate_cols(
         hgdp_1kg_metadata=hgdp_1kg_metadata[hgdp1kg_tobwgs_joined.s]
     )
-    mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
+    mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples_densified.mt'
     if not hl.hadoop_exists(mt_path):
         hgdp1kg_tobwgs_joined.write(mt_path)
     hgdp1kg_tobwgs_joined = hl.read_matrix_table(mt_path)
 
     # Perform PCA
-    eigenvalues_path = f'{output}/eigenvalues.csv'
-    scores_path = f'{output}/scores.ht'
-    loadings_path = f'{output}/loadings.ht'
+    eigenvalues_path = f'{output}/eigenvalues_densified.csv'
+    scores_path = f'{output}/scores_densified.ht'
+    loadings_path = f'{output}/loadings_densified.ht'
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         hgdp1kg_tobwgs_joined.GT, compute_loadings=True, k=20
     )
