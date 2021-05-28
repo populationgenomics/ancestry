@@ -22,7 +22,8 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
 
-    # filter to loci that are contained in both matrix tables
+    # filter to loci that are contained in both matrix tables after densifying
+    tob_wgs = hl.experimental.densify(tob_wgs)
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
     )
@@ -39,10 +40,6 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.annotate_cols(
         hgdp_1kg_metadata=hgdp_1kg_metadata[hgdp1kg_tobwgs_joined.s]
     )
-    mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
-    if not hl.hadoop_exists(mt_path):
-        hgdp1kg_tobwgs_joined.write(mt_path)
-    hgdp1kg_tobwgs_joined = hl.read_matrix_table(mt_path)
 
     # choose variants based off of gnomAD v3 parameters
     hgdp1kg_tobwgs_joined = hl.variant_qc(hgdp1kg_tobwgs_joined)
@@ -64,6 +61,9 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.filter_rows(
         hl.is_defined(pruned_variant_table[hgdp1kg_tobwgs_joined.row_key])
     )
+    mt_path = f'{output}/tob_wgs_hgdp_1kg_filtered_variants.mt'
+    if not hl.hadoop_exists(mt_path):
+        hgdp1kg_tobwgs_joined.write(mt_path)
 
 
 if __name__ == '__main__':
