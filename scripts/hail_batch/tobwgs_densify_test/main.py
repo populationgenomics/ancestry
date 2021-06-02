@@ -19,7 +19,7 @@ batch = hb.Batch(name='hgdp1kg tobwgs pca', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'tob_wgs_densify_test.py --output={OUTPUT}',
-    max_age='12h',
+    max_age='1h',
     num_secondary_workers=20,
     packages=['click'],
     job_name='tobwgs-densify-test',
