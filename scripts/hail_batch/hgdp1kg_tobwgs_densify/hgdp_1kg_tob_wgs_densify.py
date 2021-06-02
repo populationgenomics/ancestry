@@ -35,7 +35,7 @@ def query(output):  # pylint: disable=too-many-locals
         & hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
     )
     tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg.rows())
-    tob_wgs_path = f'{output}/tob_wgs_filtered_densified.mt'
+    tob_wgs_path = f'{output}/tob_wgs_filtered.mt'
     tob_wgs = tob_wgs.checkpoint(tob_wgs_path)
 
 
