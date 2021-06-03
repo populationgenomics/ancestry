@@ -56,6 +56,9 @@ def query(output):  # pylint: disable=too-many-locals
         & (hgdp1kg_tobwgs_joined.variant_qc.call_rate > 0.99)
         & (hgdp1kg_tobwgs_joined.IB.f_stat > -0.25)
     )
+    mt_path = f'{output}/hgdp_1kg_tob_wgs_variant_selection.mt'
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.repartition(10, shuffle=False)
+    hgdp1kg_tobwgs_joined.write(mt_path, overwrite=True)
 
     histogram_plot = hl.plot.histogram(
         hgdp1kg_tobwgs_joined.variant_qc.AF[1],
