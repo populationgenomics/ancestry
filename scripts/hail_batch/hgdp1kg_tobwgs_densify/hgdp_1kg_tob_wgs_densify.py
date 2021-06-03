@@ -36,6 +36,7 @@ def query(output):  # pylint: disable=too-many-locals
     )
     tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg.rows())
     tob_wgs_path = f'{output}/tob_wgs_filtered.mt'
+    tob_wgs = tob_wgs.repartition(10, shuffle=False)
     tob_wgs.write(tob_wgs_path)
 
 
