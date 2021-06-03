@@ -19,7 +19,8 @@ batch = hb.Batch(name='variant selection exploration', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_tob_wgs_variant_selection_exploration.py --output={OUTPUT}',
-    max_age='5h',
+    max_age='12h',
+    num_secondary_workers=20,
     packages=['click', 'selenium'],
     job_name='variant-selection-exploration',
 )
