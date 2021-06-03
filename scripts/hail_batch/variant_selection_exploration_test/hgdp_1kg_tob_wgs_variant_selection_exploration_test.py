@@ -22,20 +22,20 @@ def query(output):  # pylint: disable=too-many-locals
 
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
-    print('data successfully read in')
+    print(tob_wgs.count_rows())
 
     # filter to loci that are contained in both matrix tables after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
-    print('tob_wgs successfully densified')
+    print(tob_wgs.count_rows())
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
     )
     tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg.rows())
-    print('data successfully filtered')
+    print(tob_wgs.count_rows())
 
     # Entries and columns must be identical
     tob_wgs_select = tob_wgs.select_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
-    print('tob_wgs successfully GT converted')
+    print(tob_wgs.count_rows())
     hgdp_1kg_select = hgdp_1kg.select_entries(hgdp_1kg.GT)
     hgdp_1kg_select = hgdp_1kg_select.select_cols()
     # Join datasets
