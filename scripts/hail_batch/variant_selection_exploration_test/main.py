@@ -21,6 +21,7 @@ dataproc.hail_dataproc_job(
     f'hgdp_1kg_tob_wgs_variant_selection_exploration_test.py --output={OUTPUT}',
     max_age='5h',
     packages=['click', 'selenium'],
+    init=['gs://cpg-reference/hail_dataproc/install_phantomjs.sh'],
     job_name='test-variant-selection',
 )
 

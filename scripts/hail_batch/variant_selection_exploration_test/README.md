@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to select a 
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level standard --output-dir "gs://cpg-tob-wgs-test/tob_wgs_hgdp_1kg_variant_selection_exploration/v0" \
+--access-level test --output-dir "gs://cpg-tob-wgs-test/tob_wgs_hgdp_1kg_variant_selection_exploration/v3" \
 --description "test variant selection" python3 main.py
 ```
