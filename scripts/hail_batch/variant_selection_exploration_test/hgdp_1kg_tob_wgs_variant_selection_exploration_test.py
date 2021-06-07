@@ -24,8 +24,8 @@ def query(output):  # pylint: disable=too-many-locals
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
 
     # filter to loci that are contained in both matrix tables after densifying
-    hgdp_1kg = hgdp_1kg.head(1000)
-    tob_wgs = tob_wgs.head(1000)
+    hgdp_1kg = hgdp_1kg.head(10000)
+    tob_wgs = tob_wgs.head(10000)
     tob_wgs = hl.experimental.densify(tob_wgs)
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
@@ -46,14 +46,12 @@ def query(output):  # pylint: disable=too-many-locals
 
     # choose variants based off of gnomAD v3 parameters
     hgdp1kg_tobwgs_joined = hl.variant_qc(hgdp1kg_tobwgs_joined)
-    print(hgdp1kg_tobwgs_joined.count_rows())
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.filter_rows(
         (hl.len(hgdp1kg_tobwgs_joined.alleles) == 2)
         & (hgdp1kg_tobwgs_joined.locus.in_autosome())
         & (hgdp1kg_tobwgs_joined.variant_qc.AF[1] > 0.001)
         & (hgdp1kg_tobwgs_joined.variant_qc.call_rate > 0.99)
     )
-    print(hgdp1kg_tobwgs_joined.count_rows())
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.annotate_rows(
         IB=hl.agg.inbreeding(
             hgdp1kg_tobwgs_joined.GT, hgdp1kg_tobwgs_joined.variant_qc.AF[1]
@@ -62,7 +60,6 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.filter_rows(
         hgdp1kg_tobwgs_joined.IB.f_stat > -0.25
     )
-    print(hgdp1kg_tobwgs_joined.count_rows())
     histogram_plot = hl.plot.histogram(
         hgdp1kg_tobwgs_joined.variant_qc.AF[1],
         legend='Allele Frequency',
