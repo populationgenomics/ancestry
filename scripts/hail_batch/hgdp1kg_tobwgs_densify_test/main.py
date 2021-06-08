@@ -20,7 +20,6 @@ dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_tob_wgs_densify.py --output={OUTPUT}',
     max_age='2h',
-    num_secondary_workers=20,
     packages=['click'],
     job_name=f'densify_pca_test',
 )
