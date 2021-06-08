@@ -4,7 +4,6 @@ Test densify function on TOB-WGS data.
 
 import click
 import hail as hl
-import pandas as pd
 from hail.experimental import lgt_to_gt
 
 GNOMAD_LIFTOVER_LOADINGS = 'gs://cpg-reference/gnomad/gnomad_loadings_90k_liftover.ht'
@@ -31,7 +30,9 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in both tables and the loadings after densifying
     hgdp_1kg = hgdp_1kg.filter_rows(hgdp_1kg.locus.contig == 'chr22')
+    hgdp_1kg = hgdp_1kg.head(100000)
     tob_wgs = tob_wgs.filter_rows(tob_wgs.locus.contig == 'chr22')
+    tob_wgs = tob_wgs.head(100000)
     tob_wgs = hl.experimental.densify(tob_wgs)
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
@@ -52,15 +53,11 @@ def query(output):  # pylint: disable=too-many-locals
     )
 
     # Perform PCA
-    eigenvalues_path = f'{output}/eigenvalues.csv'
     scores_path = f'{output}/scores.ht'
     loadings_path = f'{output}/loadings.ht'
-    eigenvalues, scores, loadings = hl.hwe_normalized_pca(
+    _, scores, loadings = hl.hwe_normalized_pca(
         hgdp1kg_tobwgs_joined.GT, compute_loadings=True, k=20
     )
-    # save the list of eigenvalues
-    eigenvalues_df = pd.DataFrame(eigenvalues)
-    eigenvalues_df.to_csv(eigenvalues_path, index=False)
     # save the scores and loadings as a hail table
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
