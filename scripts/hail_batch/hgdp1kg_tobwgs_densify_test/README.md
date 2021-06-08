@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to densify t
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level test --output-dir "gs://cpg-tob-wgs-test/1kg_hgdp_densify/v2" \
---description "densify tob-wgs" python3 main.py
+--access-level test --output-dir "gs://cpg-tob-wgs-test/1kg_hgdp_densify/v3" \
+--description "densify pca test" python3 main.py
 ```
