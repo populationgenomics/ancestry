@@ -30,9 +30,9 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in both tables and the loadings after densifying
     hgdp_1kg = hgdp_1kg.filter_rows(hgdp_1kg.locus.contig == 'chr22')
-    hgdp_1kg = hgdp_1kg.head(100000)
+    hgdp_1kg = hgdp_1kg.head(1000000)
     tob_wgs = tob_wgs.filter_rows(tob_wgs.locus.contig == 'chr22')
-    tob_wgs = tob_wgs.head(100000)
+    tob_wgs = tob_wgs.head(1000000)
     tob_wgs = hl.experimental.densify(tob_wgs)
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
