@@ -14,7 +14,7 @@ service_backend = hb.ServiceBackend(
     billing_project=os.getenv('HAIL_BILLING_PROJECT'), bucket=os.getenv('HAIL_BUCKET')
 )
 
-batch = hb.Batch(name=f'densify_tobwgs', backend=service_backend)
+batch = hb.Batch(name=f'densify_tobwgs_pca', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
@@ -22,7 +22,7 @@ dataproc.hail_dataproc_job(
     max_age='12h',
     num_secondary_workers=20,
     packages=['click'],
-    job_name=f'densify_tobwgs',
+    job_name=f'densify_tobwgs_pca',
 )
 
 batch.run()
