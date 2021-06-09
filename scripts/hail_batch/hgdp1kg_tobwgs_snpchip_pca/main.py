@@ -18,7 +18,7 @@ batch = hb.Batch(name=f'tobwgs snp-chip', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
-    f'hgdp_1kg_tob_wgs_densify.py --output={OUTPUT}',
+    f'hgdp_1kg_tob_wgs_snp_chip_pca.py --output={OUTPUT}',
     max_age='4h',
     num_secondary_workers=20,
     packages=['click'],
