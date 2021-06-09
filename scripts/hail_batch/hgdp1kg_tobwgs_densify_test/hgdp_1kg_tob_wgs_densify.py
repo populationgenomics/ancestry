@@ -60,8 +60,7 @@ def query(output):  # pylint: disable=too-many-locals
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         hgdp1kg_tobwgs_joined.GT, compute_loadings=True, k=20
     )
-    eigenvalues_df = pd.DataFrame(eigenvalues)
-    eigenvalues_df.to_csv(eigenvalues_path, index=False)
+    hl.Table.from_pandas(pd.DataFrame(eigenvalues)).export(eigenvalues_path)
     # save the scores and loadings as a hail table
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
