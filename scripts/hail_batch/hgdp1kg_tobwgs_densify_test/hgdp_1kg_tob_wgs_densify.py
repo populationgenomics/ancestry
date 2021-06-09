@@ -4,6 +4,7 @@ Test densify function on TOB-WGS data.
 
 import click
 import hail as hl
+import pandas as pd
 from hail.experimental import lgt_to_gt
 
 GNOMAD_LIFTOVER_LOADINGS = 'gs://cpg-reference/gnomad/gnomad_loadings_90k_liftover.ht'
@@ -53,11 +54,14 @@ def query(output):  # pylint: disable=too-many-locals
     )
 
     # Perform PCA
+    eigenvalues_path = f'{output}/eigenvalues.csv'
     scores_path = f'{output}/scores.ht'
     loadings_path = f'{output}/loadings.ht'
-    _, scores, loadings = hl.hwe_normalized_pca(
+    eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         hgdp1kg_tobwgs_joined.GT, compute_loadings=True, k=20
     )
+    eigenvalues_df = pd.DataFrame(eigenvalues)
+    eigenvalues_df.to_csv(eigenvalues_path, index=False)
     # save the scores and loadings as a hail table
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
