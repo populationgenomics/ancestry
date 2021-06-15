@@ -9,7 +9,8 @@ GNOMAD_HGDP_1KG_MT = (
     'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
 )
 
-TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
+# TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
+TOB_WGS = 'gs://cpg-tob-wgs-test/mt/test-v1-raw.mt'
 
 
 @click.command()
