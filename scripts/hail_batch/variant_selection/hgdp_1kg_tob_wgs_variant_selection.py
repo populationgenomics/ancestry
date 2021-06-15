@@ -11,6 +11,8 @@ GNOMAD_HGDP_1KG_MT = (
 
 TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
 
+NUM_ROWS_BEFORE_LD_PRUNE = 1000000
+
 
 @click.command()
 @click.option('--output', help='GCS output path', required=True)
@@ -60,7 +62,7 @@ def query(output):  # pylint: disable=too-many-locals
     nrows = hgdp1kg_tobwgs_joined.count_rows()
     print(f'hgdp1kg_tobwgs_joined.count_rows() = {nrows}')
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.sample_rows(
-        1000000 / nrows, seed=12345
+        NUM_ROWS_BEFORE_LD_PRUNE / nrows, seed=12345
     )
 
     pruned_variant_table = hl.ld_prune(
