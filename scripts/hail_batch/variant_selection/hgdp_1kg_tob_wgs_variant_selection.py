@@ -9,8 +9,7 @@ GNOMAD_HGDP_1KG_MT = (
     'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
 )
 
-# TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
-TOB_WGS = 'gs://cpg-tob-wgs-test/mt/test-v1-raw.mt'
+TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
 
 
 @click.command()
@@ -22,9 +21,6 @@ def query(output):  # pylint: disable=too-many-locals
 
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
-
-    hgdp_1kg = hgdp_1kg.head(1000000)
-    tob_wgs = tob_wgs.head(1000000)
 
     # filter to loci that are contained in both matrix tables after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
@@ -61,9 +57,11 @@ def query(output):  # pylint: disable=too-many-locals
     )
 
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.cache()
-    # nrows = hgdp1kg_tobwgs_joined.count_rows()
-    # print(nrows)
-    # hgdp1kg_tobwgs_joined = filt_mt.sample_rows(1000000 / nrows, seed=12345)
+    nrows = hgdp1kg_tobwgs_joined.count_rows()
+    print(nrows)
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.sample_rows(
+        1000000 / nrows, seed=12345
+    )
 
     pruned_variant_table = hl.ld_prune(
         hgdp1kg_tobwgs_joined.GT, r2=0.1, bp_window_size=500000
