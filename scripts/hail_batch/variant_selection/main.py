@@ -19,11 +19,10 @@ batch = hb.Batch(name='variant selection', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_tob_wgs_variant_selection.py --output={OUTPUT}',
-    max_age='5h',
-    num_secondary_workers=100,
+    max_age='12h',
+    num_secondary_workers=20,
     packages=['click'],
     job_name='variant-selection',
-    worker_boot_disk_size=200,
 )
 
 batch.run()

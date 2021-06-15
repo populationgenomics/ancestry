@@ -22,6 +22,9 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
 
+    hgdp_1kg = hgdp_1kg.head(1000000)
+    tob_wgs = tob_wgs.head(1000000)
+
     # filter to loci that are contained in both matrix tables after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
     hgdp_1kg = hgdp_1kg.filter_rows(
@@ -51,10 +54,16 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.filter_rows(
         (hl.len(hgdp1kg_tobwgs_joined.alleles) == 2)
         & (hgdp1kg_tobwgs_joined.locus.in_autosome())
-        & (hgdp1kg_tobwgs_joined.variant_qc.AF[1] > 0.001)
+        & (hgdp1kg_tobwgs_joined.variant_qc.AF[1] > 0.01)
         & (hgdp1kg_tobwgs_joined.variant_qc.call_rate > 0.99)
         & (hgdp1kg_tobwgs_joined.IB.f_stat > -0.25)
     )
+
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.cache()
+    # nrows = hgdp1kg_tobwgs_joined.count_rows()
+    # print(nrows)
+    # hgdp1kg_tobwgs_joined = filt_mt.sample_rows(1000000 / nrows, seed=12345)
+
     pruned_variant_table = hl.ld_prune(
         hgdp1kg_tobwgs_joined.GT, r2=0.1, bp_window_size=500000
     )
