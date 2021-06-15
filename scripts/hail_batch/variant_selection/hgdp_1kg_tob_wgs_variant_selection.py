@@ -11,6 +11,8 @@ GNOMAD_HGDP_1KG_MT = (
 
 TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
 
+NUM_ROWS_BEFORE_LD_PRUNE = 1000000
+
 
 @click.command()
 @click.option('--output', help='GCS output path', required=True)
@@ -51,10 +53,18 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.filter_rows(
         (hl.len(hgdp1kg_tobwgs_joined.alleles) == 2)
         & (hgdp1kg_tobwgs_joined.locus.in_autosome())
-        & (hgdp1kg_tobwgs_joined.variant_qc.AF[1] > 0.001)
+        & (hgdp1kg_tobwgs_joined.variant_qc.AF[1] > 0.01)
         & (hgdp1kg_tobwgs_joined.variant_qc.call_rate > 0.99)
         & (hgdp1kg_tobwgs_joined.IB.f_stat > -0.25)
     )
+
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.cache()
+    nrows = hgdp1kg_tobwgs_joined.count_rows()
+    print(f'hgdp1kg_tobwgs_joined.count_rows() = {nrows}')
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.sample_rows(
+        NUM_ROWS_BEFORE_LD_PRUNE / nrows, seed=12345
+    )
+
     pruned_variant_table = hl.ld_prune(
         hgdp1kg_tobwgs_joined.GT, r2=0.1, bp_window_size=500000
     )
