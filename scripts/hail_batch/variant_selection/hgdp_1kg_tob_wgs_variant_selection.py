@@ -9,7 +9,7 @@ GNOMAD_HGDP_1KG_MT = (
     'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
 )
 
-TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
+TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v2-raw.mt/'
 
 NUM_ROWS_BEFORE_LD_PRUNE = 1000000
 
