@@ -58,7 +58,7 @@ def query(output):  # pylint: disable=too-many-locals
 
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.cache()
     nrows = hgdp1kg_tobwgs_joined.count_rows()
-    print(nrows)
+    print(f'hgdp1kg_tobwgs_joined.count_rows() = {nrows}')
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.sample_rows(
         1000000 / nrows, seed=12345
     )
