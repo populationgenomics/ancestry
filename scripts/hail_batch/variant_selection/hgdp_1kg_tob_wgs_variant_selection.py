@@ -72,8 +72,10 @@ def query(output):  # pylint: disable=too-many-locals
         hl.is_defined(pruned_variant_table[hgdp1kg_tobwgs_joined.row_key])
     )
     mt_path = f'{output}/tob_wgs_hgdp_1kg_filtered_variants.mt'
-    if not hl.hadoop_exists(mt_path):
-        hgdp1kg_tobwgs_joined.write(mt_path)
+    tmp_path = mt_path + '.tmp'
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.checkpoint(tmp_path)
+    hl.read_matrix_table(tmp_path, _n_partitions=100).write(mt_path)
+    hl.current_backend().fs.rmtree(tmp_path)
 
 
 if __name__ == '__main__':
