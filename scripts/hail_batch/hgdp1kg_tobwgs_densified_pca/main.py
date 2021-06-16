@@ -23,6 +23,7 @@ dataproc.hail_dataproc_job(
     num_secondary_workers=20,
     packages=['click'],
     job_name=f'densify_tobwgs_pca',
+    worker_boot_disk_size=200,
 )
 
 batch.run()
