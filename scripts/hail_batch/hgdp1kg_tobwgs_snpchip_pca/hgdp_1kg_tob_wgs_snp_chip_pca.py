@@ -29,6 +29,9 @@ def query(output):  # pylint: disable=too-many-locals
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
     loadings = hl.read_table(GNOMAD_LIFTOVER_LOADINGS).key_by('locus', 'alleles')
 
+    hgdp_1kg = hgdp_1kg.filter_rows(hgdp_1kg.locus.contig == 'chr22')
+    tob_wgs = tob_wgs.filter_rows(tob_wgs.locus.contig == 'chr22')
+
     # filter to loci that are contained in both tables and the loadings after densifying
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
