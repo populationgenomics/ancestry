@@ -51,7 +51,7 @@ def query(output):  # pylint: disable=too-many-locals
     mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
     tmp_path = mt_path + '.tmp'
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.checkpoint(tmp_path)
-    hl.read_matrix_table(tmp_path, _n_partitions=1).write(mt_path)
+    hl.read_matrix_table(tmp_path, _n_partitions=10).write(mt_path)
     hl.current_backend().fs.rmtree(tmp_path)
     hgdp1kg_tobwgs_joined = hl.read_matrix_table(mt_path)
 
