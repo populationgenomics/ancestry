@@ -2,7 +2,7 @@
 
 from bokeh.models import CategoricalColorMapper
 from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
-from bokeh.plotting import output_file, save
+from bokeh.io.export import get_screenshot_as_png
 import pandas as pd
 import hail as hl
 import click
@@ -61,9 +61,9 @@ def query(output):  # pylint: disable=too-many-locals
             xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
         )
-        study_path = f'{output}/study_pc' + str(pc2) + '.html'
-        output_file(study_path)
-        save(p)
+        plot_filename = f'{output}/study_pc' + str(pc2) + '.png'
+        with hl.hadoop_open(plot_filename, 'wb') as f:
+            get_screenshot_as_png(p).save(f, format='PNG')
 
     print('Making PCA plots labelled by the subpopulation')
     labels = columns.hgdp_1kg_metadata.labeled_subpop
@@ -83,9 +83,9 @@ def query(output):  # pylint: disable=too-many-locals
             collect_all=True,
             colors=CategoricalColorMapper(palette=turbo(len(pops)), factors=pops),
         )
-        subpopulation_path = f'{output}/subpopulation_pc' + str(pc2) + '.html'
-        output_file(subpopulation_path)
-    save(p)
+        plot_filename = f'{output}/subpopulation_pc' + str(pc2) + '.png'
+        with hl.hadoop_open(plot_filename, 'wb') as f:
+            get_screenshot_as_png(p).save(f, format='PNG')
 
 
 if __name__ == '__main__':
