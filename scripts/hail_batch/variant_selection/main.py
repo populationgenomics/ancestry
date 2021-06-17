@@ -20,7 +20,7 @@ dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_tob_wgs_variant_selection.py --output={OUTPUT}',
     max_age='12h',
-    num_secondary_workers=20,
+    num_workers=50,
     packages=['click'],
     job_name='variant-selection',
 )
