@@ -38,9 +38,11 @@ def query(output):  # pylint: disable=too-many-locals
     labels = columns.TOB_WGS
 
     # get percent variance explained
-    eigenvalues = pd.read_csv(EIGENVALUES)
+    eigenvalues = hl.import_table(EIGENVALUES)
+    eigenvalues = eigenvalues.to_pandas()
     eigenvalues.columns = ['eigenvalue']
-    variance = eigenvalues['eigenvalue'].divide(float(eigenvalues.sum())) * 100
+    eigenvalues = pd.to_numeric(eigenvalues.eigenvalue)
+    variance = eigenvalues.divide(float(eigenvalues.sum())) * 100
     variance = variance.round(2)
 
     # Get number of PCs
