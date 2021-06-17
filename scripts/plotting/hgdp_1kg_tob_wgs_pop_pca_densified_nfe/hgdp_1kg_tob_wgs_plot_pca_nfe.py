@@ -49,7 +49,7 @@ def query(output):  # pylint: disable=too-many-locals
     number_of_pcs = len(eigenvalues)
 
     print('Making PCA plots labelled by study')
-    for i in range(0, number_of_pcs):
+    for i in range(0, (number_of_pcs - 1)):
         pc1 = i
         pc2 = i + 1
         print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
@@ -69,7 +69,7 @@ def query(output):  # pylint: disable=too-many-locals
     labels = columns.hgdp_1kg_metadata.labeled_subpop
     pops = list(set(labels.collect()))
 
-    for i in range(0, number_of_pcs):
+    for i in range(0, (number_of_pcs - 1)):
         pc1 = i
         pc2 = i + 1
         print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
