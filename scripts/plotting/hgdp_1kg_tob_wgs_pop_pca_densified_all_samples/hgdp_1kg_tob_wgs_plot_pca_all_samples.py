@@ -3,6 +3,7 @@
 # from bokeh.models import CategoricalColorMapper
 # from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 
+import subprocess
 from bokeh.io.export import get_screenshot_as_png
 from bokeh.plotting import output_file, save
 import pandas as pd
@@ -61,8 +62,10 @@ def query(output):  # pylint: disable=too-many-locals
         plot_filename = f'{output}/study_pc' + str(pc2) + '.png'
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(p).save(f, format='PNG')
-        output_file('study_pc' + str(pc2) + '.html')
+        plot_filename_html = 'study_pc' + str(pc2) + '.html'
+        output_file(plot_filename_html)
         save(p)
+        subprocess.run(['gsutil', 'cp', plot_filename_html, output], check=False)
 
     # print('Making PCA plots labelled by the continental population')
     # labels = columns.hgdp_1kg_metadata.population_inference.pop
