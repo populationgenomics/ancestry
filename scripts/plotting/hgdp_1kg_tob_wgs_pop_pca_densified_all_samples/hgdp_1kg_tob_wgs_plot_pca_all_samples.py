@@ -3,7 +3,7 @@
 # from bokeh.models import CategoricalColorMapper
 # from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 
-# from bokeh.io.export import get_screenshot_as_png
+from bokeh.io.export import get_screenshot_as_png
 from bokeh.plotting import output_file, save
 import pandas as pd
 import hail as hl
@@ -18,7 +18,8 @@ EIGENVALUES = 'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/eigenvalues.ht/'
 
 
 @click.command()
-def query():  # pylint: disable=too-many-locals
+@click.option('--output', help='GCS output path', required=True)
+def query(output):  # pylint: disable=too-many-locals
     """Query script entry point."""
 
     hl.init()
@@ -57,10 +58,11 @@ def query():  # pylint: disable=too-many-locals
             xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
         )
-        plot_filename = 'study_pc' + str(pc2) + '.html'
-        with hl.hadoop_open(plot_filename, 'wb'):
-            output_file(plot_filename)
-            save(p)
+        plot_filename = f'{output}/study_pc' + str(pc2) + '.png'
+        with hl.hadoop_open(plot_filename, 'wb') as f:
+            get_screenshot_as_png(p).save(f, format='PNG')
+        output_file('study_pc' + str(pc2) + '.html')
+        save(p)
 
     # print('Making PCA plots labelled by the continental population')
     # labels = columns.hgdp_1kg_metadata.population_inference.pop
