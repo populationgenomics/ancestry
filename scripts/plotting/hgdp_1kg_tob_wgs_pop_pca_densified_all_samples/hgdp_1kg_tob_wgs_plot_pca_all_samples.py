@@ -8,11 +8,11 @@ import hail as hl
 import click
 
 HGDP1KG_TOBWGS = (
-    'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/'
-    'hgdp1kg_tobwgs_joined_all_samples.mt/'
+    'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/'
+    'hgdp1kg_tobwgs_joined_all_samples.mt'
 )
-SCORES = 'gs://cpg-tob-wgs-test/1kg_hgdp_densify/v15/scores.ht/'
-EIGENVALUES = 'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/eigenvalues.ht/'
+SCORES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/scores.ht/'
+EIGENVALUES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/eigenvalues.ht/'
 
 
 @click.command()
