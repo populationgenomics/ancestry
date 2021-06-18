@@ -1,18 +1,20 @@
 """Create PCA plots for HGDP/1kG + TOB-WGS samples"""
 
-from bokeh.models import CategoricalColorMapper
-from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
-from bokeh.io.export import get_screenshot_as_png
+# from bokeh.models import CategoricalColorMapper
+# from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
+
+# from bokeh.io.export import get_screenshot_as_png
+from bokeh.plotting import output_file, save
 import pandas as pd
 import hail as hl
 import click
 
 HGDP1KG_TOBWGS = (
-    'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/'
-    'hgdp1kg_tobwgs_joined_all_samples.mt'
+    'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/'
+    'hgdp1kg_tobwgs_joined_all_samples.mt/'
 )
-SCORES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/scores.ht/'
-EIGENVALUES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/eigenvalues.ht/'
+SCORES = 'gs://cpg-tob-wgs-test/1kg_hgdp_densify/v15/scores.ht/'
+EIGENVALUES = 'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/eigenvalues.ht/'
 
 
 @click.command()
@@ -56,53 +58,54 @@ def query(output):  # pylint: disable=too-many-locals
             xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
         )
-        plot_filename = f'{output}/study_pc' + str(pc2) + '.png'
+        plot_filename = f'{output}/study_pc' + str(pc2) + '.html'
         with hl.hadoop_open(plot_filename, 'wb') as f:
-            get_screenshot_as_png(p).save(f, format='PNG')
+            output_file(f)
+            save(p)
 
-    print('Making PCA plots labelled by the continental population')
-    labels = columns.hgdp_1kg_metadata.population_inference.pop
-    pops = list(set(labels.collect()))
+    # print('Making PCA plots labelled by the continental population')
+    # labels = columns.hgdp_1kg_metadata.population_inference.pop
+    # pops = list(set(labels.collect()))
 
-    for i in range(0, (number_of_pcs - 1)):
-        pc1 = i
-        pc2 = i + 1
-        print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
-        p = hl.plot.scatter(
-            pca_scores[pc1],
-            pca_scores[pc2],
-            label=labels,
-            title='Continental Population',
-            xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
-            ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
-            collect_all=True,
-            colors=CategoricalColorMapper(palette=turbo(len(pops)), factors=pops),
-        )
-        plot_filename = f'{output}/continental_population_pc' + str(pc2) + '.png'
-        with hl.hadoop_open(plot_filename, 'wb') as f:
-            get_screenshot_as_png(p).save(f, format='PNG')
+    # for i in range(0, (number_of_pcs - 1)):
+    #     pc1 = i
+    #     pc2 = i + 1
+    #     print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
+    #     p = hl.plot.scatter(
+    #         pca_scores[pc1],
+    #         pca_scores[pc2],
+    #         label=labels,
+    #         title='Continental Population',
+    #         xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
+    #         ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
+    #         collect_all=True,
+    #         colors=CategoricalColorMapper(palette=turbo(len(pops)), factors=pops),
+    #     )
+    #     plot_filename = f'{output}/continental_population_pc' + str(pc2) + '.png'
+    #     with hl.hadoop_open(plot_filename, 'wb') as f:
+    #         get_screenshot_as_png(p).save(f, format='PNG')
 
-    print('Making PCA plots labelled by the subpopulation')
-    labels = columns.hgdp_1kg_metadata.labeled_subpop
-    pops = list(set(labels.collect()))
+    # print('Making PCA plots labelled by the subpopulation')
+    # labels = columns.hgdp_1kg_metadata.labeled_subpop
+    # pops = list(set(labels.collect()))
 
-    for i in range(0, (number_of_pcs - 1)):
-        pc1 = i
-        pc2 = i + 1
-        print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
-        p = hl.plot.scatter(
-            pca_scores[pc1],
-            pca_scores[pc2],
-            label=labels,
-            title='Sub-Population',
-            xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
-            ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
-            collect_all=True,
-            colors=CategoricalColorMapper(palette=turbo(len(pops)), factors=pops),
-        )
-        plot_filename = f'{output}/subpopulation_pc' + str(pc2) + '.png'
-        with hl.hadoop_open(plot_filename, 'wb') as f:
-            get_screenshot_as_png(p).save(f, format='PNG')
+    # for i in range(0, (number_of_pcs - 1)):
+    #     pc1 = i
+    #     pc2 = i + 1
+    #     print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
+    #     p = hl.plot.scatter(
+    #         pca_scores[pc1],
+    #         pca_scores[pc2],
+    #         label=labels,
+    #         title='Sub-Population',
+    #         xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
+    #         ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
+    #         collect_all=True,
+    #         colors=CategoricalColorMapper(palette=turbo(len(pops)), factors=pops),
+    #     )
+    #     plot_filename = f'{output}/subpopulation_pc' + str(pc2) + '.png'
+    #     with hl.hadoop_open(plot_filename, 'wb') as f:
+    #         get_screenshot_as_png(p).save(f, format='PNG')
 
 
 if __name__ == '__main__':
