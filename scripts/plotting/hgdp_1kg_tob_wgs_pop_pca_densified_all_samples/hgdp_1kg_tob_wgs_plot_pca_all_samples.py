@@ -34,6 +34,7 @@ def query(output):  # pylint: disable=too-many-locals
     columns = mt.cols()
     pca_scores = columns.scores
     labels = columns.TOB_WGS
+    hover_fields = dict([('s', columns.s)])
 
     # get percent variance explained
     eigenvalues = hl.import_table(EIGENVALUES)
@@ -58,6 +59,7 @@ def query(output):  # pylint: disable=too-many-locals
             title='TOB-WGS',
             xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
+            hover_fields=hover_fields,
         )
         plot_filename = f'{output}/study_pc' + str(pc2) + '.png'
         with hl.hadoop_open(plot_filename, 'wb') as f:
