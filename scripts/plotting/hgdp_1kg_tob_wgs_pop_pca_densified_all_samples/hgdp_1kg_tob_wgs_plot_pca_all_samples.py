@@ -18,8 +18,7 @@ EIGENVALUES = 'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/eigenvalues.ht/'
 
 
 @click.command()
-@click.option('--output', help='GCS output path', required=True)
-def query(output):  # pylint: disable=too-many-locals
+def query():  # pylint: disable=too-many-locals
     """Query script entry point."""
 
     hl.init()
@@ -58,7 +57,7 @@ def query(output):  # pylint: disable=too-many-locals
             xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
         )
-        plot_filename = f'{output}/study_pc' + str(pc2) + '.html'
+        plot_filename = 'study_pc' + str(pc2) + '.html'
         with hl.hadoop_open(plot_filename, 'wb'):
             output_file(plot_filename)
             save(p)
