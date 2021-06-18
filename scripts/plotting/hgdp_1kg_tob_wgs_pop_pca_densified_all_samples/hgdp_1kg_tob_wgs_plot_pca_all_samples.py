@@ -59,8 +59,8 @@ def query(output):  # pylint: disable=too-many-locals
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
         )
         plot_filename = f'{output}/study_pc' + str(pc2) + '.html'
-        with hl.hadoop_open(plot_filename, 'wb') as f:
-            output_file(f)
+        with hl.hadoop_open(plot_filename, 'wb'):
+            output_file(plot_filename)
             save(p)
 
     # print('Making PCA plots labelled by the continental population')
