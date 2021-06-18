@@ -1,8 +1,10 @@
 """Create PCA plots for HGDP/1kG + TOB-WGS samples"""
 
+import subprocess
 from bokeh.models import CategoricalColorMapper
 from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 from bokeh.io.export import get_screenshot_as_png
+from bokeh.plotting import output_file, save
 import pandas as pd
 import hail as hl
 import click
@@ -31,6 +33,7 @@ def query(output):  # pylint: disable=too-many-locals
     columns = mt.cols()
     pca_scores = columns.scores
     labels = columns.TOB_WGS
+    hover_fields = dict([('s', columns.s)])
 
     # get percent variance explained
     eigenvalues = hl.import_table(EIGENVALUES)
@@ -55,10 +58,15 @@ def query(output):  # pylint: disable=too-many-locals
             title='TOB-WGS',
             xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
+            hover_fields=hover_fields,
         )
         plot_filename = f'{output}/study_pc' + str(pc2) + '.png'
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(p).save(f, format='PNG')
+        plot_filename_html = 'study_pc' + str(pc2) + '.html'
+        output_file(plot_filename_html)
+        save(p)
+        subprocess.run(['gsutil', 'cp', plot_filename_html, output], check=False)
 
     print('Making PCA plots labelled by the continental population')
     labels = columns.hgdp_1kg_metadata.population_inference.pop
@@ -77,10 +85,15 @@ def query(output):  # pylint: disable=too-many-locals
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
             collect_all=True,
             colors=CategoricalColorMapper(palette=turbo(len(pops)), factors=pops),
+            hover_fields=hover_fields,
         )
         plot_filename = f'{output}/continental_population_pc' + str(pc2) + '.png'
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(p).save(f, format='PNG')
+        plot_filename_html = 'continental_population_pc' + str(pc2) + '.html'
+        output_file(plot_filename_html)
+        save(p)
+        subprocess.run(['gsutil', 'cp', plot_filename_html, output], check=False)
 
     print('Making PCA plots labelled by the subpopulation')
     labels = columns.hgdp_1kg_metadata.labeled_subpop
@@ -103,6 +116,10 @@ def query(output):  # pylint: disable=too-many-locals
         plot_filename = f'{output}/subpopulation_pc' + str(pc2) + '.png'
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(p).save(f, format='PNG')
+        plot_filename_html = 'subpopulation_pc' + str(pc2) + '.html'
+        output_file(plot_filename_html)
+        save(p)
+        subprocess.run(['gsutil', 'cp', plot_filename_html, output], check=False)
 
 
 if __name__ == '__main__':
