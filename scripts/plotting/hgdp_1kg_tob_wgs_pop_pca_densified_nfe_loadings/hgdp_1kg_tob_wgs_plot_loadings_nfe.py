@@ -120,13 +120,13 @@ def query(output):  # pylint: disable=too-many-locals
             title='Loadings of PC ' + str(pc),
             collect_all=True,
         )
-    plot_filename = f'{output}/loadings_manhattan_plot_pc' + str(pc) + '.png'
-    with hl.hadoop_open(plot_filename, 'wb') as f:
-        get_screenshot_as_png(p).save(f, format='PNG')
-    plot_filename_html = 'loadings_pc' + str(pc) + '.html'
-    output_file(plot_filename_html)
-    save(p)
-    subprocess.run(['gsutil', 'cp', plot_filename_html, output], check=False)
+        plot_filename = f'{output}/loadings_manhattan_plot_pc' + str(pc) + '.png'
+        with hl.hadoop_open(plot_filename, 'wb') as f:
+            get_screenshot_as_png(p).save(f, format='PNG')
+        plot_filename_html = 'loadings_pc' + str(pc) + '.html'
+        output_file(plot_filename_html)
+        save(p)
+        subprocess.run(['gsutil', 'cp', plot_filename_html, output], check=False)
 
 
 if __name__ == '__main__':
