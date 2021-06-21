@@ -13,13 +13,13 @@ from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 from bokeh.io.export import get_screenshot_as_png
 
 HGDP1KG_TOBWGS = (
-    'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/'
+    'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/'
     'hgdp1kg_tobwgs_joined_all_samples.mt/'
 )
-LOADINGS = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/loadings.ht/'
+LOADINGS = 'gs://cpg-tob-wgs-test/1kg_hgdp_densify/v15/loadings.ht/'
 REPROCESSED_1KG = 'gs://cpg-tob-wgs-test/pipeline_validation/warp_gatk4/mt/v0.mt'
-SCORES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/scores.ht/'
-EIGENVALUES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/eigenvalues.ht/'
+SCORES = 'gs://cpg-tob-wgs-test/1kg_hgdp_densify/v15/scores.ht/'
+EIGENVALUES = 'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/eigenvalues.ht/'
 
 
 @click.command()
@@ -44,6 +44,7 @@ def query(output, pop):  # pylint: disable=too-many-locals
     loadings = hl.read_table(LOADINGS)
     loadings = loadings.annotate(af=mt.rows()[loadings.key].af)
     reprocessed_samples = hl.read_matrix_table(REPROCESSED_1KG)
+    reprocessed_samples = reprocessed_samples.head(1000)
     reprocessed_samples = hl.experimental.densify(reprocessed_samples)
     reprocessed_samples = reprocessed_samples.annotate_entries(
         GT=lgt_to_gt(reprocessed_samples.LGT, reprocessed_samples.LA)
