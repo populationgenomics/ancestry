@@ -7,12 +7,6 @@ from bokeh.plotting import output_file, figure, save
 import hail as hl
 import click
 
-HGDP1KG_TOBWGS = (
-    'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/'
-    'hgdp1kg_tobwgs_joined_all_samples.mt/'
-)
-SCORES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/scores.ht/'
-EIGENVALUES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/eigenvalues.ht/'
 LOADINGS = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/loadings.ht/'
 
 
@@ -57,7 +51,7 @@ def manhattan_loadings(
             n_divisions=None if collect_all else n_divisions,
         )
     )
-    source_pd['p_value'] = [10 ** (-p) for p in source_pd['_pval']]
+    source_pd['p_value'] = source_pd['_pval']
     source_pd['_contig'] = [locus.split(':')[0] for locus in source_pd['locus']]
 
     observed_contigs = set(source_pd['_contig'])
