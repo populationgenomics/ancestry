@@ -19,7 +19,7 @@ batch = hb.Batch(name='loadings qc', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'nfe_loadings_qc.py --output={OUTPUT}',
-    max_age='1h' 'nfe_loadings_qc.py',
+    max_age='1h',
     packages=['click'],
     job_name='loadings_qc',
 )
