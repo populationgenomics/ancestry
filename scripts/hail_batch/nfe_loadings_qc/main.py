@@ -7,6 +7,7 @@ from analysis_runner import dataproc
 
 OUTPUT = os.getenv('OUTPUT')
 assert OUTPUT
+print(OUTPUT)
 
 hl.init(default_reference='GRCh38')
 
@@ -18,7 +19,7 @@ batch = hb.Batch(name='loadings qc', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
-    f'nfe_loadings_qc.py --output={OUTPUT}',
+    'nfe_loadings_qc.py',
     max_age='1h',
     packages=['click'],
     job_name='loadings_qc',
