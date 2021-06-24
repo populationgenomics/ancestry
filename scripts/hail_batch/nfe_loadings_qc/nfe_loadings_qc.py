@@ -5,8 +5,7 @@ from collections import Counter
 import click
 import hail as hl
 
-LOADINGS = 'gs://cpg-tob-wgs-test/1kg_hgdp_densify/v15/loadings.ht/'
-# 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/loadings.ht/'
+LOADINGS = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/loadings.ht/'
 
 
 @click.command()
@@ -17,8 +16,9 @@ def query(output):  # pylint: disable=too-many-locals
     hl.init(default_reference='GRCh38')
 
     loadings = hl.read_table(LOADINGS)
+    number_of_pcs = hl.len(loadings.loadings).take(1)[0]
     print(loadings.count())
-    for i in range(0, 20):
+    for i in range(0, (number_of_pcs)):
         pc = i + 1
         freq = Counter(hl.abs(loadings.loadings[i]).collect())
         filename = 'loadings_pc' + str(pc) + '.txt'
