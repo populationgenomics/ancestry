@@ -3,7 +3,8 @@ Test densify function on TOB-WGS data.
 """
 
 import click
-import pandas as pd
+
+# import pandas as pd
 import hail as hl
 
 
@@ -32,7 +33,7 @@ def query(output):  # pylint: disable=too-many-locals
     hgdp_1kg = hgdp_1kg.filter_rows(hgdp_1kg.locus.contig == 'chr22')
     tob_wgs = tob_wgs.filter_rows(tob_wgs.locus.contig == 'chr22')
 
-    # filter to loci that are contained in both tables and the loadings after densifying
+    # filter to loci that are contained in both tables and the loadings
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
         & hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
@@ -52,24 +53,23 @@ def query(output):  # pylint: disable=too-many-locals
     )
     # repartition
     mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
-    tmp_path = mt_path + '.tmp'
-    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.checkpoint(tmp_path)
-    hl.read_matrix_table(tmp_path, _n_partitions=10).write(mt_path)
-    hl.current_backend().fs.rmtree(tmp_path)
-    hgdp1kg_tobwgs_joined = hl.read_matrix_table(mt_path)
-
-    # Perform PCA
-    eigenvalues_path = f'{output}/eigenvalues.ht'
-    scores_path = f'{output}/scores.ht'
-    loadings_path = f'{output}/loadings.ht'
-    eigenvalues, scores, loadings = hl.hwe_normalized_pca(
-        hgdp1kg_tobwgs_joined.GT, compute_loadings=True, k=20
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.tob_wgs.repartition(
+        1000, shuffle=False
     )
-    # save the list of eigenvalues
-    hl.Table.from_pandas(pd.DataFrame(eigenvalues)).export(eigenvalues_path)
-    # save the scores and loadings as a hail table
-    scores.write(scores_path, overwrite=True)
-    loadings.write(loadings_path, overwrite=True)
+    hgdp1kg_tobwgs_joined.write(mt_path)
+
+    # # Perform PCA
+    # eigenvalues_path = f'{output}/eigenvalues.ht'
+    # scores_path = f'{output}/scores.ht'
+    # loadings_path = f'{output}/loadings.ht'
+    # eigenvalues, scores, loadings = hl.hwe_normalized_pca(
+    #     hgdp1kg_tobwgs_joined.GT, compute_loadings=True, k=20
+    # )
+    # # save the list of eigenvalues
+    # hl.Table.from_pandas(pd.DataFrame(eigenvalues)).export(eigenvalues_path)
+    # # save the scores and loadings as a hail table
+    # scores.write(scores_path, overwrite=True)
+    # loadings.write(loadings_path, overwrite=True)
 
 
 if __name__ == '__main__':
