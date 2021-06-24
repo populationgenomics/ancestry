@@ -89,8 +89,9 @@ def query(output, pop):  # pylint: disable=too-many-locals
 
     # plot
     labels = union_scores.cohort_sample_codes
+    sample_names = union_scores.s
     cohort_sample_codes = list(set(labels.collect()))
-    tooltips = [('labels', '@label')]
+    tooltips = [('labels', '@label'), ('samples', '@samples')]
     for i in range(0, 10):
         pc1 = i
         pc2 = i + 1
@@ -109,6 +110,7 @@ def query(output, pop):  # pylint: disable=too-many-locals
                     x=union_scores.scores[pc1].collect(),
                     y=union_scores.scores[pc2].collect(),
                     label=labels.collect(),
+                    samples=sample_names.collect(),
                 )
             )
             plot.circle(
