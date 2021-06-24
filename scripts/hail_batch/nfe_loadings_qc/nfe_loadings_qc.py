@@ -9,7 +9,8 @@ LOADINGS = 'gs://cpg-tob-wgs-test/1kg_hgdp_densify/v15/loadings.ht/'
 
 
 @click.command()
-def query():  # pylint: disable=too-many-locals
+@click.option('--output', help='GCS output path', required=True)
+def query(output):  # pylint: disable=too-many-locals
     """Query script entry point."""
 
     hl.init(default_reference='GRCh38')
@@ -17,8 +18,13 @@ def query():  # pylint: disable=too-many-locals
     loadings = hl.read_table(LOADINGS)
     print(loadings.count())
     for i in range(0, 20):
+        pc = i + 1
         freq = Counter(hl.abs(loadings.loadings[i]).collect())
-        print(freq)
+        file = open(f'{output}/loadings_pc' + str(pc) + '.txt', 'w')
+        for key, value in freq.items():
+            str_value = repr(key) + ' ' + repr(value)
+            file.write(str_value + '\n')
+        file.close()
 
 
 if __name__ == '__main__':
