@@ -53,9 +53,7 @@ def query(output):  # pylint: disable=too-many-locals
     )
     # repartition
     mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
-    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.tob_wgs.repartition(
-        1000, shuffle=False
-    )
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.repartition(1000, shuffle=False)
     hgdp1kg_tobwgs_joined.write(mt_path)
 
     # # Perform PCA
