@@ -43,6 +43,7 @@ def query(output, pop):  # pylint: disable=too-many-locals
     else:
         mt = mt.filter_cols(mt.s.contains('TOB'))
 
+    # Get allele-frequency and loadings for pc_project function
     mt = mt.annotate_rows(af=hl.agg.mean(mt.GT.n_alt_alleles()) / 2)
     loadings = hl.read_table(LOADINGS)
     loadings = loadings.annotate(af=mt.rows()[loadings.key].af)
@@ -51,6 +52,7 @@ def query(output, pop):  # pylint: disable=too-many-locals
     reprocessed_samples = reprocessed_samples.annotate_entries(
         GT=lgt_to_gt(reprocessed_samples.LGT, reprocessed_samples.LA)
     )
+    # Project new genotypes onto loadings
     ht = pc_project(reprocessed_samples.GT, loadings.loadings, loadings.af)
     ht = ht.key_by(s=ht.s + '_reprocessed')
     pcs = hl.read_table(SCORES)
