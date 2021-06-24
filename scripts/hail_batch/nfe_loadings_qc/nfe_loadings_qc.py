@@ -1,5 +1,6 @@
 """Explore loadings dataset"""
 
+import subprocess
 from collections import Counter
 import click
 import hail as hl
@@ -20,11 +21,12 @@ def query(output):  # pylint: disable=too-many-locals
     for i in range(0, 20):
         pc = i + 1
         freq = Counter(hl.abs(loadings.loadings[i]).collect())
-        file = open(f'{output}/loadings_pc' + str(pc) + '.txt', 'w')
+        file = open('loadings_pc' + str(pc) + '.txt', 'w')
         for key, value in freq.items():
             str_value = repr(key) + ' ' + repr(value)
             file.write(str_value + '\n')
         file.close()
+        subprocess.run(['gsutil', 'cp', file, output], check=False)
 
 
 if __name__ == '__main__':
