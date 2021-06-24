@@ -21,12 +21,13 @@ def query(output):  # pylint: disable=too-many-locals
     for i in range(0, 20):
         pc = i + 1
         freq = Counter(hl.abs(loadings.loadings[i]).collect())
-        file = open('loadings_pc' + str(pc) + '.txt', 'w')
-        for key, value in freq.items():
-            str_value = repr(key) + ' ' + repr(value)
-            file.write(str_value + '\n')
-        file.close()
-        subprocess.run(['gsutil', 'cp', file, output], check=False)
+        filename = 'loadings_pc' + str(pc) + '.txt'
+        with open(filename, 'w') as f:
+            for key, value in freq.items():
+                str_value = repr(key) + ' ' + repr(value)
+                f.write(str_value + '\n')
+        f.close()
+        subprocess.run(['gsutil', 'cp', filename, output], check=False)
 
 
 if __name__ == '__main__':
