@@ -58,10 +58,8 @@ def query(output, pop):  # pylint: disable=too-many-locals
     pcs = hl.read_table(SCORES)
     union_scores = ht.union(pcs)
     union_scores = union_scores.annotate(
-        snp_chip=(union_scores.s.contains('_SNP_CHIP'))
-    )
-    union_scores = union_scores.annotate(
-        tob_wgs=(union_scores.s.contains('_SNP_CHIP') | union_scores.s.contains('TOB'))
+        snp_chip=(union_scores.s.contains('_SNP_CHIP')),
+        tob_wgs=(union_scores.s.contains('_SNP_CHIP') | union_scores.s.contains('TOB')),
     )
     expr = (
         hl.case()
@@ -71,8 +69,9 @@ def query(output, pop):  # pylint: disable=too-many-locals
         )
         .when(
             (
-                union_scores.snp_chip is False  # noqa: E712
-            )  # pylint: disable=singleton-comparison
+                union_scores.snp_chip  # noqa: E501; pylint: disable=singleton-comparison;
+                == False  # noqa: E712
+            )
             & (union_scores.tob_wgs),
             'tob_wgs',
         )
