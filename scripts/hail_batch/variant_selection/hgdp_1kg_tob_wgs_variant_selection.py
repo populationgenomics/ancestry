@@ -26,10 +26,6 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in both matrix tables after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
-    hgdp_1kg = hgdp_1kg.filter_rows(
-        hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
-    )
-    tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg.rows())
 
     # Entries and columns must be identical
     tob_wgs_select = tob_wgs.select_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
@@ -68,16 +64,15 @@ def query(output):  # pylint: disable=too-many-locals
     pruned_variant_table = hl.ld_prune(
         hgdp1kg_tobwgs_joined.GT, r2=0.1, bp_window_size=500000
     )
+    pruned_variant_table = pruned_variant_table.cache()
+    nrows = pruned_variant_table.count_rows()
+    print(f'pruned_variant_table.count_rows() = {nrows}')
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.filter_rows(
         hl.is_defined(pruned_variant_table[hgdp1kg_tobwgs_joined.row_key])
     )
     mt_path = f'{output}/tob_wgs_hgdp_1kg_filtered_variants.mt'
-    tmp_path = (
-        'gs://cpg-tob-wgs-main-tmp/tob_wgs_hgdp_1kg_variant_selection/'
-        'tob_wgs_hgdp_1kg_filtered_variants.mt.tmp'
-    )
-    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.checkpoint(tmp_path)
-    hl.read_matrix_table(tmp_path, _n_partitions=1000).write(mt_path)
+    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.repartition(1000, shuffle=False)
+    hgdp1kg_tobwgs_joined.write(mt_path)
 
 
 if __name__ == '__main__':
