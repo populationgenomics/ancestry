@@ -26,7 +26,6 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in both matrix tables after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
-    tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg.rows())
 
     # Entries and columns must be identical
     tob_wgs_select = tob_wgs.select_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
