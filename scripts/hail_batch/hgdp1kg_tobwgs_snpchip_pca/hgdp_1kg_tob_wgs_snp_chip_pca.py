@@ -3,8 +3,6 @@ Test densify function on TOB-WGS data.
 """
 
 import click
-
-# import pandas as pd
 import hail as hl
 
 
@@ -30,31 +28,33 @@ def query(output):  # pylint: disable=too-many-locals
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
     loadings = hl.read_table(GNOMAD_LIFTOVER_LOADINGS).key_by('locus', 'alleles')
 
-    hgdp_1kg = hgdp_1kg.filter_rows(hgdp_1kg.locus.contig == 'chr22')
-    tob_wgs = tob_wgs.filter_rows(tob_wgs.locus.contig == 'chr22')
-
     # filter to loci that are contained in both tables and the loadings
     hgdp_1kg = hgdp_1kg.filter_rows(
         hl.is_defined(loadings.index(hgdp_1kg['locus'], hgdp_1kg['alleles']))
         & hl.is_defined(tob_wgs.index_rows(hgdp_1kg['locus'], hgdp_1kg['alleles']))
     )
     tob_wgs = tob_wgs.semi_join_rows(hgdp_1kg.rows())
+    tob_wgs = tob_wgs.cache()
+    print(tob_wgs.count_rows())
+    tob_wgs_path = f'{output}/tob_wgs_filtered_snp_chip.mt'
+    tob_wgs = tob_wgs.repartition(1000, shuffle=False)
+    tob_wgs.write(tob_wgs_path)
 
-    # Entries and columns must be identical
-    tob_wgs_select = tob_wgs.select_entries(tob_wgs.GT)
-    hgdp_1kg_select = hgdp_1kg.select_entries(hgdp_1kg.GT)
-    hgdp_1kg_select = hgdp_1kg_select.select_cols()
-    # Join datasets
-    hgdp1kg_tobwgs_joined = hgdp_1kg_select.union_cols(tob_wgs_select)
-    # Add in metadata information
-    hgdp_1kg_metadata = hgdp_1kg.cols()
-    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.annotate_cols(
-        hgdp_1kg_metadata=hgdp_1kg_metadata[hgdp1kg_tobwgs_joined.s]
-    )
-    # repartition
-    mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
-    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.repartition(1000, shuffle=False)
-    hgdp1kg_tobwgs_joined.write(mt_path)
+    # # Entries and columns must be identical
+    # tob_wgs_select = tob_wgs.select_entries(tob_wgs.GT)
+    # hgdp_1kg_select = hgdp_1kg.select_entries(hgdp_1kg.GT)
+    # hgdp_1kg_select = hgdp_1kg_select.select_cols()
+    # # Join datasets
+    # hgdp1kg_tobwgs_joined = hgdp_1kg_select.union_cols(tob_wgs_select)
+    # # Add in metadata information
+    # hgdp_1kg_metadata = hgdp_1kg.cols()
+    # hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.annotate_cols(
+    #     hgdp_1kg_metadata=hgdp_1kg_metadata[hgdp1kg_tobwgs_joined.s]
+    # )
+    # # repartition
+    # mt_path = f'{output}/hgdp1kg_tobwgs_joined_all_samples.mt'
+    # hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.repartition(1000, shuffle=False)
+    # hgdp1kg_tobwgs_joined.write(mt_path)
 
     # # Perform PCA
     # eigenvalues_path = f'{output}/eigenvalues.ht'
