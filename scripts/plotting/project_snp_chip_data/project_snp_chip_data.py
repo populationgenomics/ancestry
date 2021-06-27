@@ -85,6 +85,7 @@ def query(output, pop):  # pylint: disable=too-many-locals
     cohort_sample_codes = list(set(labels.collect()))
     tooltips = [('labels', '@label'), ('samples', '@samples')]
     number_of_pcs = len(eigenvalues)
+    union_scores = union_scores.persist()
     for i in range(0, (number_of_pcs - 1)):
         pc1 = i
         pc2 = i + 1
