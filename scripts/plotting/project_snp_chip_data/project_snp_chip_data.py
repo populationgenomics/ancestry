@@ -15,13 +15,19 @@ from bokeh.transform import factor_cmap
 
 
 SNP_CHIP = 'gs://cpg-tob-wgs-test/snpchip/v1/snpchip_grch38.mt/'
+# HGDP1KG_TOBWGS = (
+#     'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/'
+#     'hgdp1kg_tobwgs_joined_all_samples.mt/'
+# )
+# LOADINGS = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/loadings.ht/'
+# SCORES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/scores.ht/'
+# EIGENVALUES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/eigenvalues.ht/'
 HGDP1KG_TOBWGS = (
-    'gs://cpg-tob-wgs-main/1kg_hgdp_densified_pca/v2/'
-    'hgdp1kg_tobwgs_joined_all_samples.mt/'
+    'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/hgdp1kg_tobwgs_joined_all_samples.mt/'
 )
-LOADINGS = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/loadings.ht/'
-SCORES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/scores.ht/'
-EIGENVALUES = 'gs://cpg-tob-wgs-main/1kg_hgdp_densified_nfe/v0/eigenvalues.ht/'
+SCORES = 'gs://cpg-tob-wgs-test/1kg_hgdp_densify/v15/scores.ht/'
+EIGENVALUES = 'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/eigenvalues.ht'
+LOADINGS = 'gs://cpg-tob-wgs-test/1kg_hgdp_densify/v15/loadings.ht/'
 
 
 @click.command()
@@ -85,6 +91,7 @@ def query(output, pop):  # pylint: disable=too-many-locals
     cohort_sample_codes = list(set(labels.collect()))
     tooltips = [('labels', '@label'), ('samples', '@samples')]
     number_of_pcs = len(eigenvalues)
+    union_scores = union_scores.persist()
     for i in range(0, (number_of_pcs - 1)):
         pc1 = i
         pc2 = i + 1
