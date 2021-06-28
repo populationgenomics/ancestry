@@ -11,7 +11,7 @@ GNOMAD_HGDP_1KG_MT = (
 
 TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v2-raw.mt/'
 
-NUM_ROWS_BEFORE_LD_PRUNE = 1000000
+NUM_ROWS_BEFORE_LD_PRUNE = 200000
 
 
 @click.command()
@@ -64,9 +64,6 @@ def query(output):  # pylint: disable=too-many-locals
     pruned_variant_table = hl.ld_prune(
         hgdp1kg_tobwgs_joined.GT, r2=0.1, bp_window_size=500000
     )
-    pruned_variant_table = pruned_variant_table.cache()
-    nrows = pruned_variant_table.count_rows()
-    print(f'pruned_variant_table.count_rows() = {nrows}')
     hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.filter_rows(
         hl.is_defined(pruned_variant_table[hgdp1kg_tobwgs_joined.row_key])
     )
