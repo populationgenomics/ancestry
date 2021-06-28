@@ -11,7 +11,7 @@ GNOMAD_HGDP_1KG_MT = (
 
 TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v2-raw.mt/'
 
-NUM_ROWS_BEFORE_LD_PRUNE = 500000
+NUM_ROWS_BEFORE_LD_PRUNE = 200000
 
 
 @click.command()
