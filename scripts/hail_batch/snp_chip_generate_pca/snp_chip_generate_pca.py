@@ -5,6 +5,7 @@ Generate PCA on combined TOB-WGS/SNP-chip data.
 import click
 import hail as hl
 import pandas as pd
+from hail.experimental import lgt_to_gt
 
 TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v3-raw.mt/'
 SNP_CHIP = 'gs://cpg-tob-wgs-test/snpchip/v1/snpchip_grch38.mt/'
@@ -22,7 +23,9 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in snp-chip data after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
-    tob_wgs = tob_wgs.select_cols().select_entries(tob_wgs.GT)
+    tob_wgs = tob_wgs.select_cols().select_entries(
+        GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA)
+    )
     snp_chip = snp_chip.select_cols().select_entries(snp_chip.GT)
     tob_combined = tob_wgs.union_cols(snp_chip)
     tob_combined = tob_combined.cache()
