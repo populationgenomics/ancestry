@@ -1,13 +1,13 @@
 """
-Test densify function on TOB-WGS data.
+Generate PCA on TOB-WGS data, filtered
+to variants present in SNP-chip data.
 """
 
 import click
 import hail as hl
 import pandas as pd
 
-# TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v2-raw.mt/'
-TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v3.mt/'
+TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v2-raw.mt/'
 SNP_CHIP = 'gs://cpg-tob-wgs-test/snpchip/v1/snpchip_grch38.mt/'
 
 
@@ -23,7 +23,6 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in snp-chip data after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
-    tob_wgs = tob_wgs.head(100000)
     tob_wgs = tob_wgs.semi_join_rows(snp_chip.rows())
     tob_wgs = tob_wgs.cache()
     print(tob_wgs.count_rows())
