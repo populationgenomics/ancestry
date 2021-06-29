@@ -1,6 +1,5 @@
 """
-Generate PCA on TOB-WGS data, filtered
-to variants present in SNP-chip data.
+Generate PCA on combined TOB-WGS/SNP-chip data.
 """
 
 import click
@@ -23,19 +22,21 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in snp-chip data after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
-    tob_wgs = tob_wgs.semi_join_rows(snp_chip.rows())
-    tob_wgs = tob_wgs.cache()
-    print(tob_wgs.count_rows())
-    tob_wgs_path = f'{output}/tob_wgs_filtered_snp_chip.mt'
-    tob_wgs = tob_wgs.repartition(100, shuffle=False)
-    tob_wgs.write(tob_wgs_path)
+    tob_wgs = tob_wgs.select_entries(tob_wgs.GT).select_cols()
+    snp_chip = snp_chip.select_entries(snp_chip.GT).select_cols()
+    tob_combined = tob_wgs.union_cols(snp_chip)
+    tob_combined = tob_combined.cache()
+    print(tob_combined.count_rows())
+    tob_combined_path = f'{output}/tob_wgs_snp_chip_combined.mt'
+    tob_combined = tob_wgs.repartition(1000, shuffle=False)
+    tob_combined.write(tob_combined_path)
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.ht'
     scores_path = f'{output}/scores.ht'
     loadings_path = f'{output}/loadings.ht'
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
-        tob_wgs.GT, compute_loadings=True, k=20
+        tob_combined.GT, compute_loadings=True, k=20
     )
     hl.Table.from_pandas(pd.DataFrame(eigenvalues)).export(eigenvalues_path)
     scores.write(scores_path, overwrite=True)
