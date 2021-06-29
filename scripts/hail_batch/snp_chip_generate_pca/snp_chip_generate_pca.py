@@ -6,7 +6,7 @@ import click
 import hail as hl
 import pandas as pd
 
-TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v2-raw.mt/'
+TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v3-raw.mt/'
 SNP_CHIP = 'gs://cpg-tob-wgs-test/snpchip/v1/snpchip_grch38.mt/'
 
 
