@@ -68,7 +68,6 @@ def query(output):  # pylint: disable=too-many-locals
         hl.is_defined(pruned_variant_table[hgdp1kg_tobwgs_joined.row_key])
     )
     mt_path = f'{output}/tob_wgs_hgdp_1kg_filtered_variants.mt'
-    hgdp1kg_tobwgs_joined = hgdp1kg_tobwgs_joined.repartition(1000, shuffle=False)
     hgdp1kg_tobwgs_joined.write(mt_path)
 
 
