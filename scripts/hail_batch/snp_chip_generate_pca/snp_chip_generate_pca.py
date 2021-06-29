@@ -27,9 +27,6 @@ def query(output):  # pylint: disable=too-many-locals
     tob_combined = tob_wgs.union_cols(snp_chip)
     tob_combined = tob_combined.cache()
     print(tob_combined.count_rows())
-    tob_combined_path = f'{output}/tob_wgs_snp_chip_combined.mt'
-    tob_combined = tob_wgs.repartition(1000, shuffle=False)
-    tob_combined.write(tob_combined_path)
 
     # Perform PCA
     eigenvalues_path = f'{output}/eigenvalues.ht'
