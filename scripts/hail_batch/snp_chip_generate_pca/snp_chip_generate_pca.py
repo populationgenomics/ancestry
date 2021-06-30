@@ -24,7 +24,7 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in snp-chip data after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
-    tob_wgs = tob_wgs.head(100000)
+    tob_wgs = tob_wgs.head(500000)
     tob_wgs = tob_wgs.select_entries(
         GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA)
     ).select_cols()
