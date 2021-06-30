@@ -7,8 +7,9 @@ import hail as hl
 import pandas as pd
 from hail.experimental import lgt_to_gt
 
-TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v3-raw.mt/'
+# TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v3-raw.mt/'
 SNP_CHIP = 'gs://cpg-tob-wgs-test/snpchip/v1/snpchip_grch38.mt/'
+TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v2-raw.mt/'
 
 
 @click.command()
@@ -23,10 +24,12 @@ def query(output):  # pylint: disable=too-many-locals
 
     # filter to loci that are contained in snp-chip data after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
+    tob_wgs = tob_wgs.head(100000)
     tob_wgs = tob_wgs.select_entries(
         GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA)
     ).select_cols()
     snp_chip = snp_chip.select_entries(snp_chip.GT).select_cols()
+    snp_chip = snp_chip.key_cols_by(s=snp_chip.s + '_snp_chip')
     tob_combined = tob_wgs.union_cols(snp_chip)
     tob_combined = tob_combined.cache()
     print(tob_combined.count_rows())
