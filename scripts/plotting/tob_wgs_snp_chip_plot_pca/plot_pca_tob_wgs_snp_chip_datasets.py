@@ -54,7 +54,6 @@ def query(output):  # pylint: disable=too-many-locals
     # Get number of PCs
     number_of_pcs = len(eigenvalues)
 
-    print('Making PCA plots labelled by study')
     for i in range(0, (number_of_pcs - 1)):
         pc1 = i
         pc2 = i + 1
@@ -68,10 +67,10 @@ def query(output):  # pylint: disable=too-many-locals
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
             hover_fields=hover_fields,
         )
-        plot_filename = f'{output}/study_pc' + str(pc2) + '.png'
+        plot_filename = f'{output}/pc' + str(pc2) + '.png'
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(p).save(f, format='PNG')
-        plot_filename_html = 'study_pc' + str(pc2) + '.html'
+        plot_filename_html = 'pc' + str(pc2) + '.html'
         output_file(plot_filename_html)
         save(p)
         subprocess.run(['gsutil', 'cp', plot_filename_html, output], check=False)
