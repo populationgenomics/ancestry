@@ -27,6 +27,7 @@ def query(output):  # pylint: disable=too-many-locals
         GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA)
     ).select_cols()
     snp_chip = snp_chip.select_entries(snp_chip.GT).select_cols()
+    snp_chip = snp_chip.key_cols_by(s=snp_chip.s + '_snp_chip')
     tob_combined = tob_wgs.union_cols(snp_chip)
     tob_combined = tob_combined.cache()
     print(tob_combined.count_rows())
