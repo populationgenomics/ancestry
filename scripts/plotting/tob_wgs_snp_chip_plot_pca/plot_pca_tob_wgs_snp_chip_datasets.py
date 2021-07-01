@@ -6,10 +6,10 @@ from bokeh.plotting import output_file, save
 import pandas as pd
 import hail as hl
 import click
-from analysis_runner import output_path
+from analysis_runner import bucket_path, output_path
 
-SCORES = 'gs://cpg-tob-wgs-main/tob_wgs_snp_chip_variant_pca/v6/scores.ht/'
-EIGENVALUES = 'gs://cpg-tob-wgs-main/tob_wgs_snp_chip_variant_pca/v6/eigenvalues.ht'
+SCORES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/scores.ht/')
+EIGENVALUES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/eigenvalues.ht')
 
 
 @click.command()
@@ -19,7 +19,11 @@ def query():  # pylint: disable=too-many-locals
     hl.init(default_reference='GRCh38')
 
     scores = hl.read_table(SCORES)
-    scores = scores.annotate(cohort_sample_codes=hl.if_else(scores.s.contains('snp_chip'), 'snp_chip', 'tob_wgs'))
+    scores = scores.annotate(
+        cohort_sample_codes=hl.if_else(
+            scores.s.contains('snp_chip'), 'snp_chip', 'tob_wgs'
+        )
+    )
     labels = scores.cohort_sample_codes
     hover_fields = dict([('s', scores.s)])
 
