@@ -9,10 +9,8 @@ import hail as hl
 import click
 from analysis_runner import output_path
 
-SCORES = 'gs://cpg-tob-wgs-test/tob_wgs_snp_chip_variant_pca/v4/scores.ht/'
-# SCORES = 'gs://cpg-tob-wgs-main/tob_wgs_snp_chip_variant_pca/v2/scores.ht/'
-# EIGENVALUES = 'gs://cpg-tob-wgs-main/tob_wgs_snp_chip_variant_pca/v2/eigenvalues.ht'
-EIGENVALUES = 'gs://cpg-tob-wgs-test/tob_wgs_snp_chip_variant_pca/v4/eigenvalues.ht'
+SCORES = 'gs://cpg-tob-wgs-main/tob_wgs_snp_chip_variant_pca/v6/scores.ht/'
+EIGENVALUES = 'gs://cpg-tob-wgs-main/tob_wgs_snp_chip_variant_pca/v6/eigenvalues.ht'
 
 
 @click.command()
