@@ -1,5 +1,4 @@
-"""Create PCA plots for the combined
-TOB-WGS/SNP-chip data"""
+"""Create PCA plots for the combined TOB-WGS/SNP-chip data"""
 
 import subprocess
 from bokeh.io.export import get_screenshot_as_png
