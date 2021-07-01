@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to plot a PC
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level standard --output-dir "gs://cpg-tob-wgs-main-web/tob_wgs_snp_chip_pca/v0" \
+--access-level standard --output-dir "tob_wgs_snp_chip_pca/v0" \
 --description "pca_tob_wgs_snp_chip" python3 main.py
 ```

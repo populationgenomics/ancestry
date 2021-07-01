@@ -7,6 +7,7 @@ from bokeh.plotting import output_file, save
 import pandas as pd
 import hail as hl
 import click
+from analysis_runner import output_path
 
 SCORES = 'gs://cpg-tob-wgs-test/tob_wgs_snp_chip_variant_pca/v4/scores.ht/'
 # SCORES = 'gs://cpg-tob-wgs-main/tob_wgs_snp_chip_variant_pca/v2/scores.ht/'
@@ -15,8 +16,7 @@ EIGENVALUES = 'gs://cpg-tob-wgs-test/tob_wgs_snp_chip_variant_pca/v4/eigenvalues
 
 
 @click.command()
-@click.option('--output', help='GCS output path', required=True)
-def query(output):  # pylint: disable=too-many-locals
+def query():  # pylint: disable=too-many-locals
     """Query script entry point."""
 
     hl.init(default_reference='GRCh38')
@@ -67,13 +67,15 @@ def query(output):  # pylint: disable=too-many-locals
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
             hover_fields=hover_fields,
         )
-        plot_filename = f'{output}/pc' + str(pc2) + '.png'
+        plot_filename = output_path('pc' + str(pc2) + '.png', 'web')
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(p).save(f, format='PNG')
         plot_filename_html = 'pc' + str(pc2) + '.html'
         output_file(plot_filename_html)
         save(p)
-        subprocess.run(['gsutil', 'cp', plot_filename_html, output], check=False)
+        subprocess.run(
+            ['gsutil', 'cp', plot_filename_html, output_path('web')], check=False
+        )
 
 
 if __name__ == '__main__':
