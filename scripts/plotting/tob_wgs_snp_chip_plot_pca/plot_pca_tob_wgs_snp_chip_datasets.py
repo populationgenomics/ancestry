@@ -74,7 +74,13 @@ def query():  # pylint: disable=too-many-locals
         output_file(plot_filename_html)
         save(p)
         subprocess.run(
-            ['gsutil', 'cp', plot_filename_html, output_path('web')], check=False
+            [
+                'gsutil',
+                'cp',
+                plot_filename_html,
+                output_path(plot_filename_html, 'web'),
+            ],
+            check=False,
         )
 
 
