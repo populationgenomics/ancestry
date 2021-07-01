@@ -6,14 +6,14 @@ import click
 import hail as hl
 import pandas as pd
 from hail.experimental import lgt_to_gt
+from analysis_runner import output_path
 
 TOB_WGS = 'gs://cpg-tob-wgs-main/mt/v3-raw.mt/'
 SNP_CHIP = 'gs://cpg-tob-wgs-test/snpchip/v1/snpchip_grch38.mt/'
 
 
 @click.command()
-@click.option('--output', help='GCS output path', required=True)
-def query(output):  # pylint: disable=too-many-locals
+def query():  # pylint: disable=too-many-locals
     """Query script entry point."""
 
     hl.init(default_reference='GRCh38')
@@ -33,9 +33,9 @@ def query(output):  # pylint: disable=too-many-locals
     print(tob_combined.count_rows())
 
     # Perform PCA
-    eigenvalues_path = f'{output}/eigenvalues.ht'
-    scores_path = f'{output}/scores.ht'
-    loadings_path = f'{output}/loadings.ht'
+    eigenvalues_path = output_path('eigenvalues.ht')
+    scores_path = output_path('scores.ht')
+    loadings_path = output_path('loadings.ht')
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         tob_combined.GT, compute_loadings=True, k=20
     )
