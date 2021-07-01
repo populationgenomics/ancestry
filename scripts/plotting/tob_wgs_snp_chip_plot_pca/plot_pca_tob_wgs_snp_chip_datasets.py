@@ -19,24 +19,7 @@ def query():  # pylint: disable=too-many-locals
     hl.init(default_reference='GRCh38')
 
     scores = hl.read_table(SCORES)
-    scores = scores.annotate(snp_chip=(scores.s.contains('snp_chip')))
-    # change from boolean values to what type of data it is
-    expr = (
-        hl.case()
-        .when(
-            (scores.snp_chip),
-            'snp_chip',
-        )
-        .when(
-            (
-                scores.snp_chip  # noqa: E501; pylint: disable=singleton-comparison;
-                == False  # noqa: E712
-            ),
-            'tob_wgs',
-        )
-        .default('NA')
-    )
-    scores = scores.annotate(cohort_sample_codes=expr)
+    scores = scores.annotate(cohort_sample_codes=hl.if_else(scores.s.contains('snp_chip'), 'snp_chip', 'tob_wgs'))
     labels = scores.cohort_sample_codes
     hover_fields = dict([('s', scores.s)])
 
