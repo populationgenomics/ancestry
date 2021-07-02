@@ -55,7 +55,7 @@ def query():  # pylint: disable=too-many-locals
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(p).save(f, format='PNG')
         html = file_html(p, CDN, 'my plot')
-        plot_filename_html = output_path('pc' + str(pc2) + '.html', 'web')
+        plot_filename_html = output_path(f'pc{pc2}.html', 'web')
         with hl.hadoop_open(plot_filename_html, 'w') as f:
             f.write(html)
 
