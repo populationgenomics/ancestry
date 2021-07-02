@@ -1,15 +1,17 @@
 """Create PCA plots for the combined TOB-WGS/SNP-chip data"""
 
-import subprocess
 from bokeh.io.export import get_screenshot_as_png
-from bokeh.plotting import output_file, save
+from bokeh.resources import CDN
+from bokeh.embed import file_html
 import pandas as pd
 import hail as hl
 import click
 from analysis_runner import bucket_path, output_path
 
-SCORES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/scores.ht/')
-EIGENVALUES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/eigenvalues.ht')
+# SCORES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/scores.ht/')
+SCORES = bucket_path('1kg_hgdp_densify/v15/scores.ht/')
+# EIGENVALUES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/eigenvalues.ht')
+EIGENVALUES = bucket_path('1kg_hgdp_tobwgs_pca/v1/eigenvalues.ht')
 
 
 @click.command()
@@ -54,18 +56,10 @@ def query():  # pylint: disable=too-many-locals
         plot_filename = output_path('pc' + str(pc2) + '.png', 'web')
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(p).save(f, format='PNG')
-        plot_filename_html = 'pc' + str(pc2) + '.html'
-        output_file(plot_filename_html)
-        save(p)
-        subprocess.run(
-            [
-                'gsutil',
-                'cp',
-                plot_filename_html,
-                output_path(plot_filename_html, 'web'),
-            ],
-            check=False,
-        )
+        html = file_html(p, CDN, 'my plot')
+        plot_filename_html = output_path('pc' + str(pc2) + '.html', 'web')
+        with hl.hadoop_open(plot_filename_html, 'w') as f:
+            f.write(html)
 
 
 if __name__ == '__main__':
