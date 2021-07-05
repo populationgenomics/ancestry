@@ -12,10 +12,8 @@ import hail as hl
 import click
 from analysis_runner import bucket_path, output_path
 
-# SCORES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/scores.ht/')
-# EIGENVALUES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/eigenvalues.ht')
-SCORES = bucket_path('tob_wgs_snp_chip_variant_pca/v5/scores.ht/')
-EIGENVALUES = bucket_path('tob_wgs_snp_chip_variant_pca/v5/eigenvalues.ht/')
+SCORES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/scores.ht/')
+EIGENVALUES = bucket_path('tob_wgs_snp_chip_variant_pca/v6/eigenvalues.ht')
 
 
 @click.command()
