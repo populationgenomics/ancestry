@@ -87,9 +87,8 @@ def query():  # pylint: disable=too-many-locals
     labels = list(map(sample_type, sample_names))
     html = pd.DataFrame({'sample_name': sample_names, 'sample_tech': labels}).to_html()
     plot_filename_html = output_path(f'sample_technology.html', 'web')
-    text_file = open(plot_filename_html, 'w')
-    text_file.write(html)
-    text_file.close()
+    with hl.hadoop_open(plot_filename_html, 'w') as f:
+        f.write(html)
 
     # plot
     cohort_sample_codes = list(set(labels))
