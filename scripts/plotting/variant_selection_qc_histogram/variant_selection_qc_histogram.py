@@ -16,8 +16,7 @@ from bokeh.embed import file_html
 # )
 
 FILTERED_VARIANTS = bucket_path(
-    'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/'
-    'hgdp1kg_tobwgs_joined_all_samples.mt/'
+    '1kg_hgdp_tobwgs_pca/v1/hgdp1kg_tobwgs_joined_all_samples.mt/'
 )
 
 
