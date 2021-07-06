@@ -10,13 +10,8 @@ from bokeh.io.export import get_screenshot_as_png
 from bokeh.resources import CDN
 from bokeh.embed import file_html
 
-# FILTERED_VARIANTS = bucket_path(
-#  'tob_wgs_hgdp_1kg_variant_selection/v8/'
-#  'tob_wgs_hgdp_1kg_filtered_variants.mt'
-# )
-
 FILTERED_VARIANTS = bucket_path(
-    '1kg_hgdp_tobwgs_pca/v1/hgdp1kg_tobwgs_joined_all_samples.mt/'
+    'tob_wgs_hgdp_1kg_variant_selection/v8/tob_wgs_hgdp_1kg_filtered_variants.mt'
 )
 
 
@@ -27,8 +22,6 @@ def query():  # pylint: disable=too-many-locals
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(FILTERED_VARIANTS)
-    mt = mt.head(1000)
-    mt = hl.variant_qc(mt)
     nrows = mt.count_rows()
     print(f'mt.count_rows() = {nrows}')
 
