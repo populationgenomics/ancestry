@@ -11,7 +11,7 @@ from bokeh.resources import CDN
 from bokeh.embed import file_html
 
 FILTERED_VARIANTS = bucket_path(
-    'tob_wgs_hgdp_1kg_variant_selection/v8/' 'tob_wgs_hgdp_1kg_filtered_variants.mt'
+    'tob_wgs_hgdp_1kg_variant_selection/v8/tob_wgs_hgdp_1kg_filtered_variants.mt'
 )
 
 
@@ -33,7 +33,7 @@ def query():  # pylint: disable=too-many-locals
     )
     variant_af = mt.variant_qc.AF[1].collect()
     af_count, edges = np.histogram(
-        variant_af, weights=np.ones(len(variant_af)) / len(variant_af)
+        variant_af, bins=100, weights=np.ones(len(variant_af)) / len(variant_af)
     )
     variant_af_count = pd.DataFrame(
         {'variant_af_count': af_count, 'left': edges[:-1], 'right': edges[1:]}
