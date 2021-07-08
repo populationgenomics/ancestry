@@ -8,18 +8,13 @@ from analysis_runner import bucket_path, output_path
 
 
 NEW_VARIANTS = bucket_path(
-    'tob_wgs_hgdp_1kg_variant_selection/v0/' 'tob_wgs_hgdp_1kg_filtered_variants.mt/'
+    'tob_wgs_hgdp_1kg_variant_selection/v8/tob_wgs_hgdp_1kg_filtered_variants.mt/'
 )
-
-# NEW_VARIANTS = bucket_path(
-#     'tob_wgs_hgdp_1kg_variant_selection/v8/tob_wgs_hgdp_1kg_filtered_variants.mt/'
-# )
 GNOMAD_HGDP_1KG_MT = (
     'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
     'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
 )
-# TOB_WGS = bucket_path('mt/v3-raw.mt/')
-TOB_WGS = bucket_path('mt/v3.2.mt/')
+TOB_WGS = bucket_path('mt/v4.mt//')
 
 
 @click.command()
