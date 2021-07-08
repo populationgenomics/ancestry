@@ -13,7 +13,7 @@ batch = hb.Batch(name=f'densify_tobwgs_new_variants', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
-    'hgdp_1kg_tob_wgs_densify.py',
+    'hgdp_1kg_tob_wgs_densify_new_variants.py',
     max_age='12h',
     num_secondary_workers=20,
     packages=['click'],
