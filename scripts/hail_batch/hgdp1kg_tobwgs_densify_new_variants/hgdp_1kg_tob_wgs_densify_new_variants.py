@@ -18,7 +18,7 @@ TOB_WGS = bucket_path('mt/v4.mt')
 
 
 @click.command()
-def query():  # pylint: disable=too-many-locals
+def query():
     """Query script entry point."""
 
     hl.init(default_reference='GRCh38')
