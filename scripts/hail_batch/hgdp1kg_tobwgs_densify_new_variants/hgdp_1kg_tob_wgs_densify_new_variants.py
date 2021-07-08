@@ -14,7 +14,7 @@ GNOMAD_HGDP_1KG_MT = (
     'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
     'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
 )
-TOB_WGS = bucket_path('mt/v4.mt//')
+TOB_WGS = bucket_path('mt/v4.mt')
 
 
 @click.command()
