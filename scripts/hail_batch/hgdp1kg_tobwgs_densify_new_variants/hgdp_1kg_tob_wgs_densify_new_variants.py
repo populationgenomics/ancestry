@@ -42,4 +42,4 @@ def query():  # pylint: disable=too-many-locals
 
 
 if __name__ == '__main__':
-    query()  # pylint: disable=no-value-for-parameter
+    query()
