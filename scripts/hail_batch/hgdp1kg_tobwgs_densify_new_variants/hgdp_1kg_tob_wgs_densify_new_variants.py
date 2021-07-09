@@ -8,7 +8,7 @@ from analysis_runner import bucket_path, output_path
 
 
 NEW_VARIANTS = bucket_path(
-    'tob_wgs_hgdp_1kg_variant_selection/v8/tob_wgs_hgdp_1kg_filtered_variants.mt/'
+    'tob_wgs_hgdp_1kg_variant_selection/v8/tob_wgs_hgdp_1kg_filtered_variants.mt'
 )
 GNOMAD_HGDP_1KG_MT = (
     'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
@@ -24,7 +24,7 @@ def query():
     hl.init(default_reference='GRCh38')
 
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
-    tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
+    tob_wgs = hl.read_matrix_table(TOB_WGS)
     new_variants = hl.read_matrix_table(NEW_VARIANTS)
 
     # filter to loci that are contained in both tables and the loadings after densifying

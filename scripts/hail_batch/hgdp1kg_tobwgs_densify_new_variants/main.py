@@ -17,7 +17,7 @@ dataproc.hail_dataproc_job(
     max_age='12h',
     num_secondary_workers=20,
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
-    job_name=f'densify_tobwgs_pca',
+    job_name=f'densify_tobwgs_new_variants',
 )
 
 batch.run()
