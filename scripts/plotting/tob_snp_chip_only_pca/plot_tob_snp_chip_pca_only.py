@@ -72,7 +72,7 @@ def query():
             legend_group='label',
         )
         plot.add_layout(plot.legend[0], 'left')
-        plot_filename = output_path('pc' + str(pc2) + '.png', 'web')
+        plot_filename = output_path(f'pc{pc2}.png', 'web')
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(plot).save(f, format='PNG')
         html = file_html(plot, CDN, 'my plot')
