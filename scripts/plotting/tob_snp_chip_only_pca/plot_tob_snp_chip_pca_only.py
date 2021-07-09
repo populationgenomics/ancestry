@@ -49,7 +49,7 @@ def query():
         pc1 = i
         pc2 = i + 1
         plot = figure(
-            title='Reprocessed Sample Projection',
+            title='SNP Chip Samples',
             x_axis_label=f'PC{pc1 + 1} ({variance[pc1]})%)',
             y_axis_label=f'PC{pc2 + 1} ({variance[pc2]}%)',
             tooltips=tooltips,
