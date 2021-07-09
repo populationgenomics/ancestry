@@ -16,7 +16,6 @@ dataproc.hail_dataproc_job(
     'hgdp_1kg_tob_wgs_densify_new_variants.py',
     max_age='12h',
     num_secondary_workers=20,
-    packages=['click'],
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
     job_name=f'densify_tobwgs_pca',
 )
