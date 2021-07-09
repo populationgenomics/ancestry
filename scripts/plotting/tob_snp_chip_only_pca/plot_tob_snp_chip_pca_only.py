@@ -50,8 +50,8 @@ def query():
         pc2 = i + 1
         plot = figure(
             title='Reprocessed Sample Projection',
-            x_axis_label='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
-            y_axis_label='PC' + str(pc2 + 1) + ' (' + str(variance[pc1]) + '%)',
+            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]})%)',
+            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]}%)',
             tooltips=tooltips,
         )
         source = ColumnDataSource(
