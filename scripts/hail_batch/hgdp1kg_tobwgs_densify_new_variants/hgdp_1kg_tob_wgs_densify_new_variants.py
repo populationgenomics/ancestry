@@ -25,7 +25,7 @@ def query():
 
     hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     tob_wgs = hl.read_matrix_table(TOB_WGS).key_rows_by('locus', 'alleles')
-    new_variants = hl.read_matrix_table(NEW_VARIANTS).key_rows_by('locus', 'alleles')
+    new_variants = hl.read_matrix_table(NEW_VARIANTS)
 
     # filter to loci that are contained in both tables and the loadings after densifying
     tob_wgs = hl.experimental.densify(tob_wgs)
