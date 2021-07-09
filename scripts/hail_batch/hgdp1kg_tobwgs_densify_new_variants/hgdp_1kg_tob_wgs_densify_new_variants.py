@@ -2,7 +2,6 @@
 Densify TOB-WGS data.
 """
 
-import click
 import hail as hl
 from analysis_runner import bucket_path, output_path
 
