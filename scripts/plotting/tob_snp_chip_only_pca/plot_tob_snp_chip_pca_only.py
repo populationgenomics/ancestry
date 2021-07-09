@@ -10,9 +10,9 @@ import hail as hl
 import click
 from analysis_runner import bucket_path, output_path
 
-SCORES = bucket_path('tob_wgs_hgdp_1kg_variant_selection/v0/scores.ht')
-EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_variant_selection/v0/eigenvalues.ht')
-TOB_WGS = bucket_path('mt/v3.2.mt/')
+SCORES = bucket_path('tob_snp_chip_pca/v0/scores.ht')
+EIGENVALUES = bucket_path('tob_snp_chip_pca/v0/eigenvalues.ht')
+TOB_WGS = bucket_path('mt/v3-raw.mt')
 
 
 @click.command()
