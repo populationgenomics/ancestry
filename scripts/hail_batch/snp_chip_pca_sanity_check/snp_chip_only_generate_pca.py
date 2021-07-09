@@ -17,7 +17,6 @@ def query():
     hl.init(default_reference='GRCh38')
 
     snp_chip = hl.read_matrix_table(SNP_CHIP)
-    snp_chip = snp_chip.head(1000)
     eigenvalues_path = output_path('eigenvalues.ht')
     scores_path = output_path('scores.ht')
     loadings_path = output_path('loadings.ht')
