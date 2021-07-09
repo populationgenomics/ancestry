@@ -27,12 +27,7 @@ def query():
     wgs_names = tob_wgs.s.collect()
 
     def sample_type(sample_name):
-        if sample_name in wgs_names:
-            prefix = 'dual_sample'
-        else:
-            prefix = 'snp_chip_only'
-
-        return prefix
+        return 'dual_sample' if sample_name in wgs_names else 'snp_chip_only'
 
     labels = list(map(sample_type, snp_chip_names))
 
