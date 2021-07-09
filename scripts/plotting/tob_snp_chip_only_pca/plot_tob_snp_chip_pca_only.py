@@ -12,7 +12,7 @@ from analysis_runner import bucket_path, output_path
 
 SCORES = bucket_path('tob_wgs_hgdp_1kg_variant_selection/v0/scores.ht')
 EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_variant_selection/v0/eigenvalues.ht')
-TOB_WGS = bucket_path('mt/v3.2.m/')
+TOB_WGS = bucket_path('mt/v3.2.mt/')
 
 
 @click.command()
