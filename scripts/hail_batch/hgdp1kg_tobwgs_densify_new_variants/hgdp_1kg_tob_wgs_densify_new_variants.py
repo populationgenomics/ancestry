@@ -17,7 +17,6 @@ GNOMAD_HGDP_1KG_MT = (
 TOB_WGS = bucket_path('mt/v4.mt')
 
 
-@click.command()
 def query():
     """Query script entry point."""
 
