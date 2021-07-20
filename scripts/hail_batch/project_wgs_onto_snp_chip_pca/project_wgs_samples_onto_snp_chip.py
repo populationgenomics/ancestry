@@ -26,6 +26,7 @@ def query():
 
     snp_chip = hl.read_matrix_table(SNP_CHIP).key_rows_by('locus', 'alleles')
     tob_wgs = hl.read_matrix_table(TOB_WGS)
+    tob_wgs = tob_wgs.head(1000000)
     tob_wgs = hl.experimental.densify(tob_wgs)
     tob_wgs = tob_wgs.annotate_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
 
