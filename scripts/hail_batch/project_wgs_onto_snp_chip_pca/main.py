@@ -16,6 +16,7 @@ dataproc.hail_dataproc_job(
     'project_wgs_samples_onto_snp_chip.py',
     max_age='12h',
     num_secondary_workers=20,
+    packages=['selenium'],
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
     job_name=f'project_wgs_samples',
 )
