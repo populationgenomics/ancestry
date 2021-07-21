@@ -7,8 +7,7 @@ import hail as hl
 from analysis_runner import bucket_path, output_path
 
 SNP_CHIP = bucket_path('snpchip/v1/snpchip_grch38.mt')
-# TOB_WGS = bucket_path('mt/v3-raw.mt')
-TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v4.mt/'
+TOB_WGS = bucket_path('mt/v3-raw.mt')
 
 
 def query():
