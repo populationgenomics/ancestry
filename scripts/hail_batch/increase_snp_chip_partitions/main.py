@@ -13,7 +13,7 @@ batch = hb.Batch(name=f'increase_partitions', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
-    'project_wgs_samples_onto_snp_chip.py',
+    'increase_snp_chip_partitions.py',
     max_age='2h',
     num_workers=20,
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
