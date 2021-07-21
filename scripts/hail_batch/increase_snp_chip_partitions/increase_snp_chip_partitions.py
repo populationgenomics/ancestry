@@ -1,6 +1,5 @@
 """
-Increase the number of partitions
-in the SNP-Chip dataset.
+Increase the number of partitions in the SNP-Chip dataset.
 """
 
 import hail as hl
