@@ -14,8 +14,11 @@ from bokeh.resources import CDN
 from bokeh.embed import file_html
 from bokeh.io.export import get_screenshot_as_png
 
-SNP_CHIP = bucket_path('snpchip/v1/snpchip_grch38.mt')
-TOB_WGS = bucket_path('mt/v3-raw.mt')
+SNP_CHIP = bucket_path(
+    'tob_wgs_snp_chip_pca/increase_partitions/v0/snp_chip_100_partitions.mt'
+)
+# TOB_WGS = bucket_path('mt/v3-raw.mt')
+TOB_WGS = bucket_path('mt/v4.mt')
 
 
 def query():
@@ -23,8 +26,9 @@ def query():
 
     hl.init(default_reference='GRCh38')
 
-    snp_chip = hl.read_matrix_table(SNP_CHIP).key_rows_by('locus', 'alleles')
+    snp_chip = hl.read_matrix_table(SNP_CHIP)
     tob_wgs = hl.read_matrix_table(TOB_WGS)
+    tob_wgs = tob_wgs.head(1000000)
     tob_wgs = hl.experimental.densify(tob_wgs)
     tob_wgs = tob_wgs.annotate_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
 
