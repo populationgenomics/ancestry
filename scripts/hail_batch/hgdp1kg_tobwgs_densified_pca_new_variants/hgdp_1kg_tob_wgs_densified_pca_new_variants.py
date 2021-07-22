@@ -12,9 +12,7 @@ from hail.experimental import lgt_to_gt
 from analysis_runner import bucket_path, output_path
 
 
-# TOB_WGS = bucket_path('1kg_hgdp_densify_new_variants/v0/tob_wgs_filtered.mt/')
-TOB_WGS = bucket_path('mt/v4.mt/')
-# TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v4.mt/'
+TOB_WGS = bucket_path('1kg_hgdp_densify_new_variants/v0/tob_wgs_filtered.mt/')
 GNOMAD_HGDP_1KG_MT = (
     'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
     'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
@@ -26,8 +24,8 @@ def query():
 
     hl.init(default_reference='GRCh38')
 
-    tob_wgs = hl.read_matrix_table(TOB_WGS).head(10000)
-    hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT).head(10000)
+    tob_wgs = hl.read_matrix_table(TOB_WGS)
+    hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
 
     # keep loci that are contained in the densified, filtered tob-wgs mt
     hgdp_1kg = hgdp_1kg.semi_join_rows(tob_wgs.rows())
