@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to increase 
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level standard --output-dir "tob_wgs_snp_chip_pca/increase_partitions/v0" \
+--access-level standard --output-dir "tob_wgs_snp_chip_pca/increase_partitions/v1" \
 --description "increase partitions snp-chip" python3 main.py
 ```
