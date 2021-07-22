@@ -26,8 +26,8 @@ def query():
 
     hl.init(default_reference='GRCh38')
 
-    tob_wgs = hl.read_matrix_table(TOB_WGS)
-    hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
+    tob_wgs = hl.read_matrix_table(TOB_WGS).head(10000)
+    hgdp_1kg = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT).head(10000)
 
     # keep loci that are contained in the densified, filtered tob-wgs mt
     hgdp_1kg = hgdp_1kg.semi_join_rows(tob_wgs.rows())
