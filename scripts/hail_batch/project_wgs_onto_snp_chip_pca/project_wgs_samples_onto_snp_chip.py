@@ -15,7 +15,7 @@ from bokeh.embed import file_html
 from bokeh.io.export import get_screenshot_as_png
 
 SNP_CHIP = bucket_path(
-    'tob_wgs_snp_chip_pca/increase_partitions/v0/snp_chip_100_partitions.mt'
+    'tob_wgs_snp_chip_pca/increase_partitions/v1/snp_chip_1000_partitions.mt'
 )
 TOB_WGS = bucket_path('mt/v3-raw.mt')
 
