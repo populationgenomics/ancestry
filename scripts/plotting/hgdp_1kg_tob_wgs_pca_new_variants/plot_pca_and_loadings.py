@@ -153,7 +153,7 @@ def query():
             'y',
             alpha=0.5,
             source=source,
-            size=8,
+            size=4,
             color=factor_cmap('label', ['#1b9e77', '#d95f02'], study),
             legend_group='label',
         )
