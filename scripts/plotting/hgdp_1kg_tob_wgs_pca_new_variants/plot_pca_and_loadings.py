@@ -158,11 +158,11 @@ def query():
             legend_group='label',
         )
         plot.add_layout(plot.legend[0], 'left')
-        plot_filename = output_path(f'pc{pc2}.png', 'web')
+        plot_filename = output_path(f'study_pc{pc2}.png', 'web')
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(plot).save(f, format='PNG')
         html = file_html(plot, CDN, 'my plot')
-        plot_filename_html = output_path(f'pc{pc2}.html', 'web')
+        plot_filename_html = output_path(f'study_pc{pc2}.html', 'web')
         with hl.hadoop_open(plot_filename_html, 'w') as f:
             f.write(html)
 
@@ -196,24 +196,24 @@ def query():
             'y',
             alpha=0.5,
             source=source,
-            size=8,
+            size=4,
             color=factor_cmap(
                 'label', turbo(len(continental_population)), continental_population
             ),
             legend_group='label',
         )
         plot.add_layout(plot.legend[0], 'left')
-        plot_filename = output_path(f'pc{pc2}.png', 'web')
+        plot_filename = output_path(f'continental_pop_pc{pc2}.png', 'web')
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(plot).save(f, format='PNG')
         html = file_html(plot, CDN, 'my plot')
-        plot_filename_html = output_path(f'pc{pc2}.html', 'web')
+        plot_filename_html = output_path(f'continental_pop_pc{pc2}.html', 'web')
         with hl.hadoop_open(plot_filename_html, 'w') as f:
             f.write(html)
 
     # Plot loadings
     loadings_ht = hl.read_table(LOADINGS)
-    for i in range(0, (number_of_pcs)):
+    for i in range(0, (number_of_pcs + 1)):
         pc = i + 1
         plot = manhattan_loadings(
             pvals=hl.abs(loadings_ht.loadings[i]),
