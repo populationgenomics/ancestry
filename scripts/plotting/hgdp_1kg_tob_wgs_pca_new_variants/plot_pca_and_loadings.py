@@ -216,9 +216,53 @@ def query():
         with hl.hadoop_open(plot_filename_html, 'w') as f:
             f.write(html)
 
+    # plot by subpopulation
+    scores = scores.annotate(
+        subpop=hgdp1kg_tobwgs.cols()[scores.s].hgdp_1kg_metadata.labeled_subpop
+    )
+    labels = scores.subpop.collect()
+    labels = ['TOB-NFE' if x is None else x for x in labels]
+    sub_population = list(set(labels))
+    tooltips = [('labels', '@label'), ('samples', '@samples')]
+
+    for i in range(0, (number_of_pcs - 1)):
+        pc1 = i
+        pc2 = i + 1
+        plot = figure(
+            title='Subpopulation',
+            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]})%)',
+            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]}%)',
+            tooltips=tooltips,
+        )
+        source = ColumnDataSource(
+            dict(
+                x=scores.scores[pc1].collect(),
+                y=scores.scores[pc2].collect(),
+                label=labels,
+                samples=sample_names,
+            )
+        )
+        plot.circle(
+            'x',
+            'y',
+            alpha=0.5,
+            source=source,
+            size=4,
+            color=factor_cmap('label', turbo(len(sub_population)), sub_population),
+            legend_group='label',
+        )
+        plot.add_layout(plot.legend[0], 'left')
+        plot_filename = output_path(f'subpop_pc{pc2}.png', 'web')
+        with hl.hadoop_open(plot_filename, 'wb') as f:
+            get_screenshot_as_png(plot).save(f, format='PNG')
+        html = file_html(plot, CDN, 'my plot')
+        plot_filename_html = output_path(f'subpop_pc{pc2}.html', 'web')
+        with hl.hadoop_open(plot_filename_html, 'w') as f:
+            f.write(html)
+
     # Plot loadings
     loadings_ht = hl.read_table(LOADINGS)
-    for i in range(0, (number_of_pcs + 1)):
+    for i in range(0, (number_of_pcs)):
         pc = i + 1
         plot = manhattan_loadings(
             pvals=hl.abs(loadings_ht.loadings[i]),
