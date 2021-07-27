@@ -221,7 +221,6 @@ def query():
         subpop=hgdp1kg_tobwgs.cols()[scores.s].hgdp_1kg_metadata.labeled_subpop
     )
     labels = scores.subpop.collect()
-    # Change TOB-WGS 'none' values to 'TOB-WGS'
     labels = ['TOB-NFE' if x is None else x for x in labels]
     sub_population = list(set(labels))
     tooltips = [('labels', '@label'), ('samples', '@samples')]
