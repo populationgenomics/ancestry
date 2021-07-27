@@ -14,8 +14,8 @@ def query():
     hl.init(default_reference='GRCh38')
 
     snp_chip = hl.read_matrix_table(SNP_CHIP).key_rows_by('locus', 'alleles')
-    snp_chip = snp_chip.repartition(1000)
-    snp_chip_path = output_path('snp_chip_1000_partitions.mt')
+    snp_chip = snp_chip.repartition(10000)
+    snp_chip_path = output_path('snp_chip_10000_partitions.mt')
     snp_chip.write(snp_chip_path, overwrite=True)
 
 
