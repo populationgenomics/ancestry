@@ -13,7 +13,7 @@ batch = hb.Batch(name='new-variants-plot-pca', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     'plot_pca_and_loadings.py',
-    max_age='1h',
+    max_age='2h',
     packages=['selenium'],
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
     job_name='new-variants-plot-pca',

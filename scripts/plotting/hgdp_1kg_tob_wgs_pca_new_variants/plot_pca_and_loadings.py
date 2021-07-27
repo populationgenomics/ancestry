@@ -167,8 +167,13 @@ def query():
             f.write(html)
 
     # plot by continental population
-    metadata = hl.read_matrix_table(HGDP1KG_TOBWGS).hgdp_1kg_metadata
-    labels = metadata.population_inference.pop.collect()
+    hgdp1kg_tobwgs = hl.read_matrix_table(HGDP1KG_TOBWGS)
+    scores = scores.annotate(
+        continental_pop=hgdp1kg_tobwgs.cols()[
+            scores.s
+        ].hgdp_1kg_metadata.population_inference.pop
+    )
+    labels = scores.continental_pop.collect()
     # Change TOB-WGS 'none' values to 'TOB-WGS'
     labels = ['TOB-NFE' if x is None else x for x in labels]
     continental_population = list(set(labels))
