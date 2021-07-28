@@ -4,6 +4,7 @@ Project WGS data onto SNP-chip data
 
 import re
 import hail as hl
+import pandas as pd
 from analysis_runner import bucket_path, output_path
 from hail.experimental import pc_project
 from hail.experimental import lgt_to_gt
@@ -30,7 +31,7 @@ def query():  # pylint: disable=too-many-locals
     tob_wgs = hl.experimental.densify(tob_wgs)
     tob_wgs = tob_wgs.annotate_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
     snp_chip = snp_chip.semi_join_rows(tob_wgs.rows())
-    snp_chip_path = output_path('snp_chip_filtered_by_tob_wgs.mt')
+    snp_chip_path = output_path('snp_chip_filtered_by_tob_wgs.mt', 'tmp')
     snp_chip = snp_chip.checkpoint(snp_chip_path)
 
     # Perform PCA
@@ -38,22 +39,22 @@ def query():  # pylint: disable=too-many-locals
         snp_chip.GT, compute_loadings=True, k=5
     )
 
-    eigenvalues_path = output_path('eigenvalues.ht')
-    scores_path = output_path('scores.ht')
-    loadings_path = output_path('loadings.ht')
+    eigenvalues_path = output_path('eigenvalues.ht', 'tmp')
+    scores_path = output_path('scores.ht', 'tmp')
+    loadings_path = output_path('loadings.ht', 'tmp')
     eigenvalues = eigenvalues.checkpoint(eigenvalues_path)
     scores = scores.checkpoint(scores_path)
     loadings = loadings.checkpoint(loadings_path)
 
     # make tob_wgs rows equivalent to the snp_chip rows
     tob_wgs = tob_wgs.semi_join_rows(snp_chip.rows())
-    tob_wgs_path = output_path('tob_wgs_filtered_by_snp_chip.mt')
+    tob_wgs_path = output_path('tob_wgs_filtered_by_snp_chip.mt', 'tmp')
     tob_wgs = tob_wgs.checkpoint(tob_wgs_path)
     snp_chip = snp_chip.annotate_rows(af=hl.agg.mean(snp_chip.GT.n_alt_alleles()) / 2)
     loadings = loadings.annotate(af=snp_chip.rows()[loadings.key].af)
     # project WGS samples onto PCA
     ht = pc_project(tob_wgs.GT, loadings.loadings, loadings.af)
-    ht_path = output_path('pc_project_tob_wgs.ht')
+    ht_path = output_path('pc_project_tob_wgs.ht', 'tmp')
     ht = ht.checkpoint(ht_path)
     scores = scores.key_by(s=scores.s + '_snp_chip')
     union_scores = ht.union(scores)
@@ -103,6 +104,8 @@ def query():  # pylint: disable=too-many-locals
                 samples=sample_names,
             )
         )
+        source_filename = output_path(f'source_{pc2}.ht', 'tmp')
+        hl.Table.from_pandas(pd.DataFrame(source.data)).export(source_filename)
         plot.circle(
             'x',
             'y',
