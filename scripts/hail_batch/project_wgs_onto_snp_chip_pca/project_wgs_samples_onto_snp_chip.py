@@ -4,6 +4,7 @@ Project WGS data onto SNP-chip data
 
 import re
 import hail as hl
+import pandas as pd
 from analysis_runner import bucket_path, output_path
 from hail.experimental import pc_project
 from hail.experimental import lgt_to_gt
@@ -20,7 +21,7 @@ SNP_CHIP = bucket_path(
 TOB_WGS = bucket_path('mt/v3-raw.mt')
 
 
-def query():
+def query():  # pylint: disable=too-many-locals
     """Query script entry point."""
 
     hl.init(default_reference='GRCh38')
@@ -29,19 +30,32 @@ def query():
     tob_wgs = hl.read_matrix_table(TOB_WGS)
     tob_wgs = hl.experimental.densify(tob_wgs)
     tob_wgs = tob_wgs.annotate_entries(GT=lgt_to_gt(tob_wgs.LGT, tob_wgs.LA))
-
     snp_chip = snp_chip.semi_join_rows(tob_wgs.rows())
+    snp_chip_path = output_path('snp_chip_filtered_by_tob_wgs.mt', 'tmp')
+    snp_chip = snp_chip.checkpoint(snp_chip_path)
+
     # Perform PCA
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         snp_chip.GT, compute_loadings=True, k=5
     )
 
+    eigenvalues_path = output_path('eigenvalues.ht', 'tmp')
+    scores_path = output_path('scores.ht', 'tmp')
+    loadings_path = output_path('loadings.ht', 'tmp')
+    eigenvalues = eigenvalues.checkpoint(eigenvalues_path)
+    scores = scores.checkpoint(scores_path)
+    loadings = loadings.checkpoint(loadings_path)
+
     # make tob_wgs rows equivalent to the snp_chip rows
     tob_wgs = tob_wgs.semi_join_rows(snp_chip.rows())
+    tob_wgs_path = output_path('tob_wgs_filtered_by_snp_chip.mt', 'tmp')
+    tob_wgs = tob_wgs.checkpoint(tob_wgs_path)
     snp_chip = snp_chip.annotate_rows(af=hl.agg.mean(snp_chip.GT.n_alt_alleles()) / 2)
     loadings = loadings.annotate(af=snp_chip.rows()[loadings.key].af)
     # project WGS samples onto PCA
     ht = pc_project(tob_wgs.GT, loadings.loadings, loadings.af)
+    ht_path = output_path('pc_project_tob_wgs.ht', 'tmp')
+    ht = ht.checkpoint(ht_path)
     scores = scores.key_by(s=scores.s + '_snp_chip')
     union_scores = ht.union(scores)
     variance = [(x / sum(eigenvalues) * 100) for x in eigenvalues]
@@ -90,6 +104,8 @@ def query():
                 samples=sample_names,
             )
         )
+        source_filename = output_path(f'source_{pc2}.ht', 'tmp')
+        hl.Table.from_pandas(pd.DataFrame(source.data)).export(source_filename)
         plot.circle(
             'x',
             'y',
