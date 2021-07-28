@@ -9,12 +9,12 @@ hgdp_1kg_tob_wgs_densified_pca_new_variants.py
 """
 
 import hail as hl
-import pandas as pd
 import click
-from analysis_runner import bucket_path, output_path
 
-HGDP1KG_TOBWGS = bucket_path(
-    '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
+
+HGDP1KG_TOBWGS = (
+    'gs://cpg-tob-wgs-test/1kg_hgdp_densified_pca_new_variants/'
+    'v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
 
 
@@ -36,15 +36,12 @@ def query(pop):
         mt = mt.filter_cols(mt.s.contains('TOB'))
 
     # Perform PCA
-    eigenvalues_path = output_path('eigenvalues.ht')
-    scores_path = output_path('scores.ht')
-    loadings_path = output_path('loadings.ht')
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         mt.GT, compute_loadings=True, k=20
     )
-    hl.Table.from_pandas(pd.DataFrame(eigenvalues)).export(eigenvalues_path)
-    scores.write(scores_path, overwrite=True)
-    loadings.write(loadings_path, overwrite=True)
+    print(eigenvalues)
+    print(scores)
+    print(loadings)
 
 
 if __name__ == '__main__':
