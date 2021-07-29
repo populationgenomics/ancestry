@@ -39,10 +39,8 @@ def query():  # pylint: disable=too-many-locals
         snp_chip.GT, compute_loadings=True, k=5
     )
 
-    eigenvalues_path = output_path('eigenvalues.ht', 'tmp')
     scores_path = output_path('scores.ht', 'tmp')
     loadings_path = output_path('loadings.ht', 'tmp')
-    eigenvalues = eigenvalues.checkpoint(eigenvalues_path)
     scores = scores.checkpoint(scores_path)
     loadings = loadings.checkpoint(loadings_path)
 
