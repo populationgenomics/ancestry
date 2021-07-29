@@ -22,6 +22,7 @@ dataproc.hail_dataproc_job(
     packages=['click'],
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
     job_name=f'{POP}-pca-new-variants',
+    worker_boot_disk_size=200,
 )
 
 batch.run()
