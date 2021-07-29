@@ -63,6 +63,7 @@ def query():
             title='TOB-WGS',
             xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
+            collect_all=True,
             hover_fields=hover_fields,
         )
         plot_filename = output_path(f'study_pc{pc2}.png', 'web')
