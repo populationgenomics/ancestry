@@ -85,7 +85,7 @@ def query():
             pca_scores[pc1],
             pca_scores[pc2],
             label=labels,
-            title='Sub-Population',
+            title='Subpopulation',
             xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
             ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
             collect_all=True,
