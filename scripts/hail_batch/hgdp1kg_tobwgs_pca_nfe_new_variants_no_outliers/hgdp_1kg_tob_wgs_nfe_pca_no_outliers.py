@@ -30,7 +30,7 @@ def query():
         | (mt.s.contains('TOB'))
     )
     # remove outlier samples TOB1734 and TOB1714
-    mt = mt.filter_cols((mt.s != ('TOB1734')) & (mt.s != ('TOB1714')))
+    mt = mt.filter_cols((mt.s != 'TOB1734') & (mt.s != 'TOB1714'))
 
     # Perform PCA
     eigenvalues_path = output_path('eigenvalues.ht')
