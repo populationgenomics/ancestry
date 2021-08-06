@@ -10,14 +10,15 @@ from analysis_runner import bucket_path, output_path
 from bokeh.io.export import get_screenshot_as_png
 from bokeh.resources import CDN
 from bokeh.embed import file_html
+from bokeh.plotting import ColumnDataSource, figure
+from bokeh.transform import factor_cmap
 from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
-from bokeh.models import CategoricalColorMapper
 
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
-SCORES = bucket_path('1kg_hgdp_densified_nfe_new_variants/v1/scores.ht')
-EIGENVALUES = bucket_path('1kg_hgdp_densified_nfe_new_variants/v1/eigenvalues.ht')
+SCORES = bucket_path('1kg_hgdp_densified_nfe_new_variants/v0/scores.ht')
+EIGENVALUES = bucket_path('1kg_hgdp_densified_nfe_new_variants/v0/eigenvalues.ht')
 
 
 def query():
@@ -39,7 +40,9 @@ def query():
     columns = mt.cols()
     pca_scores = columns.scores
     labels = columns.study
-    hover_fields = dict([('s', columns.s)])
+    sample_names = columns.s
+    cohort_sample_codes = list(set(labels.collect()))
+    tooltips = [('labels', '@label'), ('samples', '@samples')]
 
     # get percent variance explained
     eigenvalues = hl.import_table(EIGENVALUES)
@@ -57,46 +60,78 @@ def query():
         pc1 = i
         pc2 = i + 1
         print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
-        p = hl.plot.scatter(
-            pca_scores[pc1],
-            pca_scores[pc2],
-            label=labels,
+        plot = figure(
             title='TOB-WGS + HGDP/1kG Dataset',
-            xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
-            ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
-            collect_all=True,
-            hover_fields=hover_fields,
+            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]})%)',
+            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]})%)',
+            tooltips=tooltips,
         )
+        source = ColumnDataSource(
+            dict(
+                x=pca_scores[pc1].collect(),
+                y=pca_scores[pc2].collect(),
+                label=labels.collect(),
+                samples=sample_names.collect(),
+            )
+        )
+        plot.circle(
+            'x',
+            'y',
+            alpha=0.5,
+            source=source,
+            size=4,
+            color=factor_cmap('label', ['#1b9e77', '#d95f02'], cohort_sample_codes),
+            legend_group='label',
+        )
+        plot.add_layout(plot.legend[0], 'left')
         plot_filename = output_path(f'study_pc{pc2}.png', 'web')
         with hl.hadoop_open(plot_filename, 'wb') as f:
-            get_screenshot_as_png(p).save(f, format='PNG')
-        html = file_html(p, CDN, 'my plot')
+            get_screenshot_as_png(plot).save(f, format='PNG')
+        html = file_html(plot, CDN, 'my plot')
         plot_filename_html = output_path(f'study_pc{pc2}.html', 'web')
         with hl.hadoop_open(plot_filename_html, 'w') as f:
             f.write(html)
 
     print('Making PCA plots labelled by the subpopulation')
-    labels = columns.hgdp_1kg_metadata.labeled_subpop
-    pops = list(set(labels.collect()))
+    labels = columns.hgdp_1kg_metadata.labeled_subpop.collect()
+    labels = ['TOB-WGS' if x is None else x for x in labels]
+    subpopulation = list(set(labels))
+    # change ordering of subpopulations
+    # so TOB-WGS is at the end and glyphs appear on top
+    subpopulation.append(subpopulation.pop(subpopulation.index('TOB-WGS')))
+    tooltips = [('labels', '@label'), ('samples', '@samples')]
 
     for i in range(0, (number_of_pcs - 1)):
         pc1 = i
         pc2 = i + 1
         print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
-        p = hl.plot.scatter(
-            pca_scores[pc1],
-            pca_scores[pc2],
-            label=labels,
+        plot = figure(
             title='Subpopulation',
-            xlabel='PC' + str(pc1 + 1) + ' (' + str(variance[pc1]) + '%)',
-            ylabel='PC' + str(pc2 + 1) + ' (' + str(variance[pc2]) + '%)',
-            collect_all=True,
-            colors=CategoricalColorMapper(palette=turbo(len(pops)), factors=pops),
+            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]})%)',
+            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]})%)',
+            tooltips=tooltips,
+        )
+        source = ColumnDataSource(
+            dict(
+                x=pca_scores[pc1].collect(),
+                y=pca_scores[pc2].collect(),
+                label=labels,
+                samples=sample_names.collect(),
+            )
+        )
+        plot.circle(
+            'x',
+            'y',
+            alpha=0.5,
+            source=source,
+            size=4,
+            color=factor_cmap('label', turbo(len(subpopulation)), subpopulation),
+            legend_group='label',
         )
         plot_filename = output_path(f'subpopulation_pc{pc2}.png', 'web')
         with hl.hadoop_open(plot_filename, 'wb') as f:
-            get_screenshot_as_png(p).save(f, format='PNG')
-        html = file_html(p, CDN, 'my plot')
+            get_screenshot_as_png(plot).save(f, format='PNG')
+        html = file_html(plot, CDN, 'my plot')
         plot_filename_html = output_path(f'subpopulation_pc{pc2}.html', 'web')
         with hl.hadoop_open(plot_filename_html, 'w') as f:
             f.write(html)
