@@ -130,6 +130,7 @@ def query():
             color=factor_cmap('label', turbo(len(subpopulation)), subpopulation),
             legend_group='label',
         )
+        plot.add_layout(plot.legend[0], 'left')
         plot_filename = output_path(f'subpopulation_pc{pc2}.png', 'web')
         with hl.hadoop_open(plot_filename, 'wb') as f:
             get_screenshot_as_png(plot).save(f, format='PNG')
