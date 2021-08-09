@@ -29,8 +29,14 @@ def query():
         (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
         | (mt.s.contains('TOB'))
     )
-    # remove outlier samples TOB1734 and TOB1714
-    mt = mt.filter_cols((mt.s != 'TOB1734') & (mt.s != 'TOB1714') & (mt.s != 'TOB1126'))
+    # remove outlier samples
+    mt = mt.filter_cols(
+        (mt.s != 'TOB1734')
+        & (mt.s != 'TOB1714')
+        & (mt.s != 'TOB1126')
+        & (mt.s != 'TOB1653')
+        & (mt.s != 'TOB1668')
+    )
 
     # Perform PCA
     eigenvalues_path = output_path('eigenvalues.ht')
