@@ -4,7 +4,7 @@ This runs a Hail query script in Dataproc using Hail Batch in order to perform P
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level standard --output-dir "1kg_hgdp_densified_nfe_new_variants/v0" \
+--access-level standard --output-dir "tob_wgs_hgdp_1kg_nfe_pca_new_variants/v3" \
 --description "pca nfe no outliers" python3 main.py
 ```
 
