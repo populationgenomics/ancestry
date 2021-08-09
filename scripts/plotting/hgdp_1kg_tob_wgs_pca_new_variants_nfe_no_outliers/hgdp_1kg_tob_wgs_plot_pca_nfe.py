@@ -17,8 +17,8 @@ from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
-SCORES = bucket_path('1kg_hgdp_densified_nfe_new_variants/v1/scores.ht')
-EIGENVALUES = bucket_path('1kg_hgdp_densified_nfe_new_variants/v1/eigenvalues.ht')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v3/scores.ht/')
+EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v3/eigenvalues.ht')
 
 
 def query():
@@ -32,6 +32,8 @@ def query():
         (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
         | (mt.s.contains('TOB'))
     )
+    # remove outlier samples
+    mt = mt.filter_cols((mt.s != 'TOB1734') & (mt.s != 'TOB1714') & (mt.s != 'TOB1126'))
     scores = hl.read_table(SCORES)
     mt = mt.annotate_cols(scores=scores[mt.s].scores)
     mt = mt.annotate_cols(study=hl.if_else(mt.s.contains('TOB'), 'TOB-WGS', 'HGDP-1kG'))
