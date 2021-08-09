@@ -109,8 +109,8 @@ def query():
         print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
         plot = figure(
             title='Subpopulation',
-            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]})%)',
-            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]})%)',
+            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]}%)',
+            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]}%)',
             tooltips=tooltips,
         )
         source = ColumnDataSource(
