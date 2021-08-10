@@ -27,20 +27,9 @@ def query():
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
-    # Get NFE samples only
-    mt = mt.filter_cols(
-        (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
-        | (mt.s.contains('TOB'))
-    )
-    # remove outlier samples
-    mt = mt.filter_cols(
-        (mt.s != 'TOB1734')
-        & (mt.s != 'TOB1714')
-        & (mt.s != 'TOB1126')
-        & (mt.s != 'TOB1653')
-        & (mt.s != 'TOB1668')
-    )
+    # Get NFE samples only and remove outlier samples
     scores = hl.read_table(SCORES)
+    mt = mt.semi_join_cols(scores)
     mt = mt.annotate_cols(scores=scores[mt.s].scores)
     mt = mt.annotate_cols(study=hl.if_else(mt.s.contains('TOB'), 'TOB-WGS', 'HGDP-1kG'))
 
