@@ -17,8 +17,8 @@ from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
-SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v3/scores.ht/')
-EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v3/eigenvalues.ht')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/scores.ht/')
+EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/eigenvalues.ht')
 
 
 def query():
@@ -27,14 +27,9 @@ def query():
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
-    # Get NFE samples only
-    mt = mt.filter_cols(
-        (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
-        | (mt.s.contains('TOB'))
-    )
-    # remove outlier samples
-    mt = mt.filter_cols((mt.s != 'TOB1734') & (mt.s != 'TOB1714') & (mt.s != 'TOB1126'))
+    # Get NFE samples only and remove outlier samples
     scores = hl.read_table(SCORES)
+    mt = mt.semi_join_cols(scores)
     mt = mt.annotate_cols(scores=scores[mt.s].scores)
     mt = mt.annotate_cols(study=hl.if_else(mt.s.contains('TOB'), 'TOB-WGS', 'HGDP-1kG'))
 
