@@ -34,13 +34,13 @@ def query():
         | (mt.s.contains('TOB'))
     )
     filtered_samples = mt.filter_cols(hl.is_defined(scores[mt.col_key]), keep=False)
-    filt_samples_in_gnomad = filtered_samples.hgdp_1kg_metadata.gnomad_release
+    filtered_samples_in_gnomad = filtered_samples.hgdp_1kg_metadata.gnomad_release
 
     # save as html
     html = pd.DataFrame(
         {
             'sample_name': filtered_samples.s.collect(),
-            'in_gnomad': filt_samples_in_gnomad.collect(),
+            'in_gnomad': filtered_samples_in_gnomad.collect(),
         }
     ).to_html()
     plot_filename_html = output_path(f'filtered_samples_in_gnomad.html', 'web')
