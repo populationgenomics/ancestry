@@ -17,8 +17,8 @@ from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
-SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/scores.ht/')
-EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/eigenvalues.ht')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v5/scores.ht/')
+EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v5/eigenvalues.ht')
 
 
 def query():
@@ -78,8 +78,8 @@ def query():
         print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
         plot = figure(
             title='TOB-WGS + HGDP/1kG Dataset',
-            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]})%)',
-            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]})%)',
+            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]}%)',
+            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]}%)',
             tooltips=tooltips,
         )
         source = ColumnDataSource(
