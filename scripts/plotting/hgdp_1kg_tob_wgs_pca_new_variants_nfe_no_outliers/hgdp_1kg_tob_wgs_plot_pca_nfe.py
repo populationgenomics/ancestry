@@ -17,8 +17,8 @@ from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
-SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/scores.ht/')
-EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/eigenvalues.ht')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v5/scores.ht/')
+EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v5/eigenvalues.ht')
 
 
 def query():
@@ -27,8 +27,27 @@ def query():
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
-    # Get NFE samples only and remove outlier samples
     scores = hl.read_table(SCORES)
+    # Get filtered NFE samples and plot whether they are included in gnomAD
+    mt = mt.filter_cols(
+        (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
+        | (mt.s.contains('TOB'))
+    )
+    filtered_samples = mt.filter_cols(hl.is_defined(scores[mt.col_key]), keep=False)
+    filtered_samples_in_gnomad = filtered_samples.hgdp_1kg_metadata.gnomad_release
+
+    # save as html
+    html = pd.DataFrame(
+        {
+            'sample_name': filtered_samples.s.collect(),
+            'in_gnomad': filtered_samples_in_gnomad.collect(),
+        }
+    ).to_html()
+    plot_filename_html = output_path(f'filtered_samples_in_gnomad.html', 'web')
+    with hl.hadoop_open(plot_filename_html, 'w') as f:
+        f.write(html)
+
+    # Filter outliers and related samples
     mt = mt.semi_join_cols(scores)
     mt = mt.annotate_cols(scores=scores[mt.s].scores)
     mt = mt.annotate_cols(study=hl.if_else(mt.s.contains('TOB'), 'TOB-WGS', 'HGDP-1kG'))
@@ -59,8 +78,8 @@ def query():
         print(f'PC{pc1 + 1} vs PC{pc2 + 1}')
         plot = figure(
             title='TOB-WGS + HGDP/1kG Dataset',
-            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]})%)',
-            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]})%)',
+            x_axis_label=f'PC{pc1 + 1} ({variance[pc1]}%)',
+            y_axis_label=f'PC{pc2 + 1} ({variance[pc2]}%)',
             tooltips=tooltips,
         )
         source = ColumnDataSource(
