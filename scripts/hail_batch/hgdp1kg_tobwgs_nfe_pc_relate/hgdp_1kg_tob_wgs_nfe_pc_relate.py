@@ -27,7 +27,9 @@ def query():
     )
 
     # Perform kinship test with pc_relate
+    pc_rel_path = output_path('pc_relate_kinship_estimate.ht')
     pc_rel = hl.pc_relate(mt.GT, 0.01, k=20, statistics='kin')
+    pc_rel.write(pc_rel_path, overwrite=True)
     child_pca_outliers = pc_rel.filter(
         (pc_rel.i.s == 'HG01696') | (pc_rel.i.s == 'HG01629')
     )
