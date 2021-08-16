@@ -17,8 +17,8 @@ from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
-SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v5/scores.ht/')
-EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v5/eigenvalues.ht')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/scores.ht/')
+EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/eigenvalues.ht')
 
 
 def query():
@@ -28,24 +28,6 @@ def query():
 
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
     scores = hl.read_table(SCORES)
-    # Get filtered NFE samples and plot whether they are included in gnomAD
-    mt = mt.filter_cols(
-        (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
-        | (mt.s.contains('TOB'))
-    )
-    filtered_samples = mt.filter_cols(hl.is_defined(scores[mt.col_key]), keep=False)
-    filtered_samples_in_gnomad = filtered_samples.hgdp_1kg_metadata.gnomad_release
-
-    # save as html
-    html = pd.DataFrame(
-        {
-            'sample_name': filtered_samples.s.collect(),
-            'in_gnomad': filtered_samples_in_gnomad.collect(),
-        }
-    ).to_html()
-    plot_filename_html = output_path(f'filtered_samples_in_gnomad.html', 'web')
-    with hl.hadoop_open(plot_filename_html, 'w') as f:
-        f.write(html)
 
     # Filter outliers and related samples
     mt = mt.semi_join_cols(scores)
