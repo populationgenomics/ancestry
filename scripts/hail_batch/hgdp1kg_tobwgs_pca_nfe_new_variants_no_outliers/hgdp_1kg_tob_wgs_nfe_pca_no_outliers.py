@@ -38,15 +38,8 @@ def query():
         & (mt.s != 'TOB1668')
     )
 
-    # Remove related samples (at the 2nd degree or closer)
-    pc_rel = hl.pc_relate(mt.GT, 0.01, k=20, statistics='kin')
-    pairs = pc_rel.filter(pc_rel['kin'] >= 0.125)
-    related_samples_to_remove = hl.maximal_independent_set(pairs.i, pairs.j, False)
-    n_related_samples = related_samples_to_remove.count()
-    print(f'related_samples_to_remove.count() = {n_related_samples}')
-    mt = mt.filter_cols(
-        hl.is_defined(related_samples_to_remove[mt.col_key]), keep=False
-    )
+    # Remove related samples at the 2nd degree or closer, as indicated by gnomAD
+    mt = mt.filter_cols(mt.hgdp_1kg_metadata.gnomad_release | mt.s.startswith('TOB'))
 
     # Perform PCA
     eigenvalues_path = output_path('eigenvalues.ht')
