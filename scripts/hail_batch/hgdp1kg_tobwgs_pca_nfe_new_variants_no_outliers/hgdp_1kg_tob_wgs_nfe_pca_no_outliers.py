@@ -39,7 +39,7 @@ def query():
     )
 
     # Remove related samples at the 2nd degree or closer, as indicated by gnomAD
-    mt = mt.filter_cols(mt.hgdp_1kg_metadata.gnomad_release is True)
+    mt = mt.filter_cols((mt.hgdp_1kg_metadata.gnomad_release) | (mt.s.contains('TOB')))
 
     # Perform PCA
     eigenvalues_path = output_path('eigenvalues.ht')
