@@ -8,7 +8,7 @@ from bokeh.resources import CDN
 from analysis_runner import bucket_path, output_path
 import hail as hl
 
-LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/loadings.ht/')
+LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/loadings.ht/')
 
 
 def manhattan_loadings(
