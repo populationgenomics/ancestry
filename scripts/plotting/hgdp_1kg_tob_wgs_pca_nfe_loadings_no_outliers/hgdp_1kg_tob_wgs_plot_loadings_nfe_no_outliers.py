@@ -181,7 +181,7 @@ def query():  # pylint: disable=too-many-locals
             }
         ).to_html()
         plot_filename_html = output_path(
-            f'significant_variants_non_ref_samples.html', 'web'
+            f'significant_variants_non_ref_samples{dim}.html', 'web'
         )
         with hl.hadoop_open(plot_filename_html, 'w') as f:
             f.write(html)
