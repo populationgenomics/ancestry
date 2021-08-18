@@ -7,13 +7,20 @@ from bokeh.embed import file_html
 from bokeh.resources import CDN
 from analysis_runner import bucket_path, output_path
 import hail as hl
+import pandas as pd
 
 LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/loadings.ht/')
+GTF_FILE = 'gs://hail-common/references/gencode/gencode.v29.annotation.gtf.bgz'
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/scores.ht/')
+HGDP1KG_TOBWGS = bucket_path(
+    '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
+)
 
 
 def manhattan_loadings(
-    pvals,
-    locus=None,
+    iteration,
+    gtf,
+    loadings,
     title=None,
     size=4,
     hover_fields=None,
@@ -34,15 +41,17 @@ def manhattan_loadings(
         '#bcbd22',
         '#17becf',
     ]
-    if locus is None:
-        locus = pvals._indices.source.locus  # pylint: disable=protected-access
 
-    ref = locus.dtype.reference_genome
+    # add gene names, p-values, and locus info
+    loadings = loadings.annotate(gene_names=gtf[loadings.locus].gene_name)
+    pvals = hl.abs(loadings.loadings[iteration])
+    locus = loadings.locus
 
     if hover_fields is None:
         hover_fields = {}
 
     hover_fields['locus'] = hl.str(locus)
+    hover_fields['gene'] = hl.str(loadings.gene_names)
 
     source_pd = (
         hl.plot.plots._collect_scatter_plot_data(  # pylint: disable=protected-access
@@ -56,6 +65,7 @@ def manhattan_loadings(
     source_pd['_contig'] = [locus.split(':')[0] for locus in source_pd['locus']]
 
     observed_contigs = set(source_pd['_contig'])
+    ref = locus.dtype.reference_genome
     observed_contigs = [
         contig for contig in ref.contigs.copy() if contig in observed_contigs
     ]
@@ -104,12 +114,19 @@ def query():  # pylint: disable=too-many-locals
     hl.init(default_reference='GRCh38')
 
     loadings_ht = hl.read_table(LOADINGS)
+    gtf_ht = hl.experimental.import_gtf(
+        GTF_FILE,
+        reference_genome='GRCh38',
+        skip_invalid_contigs=True,
+        min_partitions=12,
+    )
     number_of_pcs = hl.len(loadings_ht.loadings).take(1)[0]
     for i in range(0, (number_of_pcs)):
         pc = i + 1
         p = manhattan_loadings(
-            pvals=hl.abs(loadings_ht.loadings[i]),
-            locus=loadings_ht.locus,
+            iteration=1,
+            gtf=gtf_ht,
+            loadings=loadings_ht,
             title=f'Loadings of PC{pc}',
             collect_all=True,
         )
@@ -118,6 +135,53 @@ def query():  # pylint: disable=too-many-locals
             get_screenshot_as_png(p).save(f, format='PNG')
         html = file_html(p, CDN, 'my plot')
         plot_filename_html = output_path(f'loadings_pc{pc}.html', 'web')
+        with hl.hadoop_open(plot_filename_html, 'w') as f:
+            f.write(html)
+
+    # Get samples which are driving loadings
+    mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
+    scores = hl.read_table(SCORES)
+    mt = mt.semi_join_cols(scores)
+    loadings_ht = loadings_ht.key_by('locus')
+    mt = mt.annotate_rows(loadings=loadings_ht[mt.locus].loadings)
+
+    for dim in range(0, number_of_pcs):
+        max_value = mt.aggregate_rows(hl.agg.stats(hl.abs(mt.loadings[dim]))).max
+        significant_variants = mt.filter_rows(hl.abs(mt.loadings[dim]) == max_value)
+        significant_variants = hl.sample_qc(significant_variants)
+        significant_variant_list = significant_variants.locus.collect()
+        print(f'PC{dim}:', significant_variant_list)
+        heterozygous_samples = significant_variants.filter_cols(
+            significant_variants.sample_qc.n_het > 0
+        ).s.collect()
+        homozygous_alternate_samples = significant_variants.filter_cols(
+            significant_variants.sample_qc.n_hom_var > 0
+        ).s.collect()
+        if len(heterozygous_samples) > len(homozygous_alternate_samples):
+            homozygous_alternate_samples.extend(
+                'null'
+                for _ in range(
+                    len(heterozygous_samples) - len(homozygous_alternate_samples)
+                )
+            )
+        elif len(heterozygous_samples) < len(homozygous_alternate_samples):
+            heterozygous_samples.extend(
+                'null'
+                for _ in range(
+                    len(homozygous_alternate_samples) - len(heterozygous_samples)
+                )
+            )
+
+        # save as html
+        html = pd.DataFrame(
+            {
+                'heterozygous_samples': heterozygous_samples,
+                'homozygous_alternate_samples': homozygous_alternate_samples,
+            }
+        ).to_html()
+        plot_filename_html = output_path(
+            f'significant_variants_non_ref_samples.html', 'web'
+        )
         with hl.hadoop_open(plot_filename_html, 'w') as f:
             f.write(html)
 
