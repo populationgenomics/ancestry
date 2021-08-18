@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to estimate 
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level test-tmp --output-dir "pc_relate/v0" \
+--access-level test --output-dir "pc_relate/v0" \
 --description "pc-relate nfe samples" python3 main.py
 ```

@@ -26,22 +26,21 @@ def query():
     mt = mt.head(1000)
 
     # liftover and get variants
-    # ht_gnomad_loadings = hl.read_table(GNOMAD_V2_LOADINGS)
-    # rg37 = hl.get_reference('GRCh37')
-    # rg38 = hl.get_reference('GRCh38')
-    # rg37.add_liftover(
-    #     'gs://hail-common/references/grch37_to_grch38.over.chain.gz', rg38
-    # )
-    # ht_gnomad_loadings_liftover = ht_gnomad_loadings.annotate(
-    #     liftover=hl.liftover(ht_gnomad_loadings.locus,
-    #     'GRCh38', include_strand=False),
-    #     old_locus=ht_gnomad_loadings.locus,
-    # )
-    # ht_gnomad_loadings_liftover = ht_gnomad_loadings_liftover.key_by(
-    #     locus=ht_gnomad_loadings_liftover.liftover,
-    #     alleles=ht_gnomad_loadings_liftover.alleles,
-    # )
-    # mt = mt.semi_join_rows(ht_gnomad_loadings_liftover)
+    ht_gnomad_loadings = hl.read_table(GNOMAD_V2_LOADINGS)
+    rg37 = hl.get_reference('GRCh37')
+    rg38 = hl.get_reference('GRCh38')
+    rg37.add_liftover(
+        'gs://hail-common/references/grch37_to_grch38.over.chain.gz', rg38
+    )
+    ht_gnomad_loadings_liftover = ht_gnomad_loadings.annotate(
+        liftover=hl.liftover(ht_gnomad_loadings.locus, 'GRCh38', include_strand=False),
+        old_locus=ht_gnomad_loadings.locus,
+    )
+    ht_gnomad_loadings_liftover = ht_gnomad_loadings_liftover.key_by(
+        locus=ht_gnomad_loadings_liftover.liftover,
+        alleles=ht_gnomad_loadings_liftover.alleles,
+    )
+    mt = mt.semi_join_rows(ht_gnomad_loadings_liftover)
 
     # Remove related samples (at the 2nd degree or closer)
     pc_rel = hl.pc_relate(mt.GT, 0.01, k=10, statistics='kin')
