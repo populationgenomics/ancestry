@@ -142,12 +142,12 @@ def query():  # pylint: disable=too-many-locals
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
     scores = hl.read_table(SCORES)
     mt = mt.semi_join_cols(scores)
+    loadings_ht = loadings_ht.key_by('locus')
     mt = mt.annotate_rows(loadings=loadings_ht[mt.locus].loadings)
-    n_pcs = hl.len(mt.loadings).take(1)[0]
 
-    for dim in range(1, n_pcs):
-        max_value = mt.aggregate_rows(hl.agg.stats(hl.abs(mt.loadings[0]))).max
-        significant_variants = mt.filter_rows(hl.abs(mt.loadings[0]) == max_value)
+    for dim in range(0, number_of_pcs):
+        max_value = mt.aggregate_rows(hl.agg.stats(hl.abs(mt.loadings[dim]))).max
+        significant_variants = mt.filter_rows(hl.abs(mt.loadings[dim]) == max_value)
         significant_variants = hl.sample_qc(significant_variants)
         significant_variant_list = significant_variants.locus.collect()
         print(f'PC{dim}:', significant_variant_list)
