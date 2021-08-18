@@ -13,7 +13,7 @@ batch = hb.Batch(name='plot-loadings-nfe-no-outliers', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_tob_wgs_plot_loadings_nfe_no_outliers.py',
-    max_age='1h',
+    max_age='3h',
     packages=['selenium'],
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
     job_name=f'plot-loadings-nfe-no-outliers',
