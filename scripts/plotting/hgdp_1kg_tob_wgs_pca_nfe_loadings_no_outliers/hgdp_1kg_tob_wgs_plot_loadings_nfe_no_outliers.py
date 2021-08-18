@@ -9,9 +9,9 @@ from analysis_runner import bucket_path, output_path
 import hail as hl
 import pandas as pd
 
-LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/loadings.ht/')
+LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/loadings.ht/')
 GTF_FILE = 'gs://hail-common/references/gencode/gencode.v29.annotation.gtf.bgz'
-SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/scores.ht/')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v4/scores.ht/')
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
@@ -123,20 +123,21 @@ def query():  # pylint: disable=too-many-locals
     number_of_pcs = 10
     for i in range(0, (number_of_pcs)):
         pc = i + 1
-        p = manhattan_loadings(
-            iteration=i,
-            gtf=gtf_ht,
-            loadings=loadings_ht,
-            title=f'Loadings of PC{pc}',
-            collect_all=True,
-        )
         plot_filename = output_path(f'loadings_manhattan_plot_pc{pc}.png', 'web')
-        with hl.hadoop_open(plot_filename, 'wb') as f:
-            get_screenshot_as_png(p).save(f, format='PNG')
-        html = file_html(p, CDN, 'my plot')
-        plot_filename_html = output_path(f'loadings_pc{pc}.html', 'web')
-        with hl.hadoop_open(plot_filename_html, 'w') as f:
-            f.write(html)
+        if not hl.hadoop_exists(plot_filename):
+            p = manhattan_loadings(
+                iteration=i,
+                gtf=gtf_ht,
+                loadings=loadings_ht,
+                title=f'Loadings of PC{pc}',
+                collect_all=True,
+            )
+            with hl.hadoop_open(plot_filename, 'wb') as f:
+                get_screenshot_as_png(p).save(f, format='PNG')
+            html = file_html(p, CDN, 'my plot')
+            plot_filename_html = output_path(f'loadings_pc{pc}.html', 'web')
+            with hl.hadoop_open(plot_filename_html, 'w') as f:
+                f.write(html)
 
     # Get samples which are driving loadings
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
