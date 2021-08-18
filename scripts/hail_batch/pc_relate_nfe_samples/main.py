@@ -13,7 +13,7 @@ batch = hb.Batch(name='pc-relate-nfe', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'pc_relate_nfe.py',
-    max_age='4h',
+    max_age='12h',
     num_secondary_workers=20,
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
     job_name=f'pc-relate-nfe',
