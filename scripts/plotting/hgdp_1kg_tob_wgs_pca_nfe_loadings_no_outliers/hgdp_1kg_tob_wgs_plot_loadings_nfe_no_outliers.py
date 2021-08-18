@@ -120,11 +120,11 @@ def query():  # pylint: disable=too-many-locals
         skip_invalid_contigs=True,
         min_partitions=12,
     )
-    number_of_pcs = hl.len(loadings_ht.loadings).take(1)[0]
+    number_of_pcs = 10
     for i in range(0, (number_of_pcs)):
         pc = i + 1
         p = manhattan_loadings(
-            iteration=1,
+            iteration=i,
             gtf=gtf_ht,
             loadings=loadings_ht,
             title=f'Loadings of PC{pc}',
