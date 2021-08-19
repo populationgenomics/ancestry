@@ -18,8 +18,6 @@ def query():
 
     mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     nrows_mt = mt.count_rows()
-    # Get samples from the specified population only
-    mt = mt.filter_cols(mt.population_inference.pop == 'nfe')
     mt = mt.sample_rows(100000 / nrows_mt, seed=12345)
 
     # Remove related samples (at the 2nd degree or closer)
