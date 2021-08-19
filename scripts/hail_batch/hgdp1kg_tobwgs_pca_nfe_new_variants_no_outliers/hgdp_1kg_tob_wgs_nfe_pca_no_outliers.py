@@ -38,6 +38,7 @@ def query():
         & (mt.s != 'TOB1668')
         & (mt.s != 'TOB1681')
         & (mt.s != 'TOB1116')
+        & (mt.s != 'TOB1107')
     )
 
     # Remove related samples at the 2nd degree or closer, as indicated by gnomAD
