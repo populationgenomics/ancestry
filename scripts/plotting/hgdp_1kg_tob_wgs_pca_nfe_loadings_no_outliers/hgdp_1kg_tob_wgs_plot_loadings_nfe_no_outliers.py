@@ -9,9 +9,9 @@ from analysis_runner import bucket_path, output_path
 import hail as hl
 import pandas as pd
 
-LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/loadings.ht/')
+LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v7/loadings.ht/')
 GTF_FILE = 'gs://hail-common/references/gencode/gencode.v29.annotation.gtf.bgz'
-SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/scores.ht/')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v7/scores.ht/')
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
