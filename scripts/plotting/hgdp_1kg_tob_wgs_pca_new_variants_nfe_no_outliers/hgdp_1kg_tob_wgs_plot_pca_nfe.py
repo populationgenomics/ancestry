@@ -17,8 +17,8 @@ from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
-SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/scores.ht/')
-EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v6/eigenvalues.ht')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v7/scores.ht/')
+EIGENVALUES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v7/eigenvalues.ht')
 
 
 def query():
