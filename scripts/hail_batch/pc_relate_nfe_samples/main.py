@@ -8,7 +8,7 @@ service_backend = hb.ServiceBackend(
     billing_project=os.getenv('HAIL_BILLING_PROJECT'), bucket=os.getenv('HAIL_BUCKET')
 )
 
-batch = hb.Batch(name='pc-relate-all', backend=service_backend)
+batch = hb.Batch(name='king-nfe', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
@@ -16,7 +16,7 @@ dataproc.hail_dataproc_job(
     max_age='12h',
     num_secondary_workers=20,
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
-    job_name=f'pc-relate-all',
+    job_name=f'king-nfe',
     worker_boot_disk_size=200,
 )
 
