@@ -9,9 +9,9 @@ from analysis_runner import bucket_path, output_path
 import hail as hl
 import pandas as pd
 
-LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v7/loadings.ht/')
+LOADINGS = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v8/loadings.ht/')
 GTF_FILE = 'gs://hail-common/references/gencode/gencode.v29.annotation.gtf.bgz'
-SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v7/scores.ht/')
+SCORES = bucket_path('tob_wgs_hgdp_1kg_nfe_pca_new_variants/v8/scores.ht/')
 HGDP1KG_TOBWGS = bucket_path(
     '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
 )
@@ -120,7 +120,7 @@ def query():  # pylint: disable=too-many-locals
         skip_invalid_contigs=True,
         min_partitions=12,
     )
-    number_of_pcs = 10
+    number_of_pcs = hl.len(loadings_ht.loadings).take(1)[0] - 1
     for i in range(0, (number_of_pcs)):
         pc = i + 1
         plot_filename = output_path(f'loadings_manhattan_plot_pc{pc}.png', 'web')
