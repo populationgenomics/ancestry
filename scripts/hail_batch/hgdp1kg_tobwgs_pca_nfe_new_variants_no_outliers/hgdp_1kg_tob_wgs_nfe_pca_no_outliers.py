@@ -29,17 +29,25 @@ def query():
         (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
         | (mt.s.contains('TOB'))
     )
-    # remove outlier samples
-    mt = mt.filter_cols(
-        (mt.s != 'TOB1734')
-        & (mt.s != 'TOB1714')
-        & (mt.s != 'TOB1126')
-        & (mt.s != 'TOB1653')
-        & (mt.s != 'TOB1668')
-        & (mt.s != 'TOB1681')
-        & (mt.s != 'TOB1116')
-        & (mt.s != 'TOB1107')
-    )
+    # remove outlier samples, as identified by PCA
+    outliers = [
+        'TOB1734',
+        'TOB1714',
+        'TOB1126',
+        'TOB1653',
+        'TOB1668',
+        'TOB1681',
+        'TOB1116',
+        'TOB1107',
+        'TOB1635',
+        'HG01628',
+        'TOB1675',
+        'TOB1125',
+        'TOB1762',
+        'TOB1263',
+        'TOB1640',
+    ]
+    mt = mt.filter_cols(hl.literal(outliers).contains(mt.s), keep=False)
 
     # Remove related samples at the 2nd degree or closer, as indicated by gnomAD
     mt = mt.filter_cols(mt.hgdp_1kg_metadata.gnomad_release | mt.s.startswith('TOB'))
