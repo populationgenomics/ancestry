@@ -18,7 +18,7 @@ def query():
 
     mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     nrows_mt = mt.count_rows()
-    mt = mt.sample_rows(100000 / nrows_mt, seed=12345)
+    mt = mt.sample_rows(50000 / nrows_mt, seed=12345)
     # Get samples from the specified population only
     mt = mt.filter_cols(mt.population_inference.pop == 'nfe')
 
