@@ -5,10 +5,7 @@ Perform pc_relate on nfe samples from the HGDP/1KG dataset.
 import hail as hl
 from analysis_runner import output_path
 
-GNOMAD_HGDP_1KG_MT = (
-    'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/'
-    'hgdp1kg_tobwgs_joined_all_samples.mt/'
-)
+TOB_WGS = 'gs://cpg-tob-wgs-test/densify/v1/tob_wgs_filtered.mt/'
 
 
 def query():
@@ -16,9 +13,7 @@ def query():
 
     hl.init(default_reference='GRCh38')
 
-    mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
-    # Get samples from the specified population only
-    mt = mt.filter_cols(mt.population_inference.pop == 'nfe')
+    mt = hl.read_matrix_table(TOB_WGS)
     nrows_mt = mt.count_rows()
     mt = mt.sample_rows(100 / nrows_mt, seed=12345)
 
