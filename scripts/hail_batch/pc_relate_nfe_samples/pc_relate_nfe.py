@@ -17,9 +17,10 @@ def query():
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
-    mt = mt.head(10000)
     # Get samples from the specified population only
     mt = mt.filter_cols(mt.population_inference.pop == 'nfe')
+    nrows_mt = mt.count_rows()
+    mt = mt.sample_rows(100 / nrows_mt, seed=12345)
 
     # Remove related samples (at the 2nd degree or closer)
     king = hl.king(mt.GT)
