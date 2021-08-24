@@ -6,8 +6,8 @@ import hail as hl
 from analysis_runner import output_path
 
 GNOMAD_HGDP_1KG_MT = (
-    'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
-    'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
+    'gs://cpg-tob-wgs-test/1kg_hgdp_tobwgs_pca/v1/'
+    'hgdp1kg_tobwgs_joined_all_samples.mt/'
 )
 
 
