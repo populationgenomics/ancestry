@@ -4,9 +4,11 @@ Perform pc_relate on nfe samples from the HGDP/1KG dataset.
 
 import hail as hl
 from analysis_runner import output_path
-from hail.experimental import lgt_to_gt
 
-TOB_WGS = 'gs://cpg-tob-wgs-test/densify/v1/tob_wgs_filtered.mt/'
+GNOMAD_HGDP_1KG_MT = (
+    'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'
+    'gnomad.genomes.v3.1.hgdp_1kg_subset_dense.mt'
+)
 
 
 def query():
@@ -14,10 +16,11 @@ def query():
 
     hl.init(default_reference='GRCh38')
 
-    mt = hl.read_matrix_table(TOB_WGS)
-    mt = mt.annotate_entries(GT=lgt_to_gt(mt.LGT, mt.LA))
+    mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     nrows_mt = mt.count_rows()
-    mt = mt.sample_rows(100 / nrows_mt, seed=12345)
+    mt = mt.sample_rows(10000 / nrows_mt, seed=12345)
+    mt = mt.repartition(1000, shuffle=False)
+    mt = mt.filter_cols(mt.population_inference.pop == 'nfe')
 
     # Remove related samples (at the 2nd degree or closer)
     king = hl.king(mt.GT)
@@ -31,7 +34,7 @@ def query():
     )
     print(known_trios.entries().to_pandas())
     king_path = output_path('king_kinship_estimate.ht')
-    known_trios.entries().write(king_path)
+    king.write(king_path)
 
 
 if __name__ == '__main__':
