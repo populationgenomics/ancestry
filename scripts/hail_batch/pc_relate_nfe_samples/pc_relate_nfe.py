@@ -19,20 +19,11 @@ def query():
     mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     nrows_mt = mt.count_rows()
     mt = mt.sample_rows(10000 / nrows_mt, seed=12345)
-    mt = mt.repartition(1000, shuffle=False)
+    mt = mt.repartition(100, shuffle=False)
     mt = mt.filter_cols(mt.population_inference.pop == 'nfe')
 
     # Remove related samples (at the 2nd degree or closer)
     king = hl.king(mt.GT)
-    known_trios = king.filter_cols((king.s == 'HG01696') | (king.s == 'HG01629'))
-    # Select parents from the child_pca_outlier matrix
-    known_trios = known_trios.filter_rows(
-        (known_trios.s_1 == 'HG01628')
-        | (known_trios.s_1 == 'HG01694')
-        | (known_trios.s_1 == 'HG01695')
-        | (known_trios.s_1 == 'HG01630')
-    )
-    print(known_trios.entries().to_pandas())
     king_path = output_path('king_kinship_estimate.ht')
     king.write(king_path)
 
