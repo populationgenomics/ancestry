@@ -46,7 +46,15 @@ def query():
         'TOB1762',
         'TOB1263',
         'TOB1640',
+        'HG01669',
+        'TOB1795',
+        'TOB1707',
+        'HG01695',
+        'HG01694',
+        'TOB1673',
+        'HG01630',
     ]
+
     mt = mt.filter_cols(hl.literal(outliers).contains(mt.s), keep=False)
 
     # Remove related samples at the 2nd degree or closer, as indicated by gnomAD
