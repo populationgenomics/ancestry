@@ -19,8 +19,12 @@ def query():
     mt = hl.read_matrix_table(GNOMAD_HGDP_1KG_MT)
     nrows_mt = mt.count_rows()
     mt = mt.sample_rows(10000 / nrows_mt, seed=12345)
-    mt = mt.repartition(100, shuffle=False)
+    mt_path = output_path('hgdp_1kg_subsampled_10k.mt', 'tmp')
+    mt = mt.checkpoint(mt_path)
+    mt = mt.repartition(1000, shuffle=False)
     mt = mt.filter_cols(mt.population_inference.pop == 'nfe')
+    mt_repartitioned_path = output_path('hgdp_1kg_repartitioned_10k.mt', 'tmp')
+    mt = mt.checkpoint(mt_repartitioned_path)
 
     # Remove related samples (at the 2nd degree or closer)
     king = hl.king(mt.GT)
