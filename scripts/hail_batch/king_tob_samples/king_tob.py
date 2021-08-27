@@ -33,7 +33,7 @@ def query():
     print(f'related_samples_to_remove.count() = {n_related_samples}')
     # save as html
     html = pd.DataFrame(
-        {'related_individual': related_samples_to_remove.node.s.collect()}
+        {'related_individual': related_samples_to_remove.node.collect()}
     ).to_html()
     plot_filename_html = output_path(f'related_samples.html', 'web')
     with hl.hadoop_open(plot_filename_html, 'w') as f:
