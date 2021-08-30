@@ -1,5 +1,5 @@
 """
-Estimate kinship coefficient using KING on TOB samples from the HGDP/1KG dataset.
+Estimate kinship coefficient using KING on NFE samples from the HGDP/1KG dataset.
 """
 
 import hail as hl
@@ -17,10 +17,13 @@ def query():
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
-    mt = mt.filter_cols(mt.s.contains('TOB'))
+    mt = mt.filter_cols(
+        (mt.hgdp_1kg_metadata.population_inference.pop == 'nfe')
+        | (mt.s.contains('TOB'))
+    )
     # Remove related samples (at the 2nd degree or closer)
     king = hl.king(mt.GT)
-    king_path = output_path('king_kinship_estimate_TOB.ht')
+    king_path = output_path('king_kinship_estimate_NFE.ht')
     king.write(king_path)
     ht = king.entries()
     related_samples = ht.filter((ht.s_1 != ht.s) & (ht.phi > 0.125), keep=True)

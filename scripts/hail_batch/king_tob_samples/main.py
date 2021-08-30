@@ -12,11 +12,11 @@ batch = hb.Batch(name='king-nfe', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
-    f'king_tob.py',
+    f'king_nfe.py',
     max_age='12h',
     num_secondary_workers=20,
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
-    job_name=f'king-tob',
+    job_name=f'king-nfe',
     worker_boot_disk_size=200,
 )
 
