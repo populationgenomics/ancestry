@@ -9,7 +9,7 @@ from analysis_runner import bucket_path, output_path
 
 
 KINSHIP_ESTIMATE_NFE = bucket_path(
-    'tob_wgs_hgdp_1kg_nfe_pc_relate/v1/pc_relate_kinship_estimate.ht'
+    'tob_wgs_hgdp_1kg_nfe_pc_relate/v0/pc_relate_kinship_estimate.ht'
 )
 
 KINSHIP_ESTIMATE_GLOBAL = bucket_path(
