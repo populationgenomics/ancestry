@@ -16,9 +16,7 @@ KINSHIP_ESTIMATE_GLOBAL = bucket_path(
     'tob_wgs_hgdp_1kg_pc_relate/v0/pc_relate_kinship_estimate.ht'
 )
 
-KING_ESTIMATE_NFE = bucket_path(
-    'gs://cpg-tob-wgs-main/king/v0/king_kinship_estimate_NFE.ht'
-)
+KING_ESTIMATE_NFE = bucket_path('king/v0/king_kinship_estimate_NFE.ht')
 
 
 def query():
