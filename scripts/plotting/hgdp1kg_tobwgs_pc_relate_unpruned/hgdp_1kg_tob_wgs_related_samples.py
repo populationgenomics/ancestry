@@ -61,7 +61,7 @@ def query():
         f.write(html)
 
     # plot relatedness estimates for KING NFE samples
-    mt = hl.read_matrix_table(KINSHIP_ESTIMATE_NFE)
+    mt = hl.read_matrix_table(KING_ESTIMATE_NFE)
     ht = mt.entries()
     related_samples = ht.filter(ht.s_1 != ht.s)
     related_samples = ht.filter(ht.phi > 0.1)
