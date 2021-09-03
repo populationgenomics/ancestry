@@ -1,5 +1,5 @@
 """
-Plot scores of related individuals after running pc_relate.
+Save scores of related individuals after running pc_relate.
 
 """
 
@@ -8,15 +8,25 @@ import pandas as pd
 from analysis_runner import bucket_path, output_path
 
 
+# KINSHIP_ESTIMATE_NFE = bucket_path(
+#     'tob_wgs_hgdp_1kg_nfe_pc_relate/v0/pc_relate_kinship_estimate.ht'
+# )
+
 KINSHIP_ESTIMATE_NFE = bucket_path(
-    'tob_wgs_hgdp_1kg_nfe_pc_relate/v0/pc_relate_kinship_estimate.ht'
+    'tob_wgs_hgdp_1kg_nfe_pc_relate/v1/pc_relate_kinship_estimate.ht'
 )
+
+# KINSHIP_ESTIMATE_GLOBAL = bucket_path(
+#     'tob_wgs_hgdp_1kg_pc_relate/v0/pc_relate_kinship_estimate.ht'
+# )
 
 KINSHIP_ESTIMATE_GLOBAL = bucket_path(
-    'tob_wgs_hgdp_1kg_pc_relate/v0/pc_relate_kinship_estimate.ht'
+    'tob_wgs_hgdp_1kg_nfe_pc_relate/v1/pc_relate_kinship_estimate.ht'
 )
 
-KING_ESTIMATE_NFE = bucket_path('king/v0/king_kinship_estimate_NFE.ht')
+# KING_ESTIMATE_NFE = bucket_path('king/v0/king_kinship_estimate_NFE.ht')
+
+KING_ESTIMATE_NFE = bucket_path('pc_relate/v3/king_kinship_estimate_global.ht')
 
 
 def query():
@@ -24,52 +34,44 @@ def query():
 
     hl.init(default_reference='GRCh38')
 
-    # plot relatedness estimates for pc_relate global populations
+    # save relatedness estimates for pc_relate global populations
     ht = hl.read_table(KINSHIP_ESTIMATE_GLOBAL)
-
-    # save as html
-    html = pd.DataFrame(
+    pc_relate_global = pd.DataFrame(
         {
             'i_s': ht.i.s.collect(),
             'j_s': ht.j.s.collect(),
             'kin': ht.kin.collect(),
         }
-    ).to_html()
-    plot_filename_html = output_path(f'pc_relate_global_matrix.html', 'web')
-    with hl.hadoop_open(plot_filename_html, 'w') as f:
-        f.write(html)
+    )
+    filename = output_path(f'pc_relate_global_matrix.csv', 'metadata')
+    pc_relate_global.to_csv(filename, index=False)
 
-    # plot relatedness estimates for pc_relate NFE samples
+    # save relatedness estimates for pc_relate NFE samples
     ht = hl.read_table(KINSHIP_ESTIMATE_NFE)
-
-    # save as html
-    html = pd.DataFrame(
+    pc_relate_nfe = pd.DataFrame(
         {
             'i_s': ht.i.s.collect(),
             'j_s': ht.j.s.collect(),
             'kin': ht.kin.collect(),
         }
-    ).to_html()
-    plot_filename_html = output_path(f'pc_relate_nfe_matrix.html', 'web')
-    with hl.hadoop_open(plot_filename_html, 'w') as f:
-        f.write(html)
+    )
+    filename = output_path(f'pc_relate_nfe_matrix.csv', 'metadata')
+    pc_relate_nfe.to_csv(filename, index=False)
 
-    # plot relatedness estimates for KING NFE samples
+    # save relatedness estimates for KING NFE samples
     mt = hl.read_matrix_table(KING_ESTIMATE_NFE)
     ht = mt.entries()
+    # remove entries where samples are identical
     related_samples = ht.filter(ht.s_1 != ht.s)
-
-    # save as html
-    html = pd.DataFrame(
+    king_nfe = pd.DataFrame(
         {
             'i_s': related_samples.s_1.collect(),
             'j_s': related_samples.s.collect(),
             'kin': related_samples.phi.collect(),
         }
-    ).to_html()
-    plot_filename_html = output_path(f'king_nfe_90k_pruned.html', 'web')
-    with hl.hadoop_open(plot_filename_html, 'w') as f:
-        f.write(html)
+    )
+    filename = output_path(f'king_nfe_matrix_90k.csv', 'metadata')
+    king_nfe.to_csv(filename, index=False)
 
 
 if __name__ == '__main__':
