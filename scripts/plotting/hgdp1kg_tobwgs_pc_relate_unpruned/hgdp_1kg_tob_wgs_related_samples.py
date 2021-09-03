@@ -27,14 +27,12 @@ def query():
     # plot relatedness estimates for pc_relate global populations
     ht = hl.read_table(KINSHIP_ESTIMATE_GLOBAL)
 
-    related_samples = ht.filter(ht.kin > 0.1)
-
     # save as html
     html = pd.DataFrame(
         {
-            'i_s': related_samples.i.s.collect(),
-            'j_s': related_samples.j.s.collect(),
-            'kin': related_samples.kin.collect(),
+            'i_s': ht.i.s.collect(),
+            'j_s': ht.j.s.collect(),
+            'kin': ht.kin.collect(),
         }
     ).to_html()
     plot_filename_html = output_path(f'pc_relate_global_matrix.html', 'web')
@@ -44,14 +42,12 @@ def query():
     # plot relatedness estimates for pc_relate NFE samples
     ht = hl.read_table(KINSHIP_ESTIMATE_NFE)
 
-    related_samples = ht.filter(ht.kin > 0.1)
-
     # save as html
     html = pd.DataFrame(
         {
-            'i_s': related_samples.i.s.collect(),
-            'j_s': related_samples.j.s.collect(),
-            'kin': related_samples.kin.collect(),
+            'i_s': ht.i.s.collect(),
+            'j_s': ht.j.s.collect(),
+            'kin': ht.kin.collect(),
         }
     ).to_html()
     plot_filename_html = output_path(f'pc_relate_nfe_matrix.html', 'web')
@@ -62,7 +58,6 @@ def query():
     mt = hl.read_matrix_table(KING_ESTIMATE_NFE)
     ht = mt.entries()
     related_samples = ht.filter(ht.s_1 != ht.s)
-    related_samples = ht.filter(ht.phi > 0.1)
 
     # save as html
     html = pd.DataFrame(
