@@ -8,14 +8,14 @@ service_backend = hb.ServiceBackend(
     billing_project=os.getenv('HAIL_BILLING_PROJECT'), bucket=os.getenv('HAIL_BUCKET')
 )
 
-batch = hb.Batch(name='related_samples-plot', backend=service_backend)
+batch = hb.Batch(name='related_samples-save', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_tob_wgs_related_samples.py',
     max_age='2h',
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
-    job_name=f'related_samples-plot',
+    job_name=f'related_samples-save',
 )
 
 batch.run()
