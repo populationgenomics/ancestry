@@ -8,25 +8,15 @@ import pandas as pd
 from analysis_runner import bucket_path, output_path
 
 
-# KINSHIP_ESTIMATE_NFE = bucket_path(
-#     'tob_wgs_hgdp_1kg_nfe_pc_relate/v0/pc_relate_kinship_estimate.ht'
-# )
-
 KINSHIP_ESTIMATE_NFE = bucket_path(
-    'tob_wgs_hgdp_1kg_nfe_pc_relate/v1/pc_relate_kinship_estimate.ht'
+    'tob_wgs_hgdp_1kg_nfe_pc_relate/v0/pc_relate_kinship_estimate.ht'
 )
-
-# KINSHIP_ESTIMATE_GLOBAL = bucket_path(
-#     'tob_wgs_hgdp_1kg_pc_relate/v0/pc_relate_kinship_estimate.ht'
-# )
 
 KINSHIP_ESTIMATE_GLOBAL = bucket_path(
-    'tob_wgs_hgdp_1kg_nfe_pc_relate/v1/pc_relate_kinship_estimate.ht'
+    'tob_wgs_hgdp_1kg_pc_relate/v0/pc_relate_kinship_estimate.ht'
 )
 
-# KING_ESTIMATE_NFE = bucket_path('king/v0/king_kinship_estimate_NFE.ht')
-
-KING_ESTIMATE_NFE = bucket_path('pc_relate/v3/king_kinship_estimate_global.ht')
+KING_ESTIMATE_NFE = bucket_path('king/v0/king_kinship_estimate_NFE.ht')
 
 
 def query():
