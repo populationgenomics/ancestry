@@ -25,7 +25,7 @@ def query():
             'kin': related_samples.phi.collect(),
         }
     )
-    filename = output_path(f'king_global_matrix_90k.csv', 'metadata')
+    filename = output_path(f'king_global_matrix_10k.csv', 'metadata')
     king_global.to_csv(filename, index=False)
 
 
