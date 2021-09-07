@@ -32,7 +32,7 @@ def query():
             'kin': related_samples.kin.collect(),
         }
     )
-    filename = output_path(f'pc_relate_global_matrix.csv', 'metadata')
+    filename = output_path(f'pc_relate_global_matrix.csv', 'analysis')
     pc_relate_global.to_csv(filename, index=False)
 
     # get maximal independent set
@@ -42,7 +42,7 @@ def query():
     related_samples = pd.DataFrame(
         {'removed_individual': related_samples_to_remove.node.s.collect()}
     )
-    filename = output_path(f'pc_relate_global_maximal_independent_set.csv', 'metadata')
+    filename = output_path(f'pc_relate_global_maximal_independent_set.csv', 'analysis')
     related_samples.to_csv(filename, index=False)
 
     # save relatedness estimates for pc_relate NFE samples
@@ -55,7 +55,7 @@ def query():
             'kin': related_samples.kin.collect(),
         }
     )
-    filename = output_path(f'pc_relate_nfe_matrix.csv', 'metadata')
+    filename = output_path(f'pc_relate_nfe_matrix.csv', 'analysis')
     pc_relate_nfe.to_csv(filename, index=False)
     # get maximal independent set
     pairs = ht.filter(ht['kin'] >= 0.125)
@@ -63,7 +63,7 @@ def query():
     related_samples = pd.DataFrame(
         {'removed_individual': related_samples_to_remove.node.s.collect()}
     )
-    filename = output_path(f'pc_relate_nfe_maximal_independent_set.csv', 'metadata')
+    filename = output_path(f'pc_relate_nfe_maximal_independent_set.csv', 'analysis')
     related_samples.to_csv(filename, index=False)
 
     # save relatedness estimates for KING NFE samples
@@ -79,7 +79,7 @@ def query():
             'kin': related_samples.phi.collect(),
         }
     )
-    filename = output_path(f'king_nfe_matrix_90k.csv', 'metadata')
+    filename = output_path(f'king_nfe_matrix_90k.csv', 'analysis')
     king_nfe.to_csv(filename, index=False)
     # save KING NFE maximal independent set
     second_degree_related_samples = ht.filter(
@@ -96,7 +96,7 @@ def query():
         {'related_individual': related_samples_to_remove.node.collect()}
     )
     filename = output_path(
-        f'king_90k_related_samples_maximal_independent_set.csv', 'metadata'
+        f'king_90k_related_samples_maximal_independent_set.csv', 'analysis'
     )
     related_samples.to_csv(filename, index=False)
 
