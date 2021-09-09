@@ -2,7 +2,6 @@
 
 import hail as hl
 import pandas as pd
-from analysis_runner import bucket_path, output_path
 from bokeh.io.export import get_screenshot_as_png
 from bokeh.resources import CDN
 from bokeh.embed import file_html
@@ -12,14 +11,16 @@ from bokeh.palettes import turbo  # pylint: disable=no-name-in-module
 from bokeh.models import CategoricalColorMapper, HoverTool
 
 
-HGDP1KG_TOBWGS = bucket_path(
-    '1kg_hgdp_densified_pca_new_variants/v0/hgdp1kg_tobwgs_joined_all_samples.mt'
-)
-SCORES = bucket_path('1kg_hgdp_densified_pca_new_variants/v0/scores.ht/')
-EIGENVALUES = bucket_path('1kg_hgdp_densified_pca_new_variants/v0/eigenvalues.ht')
-LOADINGS = bucket_path('1kg_hgdp_densified_pca_new_variants/v0/loadings.ht/')
+HGDP1KG_TOBWGS = 'gs://cpg-tob-wgs-test-tmp/joint-calling/v6-11/sample_qc/mt_subset_for_pca_with_hgdp.mt'
+SCORES = 'gs://cpg-tob-wgs-test-tmp/joint-calling/v6-11/pca_scores.ht/'
+EIGENVALUES = 'gs://cpg-tob-wgs-test-tmp/joint-calling/v6-11/pca_eigenvalues.ht'
+LOADINGS = 'gs://cpg-tob-wgs-test-tmp/joint-calling/v6-11/pca_loadings.ht/'
 
+import os
+def output_path(fname, suffix):
+    return os.path.join(f'gs://cpg-tob-wgs-test-analysis/jupyter/vsavelyev/output', fname)
 
+    
 def manhattan_loadings(
     pvals,
     locus=None,
@@ -114,7 +115,7 @@ def query():
 
     scores = hl.read_table(SCORES)
     scores = scores.annotate(
-        study=hl.if_else(scores.s.contains('TOB'), 'TOB-WGS', 'HGDP-1kG')
+        study=hl.if_else(scores.s.contains('CPG'), 'TOB-WGS', 'HGDP-1kG')
     )
     sample_names = scores.s.collect()
     labels = scores.study.collect()
