@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to get the n
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level standard --output-dir "tob_wgs_densified/v0" \
+--access-level standard --output-dir "tob_maf/v0" \
 --description "TOB maf" python3 main.py
 ```
