@@ -12,8 +12,6 @@ def query():
     hl.init(default_reference='GRCh38')
 
     tob_wgs = hl.read_matrix_table(TOB_WGS)
-    tob_wgs = tob_wgs.head(1000)
-    # save densified table
     tob_wgs = hl.experimental.densify(tob_wgs)
     tob_wgs = hl.variant_qc(tob_wgs)
     # get MAF < 0.05
