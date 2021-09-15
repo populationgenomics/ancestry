@@ -14,6 +14,8 @@ def query():
     tob_wgs = hl.read_matrix_table(TOB_WGS)
     tob_wgs = hl.experimental.densify(tob_wgs)
     tob_wgs = hl.variant_qc(tob_wgs)
+    tob_wgs_path = output_path(f'tob_wgs_densified.mt', 'tmp')
+    tob_wgs.write(tob_wgs_path)
     # get MAF < 0.05
     snp_maf_05 = tob_wgs.aggregate_rows(
         hl.agg.count_where(tob_wgs.variant_qc.AF[1] < 0.05)
