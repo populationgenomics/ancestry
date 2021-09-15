@@ -3,7 +3,7 @@
 import hail as hl
 from analysis_runner import bucket_path, output_path
 
-TOB_WGS = bucket_path('mt/v5.1-nonref.mt/')
+TOB_WGS = bucket_path('mt/v5.1.mt/')
 
 
 def query():
