@@ -13,7 +13,7 @@ def query():
 
     loadings = hl.read_table(LOADINGS)
     loadings = loadings.repartition(100, shuffle=False)
-    loadings_path = output_path(f'gnomad_loadings_90k_liftover_repartitioned.ht', 'tmp')
+    loadings_path = output_path(f'gnomad_loadings_90k_liftover_repartitioned.ht')
     loadings.write(loadings_path)
 
 
