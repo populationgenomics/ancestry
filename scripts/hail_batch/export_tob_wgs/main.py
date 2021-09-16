@@ -13,10 +13,11 @@ batch = hb.Batch(name='export_plink', backend=service_backend)
 dataproc.hail_dataproc_job(
     batch,
     f'export_plink.py',
-    max_age='2h',
+    max_age='4h',
     num_secondary_workers=20,
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
     job_name=f'export_plink',
+    worker_boot_disk_size=200,
 )
 
 batch.run()
