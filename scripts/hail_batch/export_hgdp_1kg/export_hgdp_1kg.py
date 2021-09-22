@@ -25,6 +25,8 @@ def query():
         'NA12892',
     ]
     mt = mt.filter_cols(hl.literal(samples).contains(mt.s), keep=True)
+    nrows = mt.count_rows()
+    mt = mt.sample_rows(10000 / nrows, seed=12345)
     mt = hl.split_multi_hts(mt)
     mt_path = output_path('hgdp_1kg_plink_subset')
     hl.export_plink(mt, mt_path, ind_id=mt.s)
