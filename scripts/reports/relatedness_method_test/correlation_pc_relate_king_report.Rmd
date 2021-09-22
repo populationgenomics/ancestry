@@ -111,15 +111,15 @@ for (row in 1:nrow(ped_related)){
 }
 ped_related$related <- related
 ped_related <- ped_related %>% filter(., related == "Y") %>% select(., -related)
+# only keep individuals in HGDP/1kG dataset
+metadata <- read.delim("gnomad.genomes.v3.1.hgdp_1kg_subset.sample_meta.tsv")
+metadata$s <- gsub("v3.1::", "", metadata$s) %>% gsub("[^0-9]$", "", .)
+ped_related <- ped_related[which((ped_related$Individual.ID %in% metadata$s & ped_related$Paternal.ID %in% metadata$s) | (ped_related$Individual.ID %in% metadata$s & ped_related$Maternal.ID %in% metadata$s) | (ped_related$Individual.ID %in% metadata$s & ped_related$Siblings %in% metadata$s) | (ped_related$Individual.ID %in% metadata$s & ped_related$Second.Order %in% metadata$s)),]
 ped_related <- melt(ped_related, id.vars=c("Individual.ID", "Population", "Relationship")) %>% melt(., id.vars=c("variable", "Population", "Relationship")) %>% select(Population, Relationship, value)
 colnames(ped_related) <- c("Population", "Relationship", "Individual.ID")
 ped_related <- ped_related[-which(duplicated(ped_related$Individual.ID)),]
 ped_related <- ped_related[grep("^NA|HG", ped_related$Individual.ID),]
 rownames(ped_related) <- ped_related$Individual.ID
-
-# only keep individuals in HGDP/1kG dataset
-metadata <- read.delim("gnomad.genomes.v3.1.hgdp_1kg_subset.sample_meta.tsv")
-metadata$s <- gsub("v3.1::", "", metadata$s)
 ped_related <- ped_related[which(ped_related$Individual.ID %in% metadata$s),]
 
 # define not in function
@@ -133,7 +133,7 @@ method_performance <- function(method, truth, pedigree_table, tgp){
     truth <- truth
     false_positive <- test[test %!in% truth]
     false_negative <- truth[truth %!in% test]
-    true_positive <- test[-which(test %in% false_positive)]
+    true_positive <- test[which(test %!in% false_positive)]
     true_negative <- tgp[-which(tgp %in% c(true_positive, false_negative, false_positive))]
     name <- deparse(substitute(method))
     method_df <- data.frame(method = name, false_positive = length(false_positive), false_negative = length(false_negative), related_samples = length(true_positive))
@@ -153,7 +153,7 @@ method_performance <- function(method, truth, pedigree_table, tgp){
 
 # test on PC-Relate global dataset
 pc_rel_unpruned <- read.csv("pc_relate_global_matrix.csv")
-pc_rel_unpruned <- apply(pc_rel_unpruned,2,function(x) gsub("v3.1::", "", x)) %>% as.data.frame(.)
+pc_rel_unpruned <- apply(pc_rel_unpruned,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .) %>% as.data.frame(.)
 pc_rel_global <- unique(melt(pc_rel_unpruned, id.vars=3)[[3]])
 truth <- ped_related$Individual.ID
 tgp <- metadata[which(metadata$subsets.tgp == "true"),"s"]
@@ -168,19 +168,19 @@ Here's a quick overview of what these measurements mean:
 
 * Total accuracy = Number of correct assessments (e.g., true positives + true negatives)/Number of all assessments (true and false positives + true and false negatives)
 
-With that, we can see that PC-Relate does pretty well, but it's not perfect. Out of 1,775 samples, it correctly predicted 1,754 but missed 21. It also missed assigning 185 samples as related.
+With that, we can see that PC-Relate does pretty well, but it's not perfect. While PC-Relate did not have any false negatives, it did have 28 false positives (2%).
 
 Now let's test the same for KING at the global level, which was run on a set of 10k randomly-sampled (unpruned) variants.
 
 ```{r, warning=FALSE, message=FALSE}
 # Test on KING global, 10k randomly sampled
 king_global_unpruned <- read.csv("king_global_matrix_10k.csv")
-king_global_unpruned <- apply(king_global_unpruned,2,function(x) gsub("v3.1::", "", x)) %>% as.data.frame(.)
+king_global_unpruned <- apply(king_global_unpruned,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .) %>% as.data.frame(.)
 king_global <- unique(melt(king_global_unpruned, id.vars=3)[[3]])
 king_global <- method_performance(king_global, truth, ped_related, tgp)
 ```
 
-While the sensitivity slightly increases, the accuracy for KING performs much worse. Out of 2,084 samples, 301 were misclassified as related. As an aside, I'm actually unsure of how the above pedigree for 1kg was generated. That is, if the related samples are assigned by stating they are, that can leave a lot of room for false positives and negatives. But if the relatedness classification is from running a relatedness estimate on it, then that means KING performs much worse than PC-Relate in regards to assigning false positives. In comparison to PC-Relate, we can see that the overall accuracy is lower.
+We can see that for KING, the accuracy drops significantly. Out of 2,084 samples, 337 were misclassified as related. As an aside, I'm actually unsure of how the above pedigree for 1kg was generated. That is, if the related samples are assigned by stating they are, that can leave a lot of room for false positives and negatives. But if the relatedness classification is from running a relatedness estimate on it, then that means KING performs much worse than PC-Relate in regards to assigning false positives.
 
 ### Continental-level accuracy
 
@@ -191,7 +191,7 @@ Let's see how PC-Relate performs again at the continental level only. This test,
 ```{r, warning=FALSE, message=FALSE}
 # Test pc_relate at the continental level on NFE samples
 pc_rel_unpruned_nfe <- read.csv("pc_relate_nfe_matrix.csv")
-pc_rel_unpruned_nfe <- apply(pc_rel_unpruned_nfe,2,function(x) gsub("v3.1::", "", x)) %>% as.data.frame(.)
+pc_rel_unpruned_nfe <- apply(pc_rel_unpruned_nfe,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .) %>% as.data.frame(.)
 ## filter samples in pedigree to just NFE samples
 ped_nfe <- ped_related %>% filter(Population %in% c("CEU","TSI","GBR","IBS"))
 pc_rel_nfe <- unique(melt(pc_rel_unpruned_nfe, id.vars=3)[[3]])
@@ -207,7 +207,7 @@ Now let's test how KING performs at the continental level (using 10k randomly sa
 ```{r, warning=FALSE, message=FALSE}
 ## Test KING at the continental level (NFE) on 10k randomly sampled variants
 king_nfe_unpruned <- read.csv("king_nfe_matrix_10k.csv")
-king_nfe_unpruned <- apply(king_nfe_unpruned,2,function(x) gsub("v3.1::", "", x)) %>% as.data.frame(.)
+king_nfe_unpruned <- apply(king_nfe_unpruned,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .) %>% as.data.frame(.)
 king_nfe <- unique(melt(king_nfe_unpruned, id.vars=3)[[3]])
 king_nfe <- method_performance(king_nfe, truth, ped_nfe, tgp_nfe)
 ```
@@ -228,7 +228,7 @@ ggplot(performance_summary, aes(fill=classification, y=n_samples, x=method)) +
     facet_grid(cols = vars(scale), scales = "free") + ggtitle("Relatedness test performance, all methods")
 ```
 
-From the barplots, we can see that although KING does assign slightly more related samples, it has a higher false positive rate than PC-Relate. However, PC-Relate misses slightly more truly-related samples.
+From the barplots, we can see that KING at both the global and continental level has a much higher false positive rate. We can also see that PC-Relate misses more samples at the continental scale compared to the global scale.
 
 ## Testing input variants for KING
 
@@ -238,13 +238,13 @@ Input variants will affect the overall relatedness estimates, and therefore I wa
 # Test KING at the continental level (NFE) on 90k pruned variants
 king_nfe_90k <- read.csv("king_nfe_matrix_90k.csv")
 king_nfe_90k <- king_nfe_90k[-which(king_nfe_90k$i_s == king_nfe_90k$j_s),]
-king_nfe_90k <- apply(king_nfe_90k,2,function(x) gsub("v3.1::", "", x)) %>% as.data.frame(.)
+king_nfe_90k <- apply(king_nfe_90k,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .) %>% as.data.frame(.)
 king_nfe_90k <- unique(melt(king_nfe_90k, id.vars=3)[[3]])
 truth <- ped_nfe$Individual.ID
 king_nfe_90k <- method_performance(king_nfe_90k, truth, ped_nfe, tgp_nfe)
 ```
 
-While sensitivity goes down slightly, it's clear that the accuracy goes up quite a bit. In particular, the number of incorrectly-predicted related samples goes down using the set of 90k pruned variants.
+By every single metric, it's clear that the accuracy goes up quite when using 90k pruned variants rather than 10k randomly sub-sampled variants. When using 90k pruned variants, sensitivity, specificity, and accuracy go up to 100%, meaning no samples were missed or incorrectly predicted.
 
 Here's a visualisation of the results from the two variant sets:
 
@@ -259,7 +259,7 @@ ggplot(performance_summary_king, aes(fill=classification, y=n_samples, x=method)
     ggtitle("Relatedness test performance, KING")
 ```
 
-We can see that there's a substantial increase in false positives with the randomly-sampled variant set, but the total number of false negatives does slightly increase using the 90k set (I'm curious as to why this is?)
+We can see that there's a substantial decrease in false positives with the 90k pruned variant set, which makes it clear that KING should be run using pruned samples (and perhaps a larger number of variants as well?).
 
 ## Comparing pruned samples in these tests vs gnomAD pruned samples
 
@@ -273,7 +273,7 @@ Let's first see how gnomAD results compare to the pruned set of related samples 
 gnomad_related_samples <- metadata[which(metadata$gnomad_release == "false"),"s"]
 # pc_relate global
 pc_relate_global <- read.csv("pc_relate_global_maximal_independent_set.csv")
-pc_relate_global <- apply(pc_relate_global,2,function(x) gsub("v3.1::", "", x))
+pc_relate_global <- apply(pc_relate_global,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .)
 listInput <- list(gnomAD = gnomad_related_samples, my_test = pc_relate_global)
 upset(fromList(listInput), order.by = "freq")
 ```
@@ -307,7 +307,7 @@ While gnomAD used PC-Relate to call related samples, I also wanted to see what t
 ```{r, warning=FALSE, message=FALSE}
 # king global
 king_global <- read.csv("king_10k_global_related_samples_maximal_independent_set.csv")
-king_global <- apply(king_global,2,function(x) gsub("v3.1::", "", x))
+king_global <- apply(king_global,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .)
 listInput <- list(gnomAD = gnomad_related_samples, my_test = king_global)
 upset(fromList(listInput), order.by = "freq")
 ```
@@ -324,7 +324,7 @@ However, fewer pruned samples called by PC-Relate overlap with the gnomAD datase
 gnomad_related_samples <- metadata[which(metadata$gnomad_release == "false"),] %>% filter(., population_inference.pop == "nfe") %>% pull(s)
 # pc_relate NFE
 pc_relate_nfe <- read.csv("pc_relate_nfe_maximal_independent_set.csv")
-pc_relate_nfe <- apply(pc_relate_nfe,2,function(x) gsub("v3.1::", "", x))
+pc_relate_nfe <- apply(pc_relate_nfe,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .)
 listInput <- list(gnomAD = gnomad_related_samples, my_test_nfe = pc_relate_nfe)
 upset(fromList(listInput), order.by = "freq")
 ```
@@ -338,7 +338,7 @@ truth_overlap(pc_relate_nfe)
 ```{r, warning=FALSE, message=FALSE}
 ## king
 king_nfe <- read.csv("king_10k_nfe_related_samples_maximal_independent_set.csv")
-king_nfe <- apply(king_nfe,2,function(x) gsub("v3.1::", "", x))
+king_nfe <- apply(king_nfe,2,function(x) gsub("v3.1::", "", x)) %>% gsub("[^0-9]$", "", .)
 listInput <- list(gnomAD = gnomad_related_samples, my_test_king = king_nfe)
 upset(fromList(listInput), order.by = "freq")
 ```
