@@ -9,7 +9,7 @@ TOB_WGS = bucket_path('mt/v5.1.mt')
 def query():
     """Query script entry point."""
     mt = hl.read_matrix_table(TOB_WGS)
-    mt = mt.densify(mt)
+    mt = hl.experimental.densify(mt)
     # save output
     mt_path = output_path(f'densified_tob_wgs.mt', 'tmp')
     mt.write(mt_path)
