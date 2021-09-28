@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to test the 
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level standard --output-dir "densify_benchmark/v0" \
+--access-level test --output-dir "densify_benchmark/v0" \
 --description "densify benchmark" python3 main.py
 ```
