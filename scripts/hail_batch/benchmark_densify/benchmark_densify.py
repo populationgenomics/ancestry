@@ -8,6 +8,9 @@ TOB_WGS = bucket_path('mt/v3.1.mt')
 
 def query():
     """Query script entry point."""
+
+    hl.init(default_reference='GRCh38')
+
     mt = hl.read_matrix_table(TOB_WGS)
     mt = hl.experimental.densify(mt)
     # save output
