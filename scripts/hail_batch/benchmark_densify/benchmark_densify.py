@@ -1,9 +1,9 @@
 """Test cost and speed of densifying on 20 samples"""
 
 import hail as hl
-from analysis_runner import bucket_path, output_path
+from analysis_runner import output_path
 
-TOB_WGS = bucket_path('mt/v5.1.mt')
+TOB_WGS = 'gs://cpg-tob-wgs-test-tmp/joint-calling/v6-25/combiner/v6-25-raw.mt'
 
 
 def query():
@@ -12,8 +12,9 @@ def query():
     hl.init(default_reference='GRCh38')
 
     mt = hl.read_matrix_table(TOB_WGS)
+    mt = hl.experimental.densify(mt)
     # save output
-    mt_path = output_path(f'sparse_tob_wgs.mt', 'tmp')
+    mt_path = output_path(f'densified_tob_wgs.mt', 'tmp')
     mt.write(mt_path)
 
 
