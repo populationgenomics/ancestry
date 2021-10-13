@@ -29,7 +29,7 @@ def write_dataframe(df, output_path):
     bucket.blob(output_path).upload_from_string(df.to_csv(), 'text/csv')
 
 
-backend = hb.ServiceBackend()
+backend = hb.ServiceBackend('tob-wgs', 'cpg-tob-wgs-test')
 b = hb.Batch(name='run-python job', backend=backend, default_python_image=DRIVER_IMAGE)
 
 # Create the first python_job to create the dataframe
