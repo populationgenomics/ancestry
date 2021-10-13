@@ -57,13 +57,13 @@ j3.call(write_dataframe, df2, 'out-dataframe.csv')
 #   - `PythonResult.as_str`: `str(object)`
 #   - `PythonResult.as_json`: `json.dumps(object)`
 #   - `PythonResult.as_repr`: `repr(object)`
-b.write_output(df1.as_str(), f'gs://{OUTPUT_BUCKET}/output-df1-str.txt')
+b.write_output(df1.as_str(), f'gs://{OUTPUT_BUCKET}/kat/output-df1-str.txt')
 #     0
 # 0   5
 # 1  10
 # 2   5
 
-b.write_output(df2.as_repr(), f'gs://{OUTPUT_BUCKET}/output-df2-repr.txt')
+b.write_output(df2.as_repr(), f'gs://{OUTPUT_BUCKET}/kat/output-df2-repr.txt')
 #     0
 # 0  10
 # 1  15
