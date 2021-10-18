@@ -46,6 +46,22 @@ def query():
         'CPG3244',
         'CPG2634',
         'CPG2311',
+        'CPG6122',
+        'CPG1677',
+        'CPG9191',
+        'CPG9704',
+        'CPG2329',
+        'CPG2691',
+        'CPG8250',
+        'CPG3129',
+        'CPG3467',
+        'CPG3350',
+        'CPG10066',
+        'CPG1784',
+        'CPG4374',
+        'CPG1412',
+        'CPG1099',
+        'CPG1842',
     ]
 
     mt = mt.filter_cols(hl.literal(outliers).contains(mt.s), keep=False)
