@@ -16,55 +16,72 @@ DRIVER_IMAGE = os.getenv(
 )
 
 
-expression_df = pd.read_csv(
-    f'gs://{INPUT_BUCKET}/kat/input/Plasma_expression.tsv', sep='\t'
-)
-genotype_df = pd.read_csv(f'gs://{INPUT_BUCKET}/kat/input/genotype_chr22.tsv', sep='\t')
-geneLoc_df = pd.read_csv(f'gs://{INPUT_BUCKET}/kat/input/geneloc_chr22.tsv', sep='\t')
-snpLoc_df = pd.read_csv(f'gs://{INPUT_BUCKET}/kat/input/snpsloc_chr22.tsv', sep='\t')
-covariate_df = pd.read_csv(
-    f'gs://{INPUT_BUCKET}/kat/input/Plasma_peer_factors.tsv', sep='\t'
-)
-
-# Remove genes with 0 expression in all samples
-expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
-# Prepare variables used to calculate Spearman's correlation
-gene_ids = list(expression_df.columns.values)[1:]
-sample_ids = expression_df.iloc[:, 0]
-genotype_df = genotype_df[genotype_df.sampleid.isin(expression_df.sampleid)]
-snp_ids = list(genotype_df.columns.values)[1:]
-covariate_ids = list(covariate_df.columns.values)[1:]
-
-
-# Calculate expression residuals
-def calculate_residuals(gene_id):
-    """Calculate gene residuals"""
-    gene = gene_id
-    exprs_val = expression_df[['sampleid', gene]]
-    test_df = exprs_val.merge(covariate_df, on='sampleid', how='left')
-    test_df = test_df.rename(columns={test_df.columns[1]: 'expression'})
-    y, x = dmatrices(
-        'expression ~ sex + pc1 + pc2 + pc3 + pc4 + pc5 + pc6 + age + pf1 + pf2',
-        test_df,
+def get_number_of_scatters():
+    """get index of total number of genes"""
+    expression_df = pd.read_csv(
+        f'gs://{INPUT_BUCKET}/kat/input/Plasma_expression.tsv', sep='\t'
     )
-    model = sm.OLS(y, x)
-    residuals = list(model.fit().resid)
-    return residuals
+    # Remove genes with 0 expression in all samples
+    expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
+    gene_ids = list(expression_df.columns.values)[1:]
+    geneloc_df = pd.read_csv(
+        f'gs://{INPUT_BUCKET}/kat/input/geneloc_chr22.tsv', sep='\t'
+    )
+    geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
 
-
-residual_df = pd.DataFrame(list(map(calculate_residuals, gene_ids))).T
-residual_df.columns = gene_ids
-residual_df = residual_df.assign(sampleid=list(sample_ids))
-
-# Get 1Mb sliding window around each gene
-geneLoc_df = geneLoc_df[geneLoc_df.geneid.isin(gene_ids)]
-geneLoc_df = geneLoc_df.assign(left=geneLoc_df.start - 1000000)
-geneLoc_df = geneLoc_df.assign(right=geneLoc_df.end + 1000000)
+    return 15  # len(geneloc_df.index)
 
 
 # Run Spearman rank in parallel by sending genes in a batches
 def run_computation_in_scatter(idx):
     """Run genes in scatter"""
+
+    expression_df = pd.read_csv(
+        f'gs://{INPUT_BUCKET}/kat/input/Plasma_expression.tsv', sep='\t'
+    )
+    genotype_df = pd.read_csv(
+        f'gs://{INPUT_BUCKET}/kat/input/genotype_chr22.tsv', sep='\t'
+    )
+    geneloc_df = pd.read_csv(
+        f'gs://{INPUT_BUCKET}/kat/input/geneloc_chr22.tsv', sep='\t'
+    )
+    snploc_df = pd.read_csv(
+        f'gs://{INPUT_BUCKET}/kat/input/snpsloc_chr22.tsv', sep='\t'
+    )
+    covariate_df = pd.read_csv(
+        f'gs://{INPUT_BUCKET}/kat/input/Plasma_peer_factors.tsv', sep='\t'
+    )
+
+    # Remove genes with 0 expression in all samples
+    expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
+    # Prepare variables used to calculate Spearman's correlation
+    gene_ids = list(expression_df.columns.values)[1:]
+    sample_ids = expression_df.iloc[:, 0]
+    genotype_df = genotype_df[genotype_df.sampleid.isin(expression_df.sampleid)]
+
+    # Calculate expression residuals
+    def calculate_residuals(gene_id):
+        """Calculate gene residuals"""
+        gene = gene_id
+        exprs_val = expression_df[['sampleid', gene]]
+        test_df = exprs_val.merge(covariate_df, on='sampleid', how='left')
+        test_df = test_df.rename(columns={test_df.columns[1]: 'expression'})
+        y, x = dmatrices(
+            'expression ~ sex + pc1 + pc2 + pc3 + pc4 + pc5 + pc6 + age + pf1 + pf2',
+            test_df,
+        )
+        model = sm.OLS(y, x)
+        residuals = list(model.fit().resid)
+        return residuals
+
+    residual_df = pd.DataFrame(list(map(calculate_residuals, gene_ids))).T
+    residual_df.columns = gene_ids
+    residual_df = residual_df.assign(sampleid=list(sample_ids))
+
+    # Get 1Mb sliding window around each gene
+    geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
+    geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
+    geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
@@ -77,11 +94,11 @@ def run_computation_in_scatter(idx):
         coef, p = spearmanr(test_df['SNP'], test_df['residual'])
         return (gene, snp, coef, p)
 
-    gene_info = geneLoc_df.iloc[idx]
-    snps_within_region = snpLoc_df[
-        snpLoc_df['pos'].between(gene_info['left'], gene_info['right'])
+    gene_info = geneloc_df.iloc[idx]
+    snps_within_region = snploc_df[
+        snploc_df['pos'].between(gene_info['left'], gene_info['right'])
     ]
-    gene_snp_df = snpLoc_df.merge(pd.DataFrame(snps_within_region))
+    gene_snp_df = snploc_df.merge(pd.DataFrame(snps_within_region))
     gene_snp_df = gene_snp_df.assign(geneid=gene_info.geneid)
     spearman_df = pd.DataFrame(list(gene_snp_df.apply(spearman_correlation, axis=1)))
     spearman_df.columns = ['geneid', 'snpid', 'coef', 'p.value']
@@ -95,7 +112,7 @@ backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test'
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
 spearman_dfs_from_scatter = []
-for i in range(0, len(geneLoc_df.index)):
+for i in range(get_number_of_scatters()):
     j = b.new_python_job(name=f'process_{i}')
     result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
     spearman_dfs_from_scatter.append(result)
