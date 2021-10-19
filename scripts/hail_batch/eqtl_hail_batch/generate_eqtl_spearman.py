@@ -29,7 +29,7 @@ def get_number_of_scatters():
     )
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
 
-    return 15  # len(geneloc_df.index)
+    return len(geneloc_df.index)
 
 
 # Run Spearman rank in parallel by sending genes in a batches
