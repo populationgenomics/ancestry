@@ -22,7 +22,16 @@ def query():
     mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
     # Get samples from the specified population only
     mt = mt.filter_cols((mt.hgdp_1kg_metadata.population_inference.pop == 'nfe'))
-    # # remove outlier samples, as identified by PCA
+    # remove outlier samples, as identified by PCA
+    outliers = [
+        'NA12892',
+        'HG01628',
+        'HG01694',
+        'HG01695',
+        'HG01669',
+        'HG01527',
+        'HG01630',
+    ]
     # outliers = [
     #     'CPG2709',
     #     'CPG2881',
@@ -107,7 +116,7 @@ def query():
     #     'HG01628',
     # ]
 
-    # mt = mt.filter_cols(hl.literal(outliers).contains(mt.s), keep=False)
+    mt = mt.filter_cols(hl.literal(outliers).contains(mt.s), keep=False)
 
     # Remove related samples at the 2nd degree or closer, as indicated by gnomAD
     mt = mt.filter_cols(mt.hgdp_1kg_metadata.gnomad_release)
