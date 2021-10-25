@@ -11,7 +11,7 @@ from analysis_runner import output_path
 
 
 HGDP1KG_TOBWGS = (
-    'gs://cpg-tob-wgs-main-analysis/joint-calling/v6/ancestry/mt_union_hgdp.mt'
+    'gs://cpg-tob-wgs-main-analysis/joint-calling/v6-1/ancestry/mt_union_hgdp.mt'
 )
 
 
