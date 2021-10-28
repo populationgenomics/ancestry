@@ -3,6 +3,7 @@
 import os
 import hailtop.batch as hb
 import pandas as pd
+import numpy as np
 import statsmodels.api as sm
 import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
@@ -54,16 +55,37 @@ def run_computation_in_scatter(idx):
 
     # Remove genes with 0 expression in all samples
     expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
+    # Number of individuals with non-zero expression
+    genes_not_equal_zero = expression_df.iloc[:, 1:].values != 0
+    n_expr_over_zero = pd.DataFrame(genes_not_equal_zero.sum(axis=0))
+    percent_expr_over_zero = (n_expr_over_zero / len(expression_df.index)) * 100
+    percent_expr_over_zero.index = expression_df.columns[1:]
+
+    # Filter genes with less than 10 percent individuals with non-zero expression
+    atleast10percent = percent_expr_over_zero[(percent_expr_over_zero > 10)[0]]
+    sample_ids = expression_df['sampleid']
+    expression_df = expression_df[atleast10percent.index]
+    expression_df.insert(loc=0, column='sampleid', value=sample_ids)
+
     # Prepare variables used to calculate Spearman's correlation
     gene_ids = list(expression_df.columns.values)[1:]
     sample_ids = expression_df.iloc[:, 0]
     genotype_df = genotype_df[genotype_df.sampleid.isin(expression_df.sampleid)]
 
+    # Get 1Mb sliding window around each gene
+    geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
+    geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
+    geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
+
+    to_log = expression_df.iloc[:, 1:].columns
+    log_expression_df = expression_df[to_log].applymap(lambda x: np.log(x + 1))
+    log_expression_df.insert(loc=0, column='sampleid', value=sample_ids)
+
     # Calculate expression residuals
     def calculate_residuals(gene_id):
         """Calculate gene residuals"""
         gene = gene_id
-        exprs_val = expression_df[['sampleid', gene]]
+        exprs_val = log_expression_df[['sampleid', gene]]
         test_df = exprs_val.merge(covariate_df, on='sampleid', how='left')
         test_df = test_df.rename(columns={test_df.columns[1]: 'expression'})
         y, x = dmatrices(
@@ -77,11 +99,6 @@ def run_computation_in_scatter(idx):
     residual_df = pd.DataFrame(list(map(calculate_residuals, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-
-    # Get 1Mb sliding window around each gene
-    geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
-    geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
-    geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
@@ -130,5 +147,5 @@ merge_job = b.new_python_job(name='merge_scatters')
 result_second = merge_job.call(
     function_that_merges_dataframes, *spearman_dfs_from_scatter
 )
-b.write_output(result_second.as_str(), f'gs://{OUTPUT_BUCKET}/kat/test.csv')
+b.write_output(result_second.as_str(), f'gs://{OUTPUT_BUCKET}/kat/test_log.csv')
 b.run()
