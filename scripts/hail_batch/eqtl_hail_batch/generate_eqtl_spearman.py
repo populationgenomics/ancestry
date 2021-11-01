@@ -24,6 +24,17 @@ def get_number_of_scatters():
     )
     # Remove genes with 0 expression in all samples
     expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
+    # Number of individuals with non-zero expression
+    genes_not_equal_zero = expression_df.iloc[:, 1:].values != 0
+    n_expr_over_zero = pd.DataFrame(genes_not_equal_zero.sum(axis=0))
+    percent_expr_over_zero = (n_expr_over_zero / len(expression_df.index)) * 100
+    percent_expr_over_zero.index = expression_df.columns[1:]
+
+    # Filter genes with less than 10 percent individuals with non-zero expression
+    atleast10percent = percent_expr_over_zero[(percent_expr_over_zero > 10)[0]]
+    sample_ids = expression_df['sampleid']
+    expression_df = expression_df[atleast10percent.index]
+    expression_df.insert(loc=0, column='sampleid', value=sample_ids)
     gene_ids = list(expression_df.columns.values)[1:]
     geneloc_df = pd.read_csv(
         f'gs://{INPUT_BUCKET}/kat/input/geneloc_chr22.tsv', sep='\t'
