@@ -133,10 +133,6 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     gene_snp_df = gene_snp_df.assign(geneid=gene_info.geneid)
     spearman_df = pd.DataFrame(list(gene_snp_df.apply(spearman_correlation, axis=1)))
     spearman_df.columns = ['geneid', 'snpid', 'coef', 'p.value']
-    pvalues = spearman_df['p.value']
-    fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
-    spearman_df = spearman_df.assign(FDR=fdr_values)
-    # spearman_df['FDR'] = spearman_df.FDR.astype(float)
     # # add in global position and round
     # locus = spearman_df.snpid.str.split('_', expand=True)[0]
     # chromosome = 'chr' + locus.str.split(':', expand=True)[0]
@@ -152,6 +148,8 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     # t = hl.Table.from_pandas(spearman_df)
     # t = t.annotate(position=hl.int(t.position))
     # t = t.annotate(global_position=hl.locus(t.chromosome, t.position)
+    # get alleles
+    # mt.rows()[c.liftover].alleles
     # # turn back into pandas df
     # spearman_df = t.to_pandas()
     return spearman_df
@@ -182,3 +180,11 @@ result_second = merge_job.call(
 )
 b.write_output(result_second.as_str(), f'gs://{OUTPUT_BUCKET}/kat/test_log.csv')
 b.run()
+
+# Read in table and perform multiple testing correction
+results = pd.read_csv(f'gs://{OUTPUT_BUCKET}/kat/test_log.csv')
+pvalues = results['p.value']
+fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
+results = results.assign(FDR=fdr_values)
+results['FDR'] = results.FDR.astype(float)
+results.to_csv(f'gs://{OUTPUT_BUCKET}/kat/test_log_fdr_corrected.csv')
