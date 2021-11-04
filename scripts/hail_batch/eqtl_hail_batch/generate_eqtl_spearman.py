@@ -7,7 +7,8 @@ import hailtop.batch as hb
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
-import statsmodels.stats.multitest as multi
+
+# import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
 from scipy.stats import spearmanr
 
@@ -159,8 +160,7 @@ backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test'
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
 spearman_dfs_from_scatter = []
-# for i in range(get_number_of_scatters()):
-for i in range(5):
+for i in range(get_number_of_scatters()):
     j = b.new_python_job(name=f'process_{i}')
     result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
     spearman_dfs_from_scatter.append(result)
@@ -181,10 +181,10 @@ result_second = merge_job.call(
 b.write_output(result_second.as_str(), f'gs://{OUTPUT_BUCKET}/kat/test_log.csv')
 b.run()
 
-# Read in table and perform multiple testing correction
-results = pd.read_csv(f'gs://{OUTPUT_BUCKET}/kat/test_log.csv')
-pvalues = results['p.value']
-fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
-results = results.assign(FDR=fdr_values)
-results['FDR'] = results.FDR.astype(float)
-results.to_csv(f'gs://{OUTPUT_BUCKET}/kat/test_log_fdr_corrected.csv')
+# # Read in table and perform multiple testing correction
+# results = pd.read_csv(f'gs://{OUTPUT_BUCKET}/kat/test_log.csv')
+# pvalues = results['p.value']
+# fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
+# results = results.assign(FDR=fdr_values)
+# results['FDR'] = results.FDR.astype(float)
+# results.to_csv(f'gs://{OUTPUT_BUCKET}/kat/test_log_fdr_corrected.csv')
