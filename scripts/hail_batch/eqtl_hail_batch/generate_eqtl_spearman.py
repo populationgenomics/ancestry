@@ -1,8 +1,7 @@
 """Run Spearman rank correlation on SNPs and expression residuals"""
 
 import os
-
-# import hail as hl
+import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import numpy as np
@@ -134,25 +133,25 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     gene_snp_df = gene_snp_df.assign(geneid=gene_info.geneid)
     spearman_df = pd.DataFrame(list(gene_snp_df.apply(spearman_correlation, axis=1)))
     spearman_df.columns = ['geneid', 'snpid', 'coef', 'p.value']
-    # # add in global position and round
-    # locus = spearman_df.snpid.str.split('_', expand=True)[0]
-    # chromosome = 'chr' + locus.str.split(':', expand=True)[0]
-    # position = locus.str.split(':', expand=True)[1]
-    # spearman_df['locus'], spearman_df['chromosome'], spearman_df['position'] = [
-    #     locus,
-    #     chromosome,
-    #     position,
-    # ]
-    # spearman_df['round'] = 1
-    # # convert to hail table
-    # hl.init(default_reference='GRCh38')
-    # t = hl.Table.from_pandas(spearman_df)
-    # t = t.annotate(position=hl.int(t.position))
+    # add in global position and round
+    locus = spearman_df.snpid.str.split('_', expand=True)[0]
+    chromosome = 'chr' + locus.str.split(':', expand=True)[0]
+    position = locus.str.split(':', expand=True)[1]
+    spearman_df['locus'], spearman_df['chromosome'], spearman_df['position'] = [
+        locus,
+        chromosome,
+        position,
+    ]
+    spearman_df['round'] = 1
+    # convert to hail table
+    hl.init_local(default_reference='GRCh38')
+    t = hl.Table.from_pandas(spearman_df)
+    t = t.annotate(position=hl.int(t.position))
     # t = t.annotate(global_position=hl.locus(t.chromosome, t.position)
     # get alleles
     # mt.rows()[c.liftover].alleles
-    # # turn back into pandas df
-    # spearman_df = t.to_pandas()
+    # turn back into pandas df
+    spearman_df = t.to_pandas()
     return spearman_df
 
 
@@ -160,7 +159,8 @@ backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test'
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
 spearman_dfs_from_scatter = []
-for i in range(get_number_of_scatters()):
+# for i in range(get_number_of_scatters()):
+for i in range(5):
     j = b.new_python_job(name=f'process_{i}')
     result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
     spearman_dfs_from_scatter.append(result)
