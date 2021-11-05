@@ -1,7 +1,8 @@
 """Run Spearman rank correlation on SNPs and expression residuals"""
 
 import os
-import hail as hl
+
+# import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import numpy as np
@@ -144,14 +145,14 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     ]
     spearman_df['round'] = 1
     # convert to hail table
-    hl.init(default_reference='GRCh38')
-    t = hl.Table.from_pandas(spearman_df)
-    t = t.annotate(position=hl.int(t.position))
+    # hl.init(default_reference='GRCh38')
+    # t = hl.Table.from_pandas(spearman_df)
+    # t = t.annotate(position=hl.int(t.position))
     # t = t.annotate(global_position=hl.locus(t.chromosome, t.position)
     # get alleles
     # mt.rows()[c.liftover].alleles
     # turn back into pandas df
-    spearman_df = t.to_pandas()
+    # spearman_df = t.to_pandas()
     return spearman_df
 
 
