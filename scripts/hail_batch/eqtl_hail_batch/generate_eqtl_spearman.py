@@ -184,11 +184,3 @@ result_second = merge_job.call(
 )
 b.write_output(result_second.as_str(), f'gs://{OUTPUT_BUCKET}/kat/test_log.csv')
 b.run()
-
-# # Read in table and perform multiple testing correction
-# results = pd.read_csv(f'gs://{OUTPUT_BUCKET}/kat/test_log.csv')
-# pvalues = results['p.value']
-# fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
-# results = results.assign(FDR=fdr_values)
-# results['FDR'] = results.FDR.astype(float)
-# results.to_csv(f'gs://{OUTPUT_BUCKET}/kat/test_log_fdr_corrected.csv')
