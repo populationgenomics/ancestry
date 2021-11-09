@@ -142,11 +142,12 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
         position,
     ]
     spearman_df['round'] = 1
-    # convert to hail table
-    spearman_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv')
-    hl.init_local(default_reference='GRCh38')
+    # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
+    # because it doesnt' work with the spark local backend
+    spearman_df.to_csv(f'spearman_df.csv')
+    hl.init(default_reference='GRCh38')
     t = hl.import_table(
-        f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv',
+        'spearman_df.csv',
         delimiter=',',
         types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
     )  # noqa: E501; pylint: disable=line-too-long
@@ -155,8 +156,10 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     )  # noqa: E501; pylint: disable=line-too-long
     # get alleles
     # mt.rows()[c.liftover].alleles
-    # turn back into pandas df
-    spearman_df = t.to_pandas()
+    # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
+    # because it doesn't work with the spark local backend
+    t.export('spearman_df_annotated.tsv')
+    spearman_df = pd.read_csv('spearman_df_annotated.tsv', sep='\t')
     return spearman_df
 
 
@@ -167,6 +170,7 @@ spearman_dfs_from_scatter = []
 # for i in range(get_number_of_scatters()):
 for i in range(5):
     j = b.new_python_job(name=f'process_{i}')
+    j.env('HAIL_QUERY_BACKEND', 'local')
     result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
     spearman_dfs_from_scatter.append(result)
 
