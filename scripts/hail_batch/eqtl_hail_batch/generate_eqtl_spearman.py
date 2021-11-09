@@ -1,8 +1,7 @@
 """Run Spearman rank correlation on SNPs and expression residuals"""
 
 import os
-
-# import hail as hl
+import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import numpy as np
@@ -144,14 +143,20 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     ]
     spearman_df['round'] = 1
     # convert to hail table
-    # spearman_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv')
-    # hl.init_local(default_reference='GRCh38')
-    # t = hl.import_table(f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv', delimiter=',', types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64}) # noqa: E501; pylint: disable=line-too-long
-    # t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position()) # noqa: E501; pylint: disable=line-too-long
+    spearman_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv')
+    hl.init_local(default_reference='GRCh38')
+    t = hl.import_table(
+        f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv',
+        delimiter=',',
+        types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
+    )  # noqa: E501; pylint: disable=line-too-long
+    t = t.annotate(
+        global_position=hl.locus(t.chromosome, t.position).global_position()
+    )  # noqa: E501; pylint: disable=line-too-long
     # get alleles
     # mt.rows()[c.liftover].alleles
     # turn back into pandas df
-    # spearman_df = t.to_pandas()
+    spearman_df = t.to_pandas()
     return spearman_df
 
 
