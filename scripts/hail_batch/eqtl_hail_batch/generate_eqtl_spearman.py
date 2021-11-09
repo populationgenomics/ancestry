@@ -1,13 +1,13 @@
 """Run Spearman rank correlation on SNPs and expression residuals"""
 
 import os
-import hail as hl
+
+# import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
-
-# import statsmodels.stats.multitest as multi
+import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
 from scipy.stats import spearmanr
 
@@ -144,14 +144,14 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     ]
     spearman_df['round'] = 1
     # convert to hail table
-    hl.init(default_reference='GRCh38')
-    t = hl.Table.from_pandas(spearman_df)
-    # t = t.annotate(position=hl.int(t.position))
-    # t = t.annotate(global_position=hl.locus(t.chromosome, t.position)
+    # spearman_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv')
+    # hl.init_local(default_reference='GRCh38')
+    # t = hl.import_table(f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv', delimiter=',', types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64}) # noqa: E501; pylint: disable=line-too-long
+    # t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position()) # noqa: E501; pylint: disable=line-too-long
     # get alleles
     # mt.rows()[c.liftover].alleles
     # turn back into pandas df
-    spearman_df = t.to_pandas()
+    # spearman_df = t.to_pandas()
     return spearman_df
 
 
@@ -170,7 +170,11 @@ def function_that_merges_dataframes(*df_list):
     """Merge all Spearman dfs"""
     print(df_list)
     print(type(df_list))
-    merged_df = pd.concat(df_list)
+    merged_df: pd.DataFrame = pd.concat(df_list)
+    pvalues = merged_df['p.value']
+    fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
+    merged_df = merged_df.assign(FDR=fdr_values)
+    merged_df['FDR'] = merged_df.FDR.astype(float)
     return merged_df.to_string()
 
 
