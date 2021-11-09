@@ -186,6 +186,8 @@ def function_that_merges_dataframes(*df_list):
     return merged_df.to_string()
 
 
+print('HAIL_QUERY_BACKEND=', os.getenv('HAIL_QUERY_BACKEND'))
+
 merge_job = b.new_python_job(name='merge_scatters')
 result_second = merge_job.call(
     function_that_merges_dataframes, *spearman_dfs_from_scatter
