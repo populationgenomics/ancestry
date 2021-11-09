@@ -144,11 +144,10 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     spearman_df['round'] = 1
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
-    spearman_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv')
-    print('in job: HAIL_QUERY_BACKEND=', os.getenv('HAIL_QUERY_BACKEND'))
+    spearman_df.to_csv(f'spearman_df.csv')
     hl.init(default_reference='GRCh38')
     t = hl.import_table(
-        f'gs://{OUTPUT_BUCKET}/kat/spearman_df.csv',
+        'spearman_df.csv',
         delimiter=',',
         types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
     )  # noqa: E501; pylint: disable=line-too-long
@@ -163,8 +162,6 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     spearman_df = pd.read_csv('spearman_df_annotated.tsv', sep='\t')
     return spearman_df
 
-
-print('HAIL_QUERY_BACKEND=', os.getenv('HAIL_QUERY_BACKEND'))
 
 backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test')
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
@@ -191,7 +188,6 @@ def function_that_merges_dataframes(*df_list):
 
 
 merge_job = b.new_python_job(name='merge_scatters')
-merge_job.env('HAIL_QUERY_BACKEND', 'local')
 result_second = merge_job.call(
     function_that_merges_dataframes, *spearman_dfs_from_scatter
 )
