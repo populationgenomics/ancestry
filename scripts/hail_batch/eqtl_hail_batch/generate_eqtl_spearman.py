@@ -150,10 +150,8 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
         'spearman_df.csv',
         delimiter=',',
         types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
-    )  # noqa: E501; pylint: disable=line-too-long
-    t = t.annotate(
-        global_position=hl.locus(t.chromosome, t.position).global_position()
-    )  # noqa: E501; pylint: disable=line-too-long
+    )
+    t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position())
     # get alleles
     # mt.rows()[c.liftover].alleles
     # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
