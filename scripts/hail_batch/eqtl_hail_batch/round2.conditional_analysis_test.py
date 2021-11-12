@@ -17,26 +17,26 @@ DRIVER_IMAGE = os.getenv(
 )
 
 
-def get_number_of_scatters():
-    """get index of total number of genes"""
-    # Input filenames
-    residual_df = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/input/Plasma_chr22_log_residuals.tsv', sep='\t'
-    )
-    significant_snps = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/test.csv', sep=' ', skipinitialspace=True
-    )
+# def get_number_of_scatters():
+#     """get index of total number of genes"""
+#     # Input filenames
+#     residual_df = pd.read_csv(
+#         f'gs://{INPUT_BUCKET}/kat/input/Plasma_chr22_log_residuals.tsv', sep='\t'
+#     )
+#     significant_snps = pd.read_csv(
+#         f'gs://{INPUT_BUCKET}/kat/test.csv', sep=' ', skipinitialspace=True
+#     )
 
-    # Identify the top eSNP for each eGene and assign remaining to df
-    esnp1 = (
-        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
-        .groupby('geneid')
-        .first()
-        .reset_index()
-    )
-    gene_ids = esnp1['geneid'][esnp1['geneid'].isin(residual_df.columns)]
+#     # Identify the top eSNP for each eGene and assign remaining to df
+#     esnp1 = (
+#         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
+#         .groupby('geneid')
+#         .first()
+#         .reset_index()
+#     )
+#     gene_ids = esnp1['geneid'][esnp1['geneid'].isin(residual_df.columns)]
 
-    return len(gene_ids)
+#     return len(gene_ids)
 
 
 # Run Spearman rank in parallel by sending genes in a batches
