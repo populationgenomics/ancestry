@@ -63,13 +63,13 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
         .first()
-        .reset_index()
+        .reset_index(drop=True)
     )
     esnps_to_test = (
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
-        .reset_index()
+        .reset_index(drop=True)
     )
 
     # Subset residuals for the genes to be tested
