@@ -243,5 +243,8 @@ sig_snps_as_string = get_sig_snps_job.call(
     get_last_element_of_list_and_convert_to_text, result
 )
 
-b.write_output(sig_snps_as_string.as_str(), f'gs://{OUTPUT_BUCKET}/kat/test_round2.csv')
-b.run(dry_run=True)
+b.write_output(
+    sig_snps_as_string.as_str(),
+    f'gs://{OUTPUT_BUCKET}/kat/test_conditional_analysis.csv',
+)
+b.run()
