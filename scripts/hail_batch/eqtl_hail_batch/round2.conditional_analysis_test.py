@@ -60,7 +60,6 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
 
     # Identify the top eSNP for each eGene and assign remaining to df
     significant_snps.index.name = 'y'
-    print(idx)
     esnp1 = (
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
@@ -133,6 +132,9 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         esnps_to_test.geneid.isin(adjusted_residual_mat.columns)
     ]
     gene_snp_test_df = esnps_to_test[['snpid', 'geneid']]
+    print(gene_snp_test_df.head)
+    print(gene_ids)
+    print(f'Index is {idx}')
     gene_snp_test_df = gene_snp_test_df[
         gene_snp_test_df['geneid'] == gene_ids.iloc[idx]
     ]
