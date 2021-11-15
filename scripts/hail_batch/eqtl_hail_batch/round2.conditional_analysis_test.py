@@ -71,8 +71,9 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
-        .reset_index()
+        # .reset_index()
     )
+    esnps_to_test['geneid'] = esnps_to_test.index.get_level_values(0).tolist()
 
     # Subset residuals for the genes to be tested
     sample_ids = residual_df.loc[:, ['sampleid']]
