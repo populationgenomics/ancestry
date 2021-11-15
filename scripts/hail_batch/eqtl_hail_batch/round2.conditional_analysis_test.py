@@ -16,7 +16,6 @@ DRIVER_IMAGE = os.getenv(
     'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08',  # noqa: E501; pylint: disable=line-too-long
 )
 
-
 # def get_number_of_scatters():
 #     """get index of total number of genes"""
 #     # Input filenames
@@ -65,18 +64,12 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         .first()
         .reset_index()
     )
-    print('Printing esnp1')
-    print(esnp1)
-    print('Printing significant snps')
-    print(significant_snps)
     esnps_to_test = (
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
         .reset_index()
     )
-    print(esnps_to_test)
-    # esnps_to_test = esnps_to_test.reset_index()
 
     # Subset residuals for the genes to be tested
     sample_ids = residual_df.loc[:, ['sampleid']]
@@ -226,7 +219,10 @@ for _ in range(5):
     for i in range(N_GENES):
         j = b.new_python_job(name=f'process_{i}')
         result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i, result)
-        residual_and_sig_snps_dfs.append(result)
+        gene_result: hb.resource.PythonResult = j.call(
+            run_computation_in_scatter, i, result
+        )
+        residual_and_sig_snps_dfs.append(gene_result)
 
     merge_job = b.new_python_job(name='merge_scatters')
     result = merge_job.call(
