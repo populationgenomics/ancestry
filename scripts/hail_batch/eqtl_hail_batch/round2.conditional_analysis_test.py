@@ -73,9 +73,10 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
-        .reset_index()
+        # .reset_index()
     )
-    esnps_to_test['geneid'] = esnps_to_test.index.get_level_values(0).tolist()
+    print(esnps_to_test)
+    esnps_to_test = esnps_to_test.reset_index()
 
     # Subset residuals for the genes to be tested
     sample_ids = residual_df.loc[:, ['sampleid']]
@@ -194,8 +195,6 @@ def function_that_merges_lists_of_dataframes(*df_list):
     """
     merged_dfs = []
     for idx in range(len(df_list[0])):
-        # print(df_list)
-        # print(type(df_list))
         merged_df = pd.concat([i[idx] for i in df_list])
         pvalues = merged_df['p.value']
         fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
