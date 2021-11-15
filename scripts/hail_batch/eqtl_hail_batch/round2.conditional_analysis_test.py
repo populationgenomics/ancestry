@@ -64,6 +64,11 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         .first()
         .reset_index()
     )
+    print(f'idx = {idx}')
+    print('esnp1 df:')
+    print(esnp1)
+    print('significant snps df:')
+    print(significant_snps)
     esnps_to_test = (
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
