@@ -63,17 +63,17 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
         .first()
-        .reset_index(drop=True)
+        .reset_index()
     )
     esnps_to_test = (
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
-        .reset_index(drop=True)
+        .reset_index()
     )
 
     # Subset residuals for the genes to be tested
-    sample_ids = residual_df['sampleid']
+    sample_ids = residual_df.loc[:, ['sampleid']]
     gene_ids = esnp1['geneid'][esnp1['geneid'].isin(residual_df.columns)]
     residual_df = residual_df.loc[:, residual_df.columns.isin(gene_ids)]
     residual_df['sampleid'] = sample_ids
@@ -81,7 +81,7 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     # Subset genotype file for the significant SNPs
     genotype_df = genotype_df.loc[
         genotype_df['sampleid'].isin(  # pylint: disable=unsubscriptable-object
-            sample_ids
+            sample_ids.sampleid
         ),
         :,
     ]
@@ -112,7 +112,7 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         list(map(calculate_adjusted_residuals, gene_ids))
     ).T
     adjusted_residual_mat.columns = gene_ids
-    adjusted_residual_mat.insert(loc=0, column='sampleid', value=sample_ids)
+    adjusted_residual_mat.insert(loc=0, column='sampleid', value=sample_ids.sampleid)
 
     # Spearman's rank correlation
     def spearman_correlation(df):
