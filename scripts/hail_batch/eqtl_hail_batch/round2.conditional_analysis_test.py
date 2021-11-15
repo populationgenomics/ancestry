@@ -59,6 +59,8 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     )
 
     # Identify the top eSNP for each eGene and assign remaining to df
+    significant_snps.index.name = 'y'
+    print(idx)
     esnp1 = (
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
