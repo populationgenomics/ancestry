@@ -66,10 +66,6 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
         .reset_index()
     )
     print(f'idx = {idx}')
-    print('esnp1 df:')
-    print(esnp1)
-    print('significant snps df:')
-    print(significant_snps)
     esnps_to_test = (
         significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
@@ -176,6 +172,10 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     # set variables for next iteration of loop
     residual_df = adjusted_residual_mat
     significant_snps = adjusted_spearman_df
+    print('residual_df:')
+    print(residual_df)
+    print('significant_snps:')
+    print(significant_snps)
 
     # the order of this is important
     return [residual_df, significant_snps]
