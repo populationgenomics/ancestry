@@ -16,6 +16,8 @@ DRIVER_IMAGE = os.getenv(
     'DRIVER_IMAGE',
     'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08',  # noqa: E501; pylint: disable=line-too-long
 )
+DEFAULT_RESIDUALS_PATH = f'gs://{INPUT_BUCKET}/kat/input/Plasma_chr22_log_residuals.tsv'
+DEFAULT_SNPS_PATH = f'gs://{INPUT_BUCKET}/kat/test.csv'
 
 # def get_number_of_scatters():
 #     """get index of total number of genes"""
@@ -39,46 +41,10 @@ DRIVER_IMAGE = os.getenv(
 #     return len(gene_ids)
 
 
-# Run Spearman rank in parallel by sending genes in a batches
-def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-locals
-    """Run genes in scatter"""
-    # Input filenames
-    if inputs is None:
-        residual_df = pd.read_csv(
-            f'gs://{INPUT_BUCKET}/kat/input/Plasma_chr22_log_residuals.tsv', sep='\t'
-        )
-        significant_snps = pd.read_csv(
-            f'gs://{INPUT_BUCKET}/kat/test.csv', sep=' ', skipinitialspace=True
-        )
-    else:
-        # if you specify the inputs, they're in this order (so deconstruct them)
-        residual_df, significant_snps = inputs
-
+def get_genotype_df(significant_snps, sample_ids):
     genotype_df = pd.read_csv(
         f'gs://{INPUT_BUCKET}/kat/input/genotype_chr22.tsv', sep='\t'
     )
-
-    # Identify the top eSNP for each eGene and assign remaining to df
-    esnp1 = (
-        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
-        .groupby('geneid')
-        .first()
-        .reset_index()
-    )
-    print(f'idx = {idx}')
-    esnps_to_test = (
-        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
-        .groupby('geneid')
-        .apply(lambda group: group.iloc[1:, 1:])
-        .reset_index()
-    )
-
-    # Subset residuals for the genes to be tested
-    sample_ids = residual_df.loc[:, ['sampleid']]
-    gene_ids = esnp1['geneid'][esnp1['geneid'].isin(residual_df.columns)]
-    residual_df = residual_df.loc[:, residual_df.columns.isin(gene_ids)]
-    residual_df['sampleid'] = sample_ids
-
     # Subset genotype file for the significant SNPs
     genotype_df = genotype_df.loc[
         genotype_df['sampleid'].isin(  # pylint: disable=unsubscriptable-object
@@ -89,6 +55,32 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     genotype_sampleid = genotype_df['sampleid']
     genotype_df = genotype_df.loc[:, genotype_df.columns.isin(significant_snps.snpid)]
     genotype_df = genotype_df.assign(sampleid=genotype_sampleid)
+
+    return genotype_df
+
+
+def calculate_residual_df(residual_df, significant_snps):
+    if not residual_df:
+        residual_df = pd.read_csv(DEFAULT_RESIDUALS_PATH, sep='\t')
+    if not significant_snps:
+        significant_snps = pd.read_csv(
+            DEFAULT_SNPS_PATH, sep=' ', skipinitialspace=True
+        )
+
+    # Identify the top eSNP for each eGene and assign remaining to df
+    esnp1 = (
+        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
+        .groupby('geneid')
+        .first()
+        .reset_index()
+    )
+
+    # Subset residuals for the genes to be tested
+    sample_ids = residual_df.loc[:, ['sampleid']]
+    gene_ids = esnp1['geneid'][esnp1['geneid'].isin(residual_df.columns)]
+    residual_df = residual_df.loc[:, residual_df.columns.isin(gene_ids)]
+    residual_df['sampleid'] = sample_ids
+    genotype_df = get_genotype_df(significant_snps, sample_ids)
 
     # Find residuals after adjustment of lead SNP
     def calculate_adjusted_residuals(gene_id):
@@ -115,21 +107,53 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     adjusted_residual_mat.columns = gene_ids
     adjusted_residual_mat.insert(loc=0, column='sampleid', value=sample_ids.sampleid)
 
+    return adjusted_residual_mat
+
+
+# Run Spearman rank in parallel by sending genes in a batches
+def run_computation_in_scatter(
+    iteration, idx, residual_df, significant_snps=None
+):  # pylint: disable=too-many-locals
+    """Run genes in scatter"""
+    # Input filenames
+    if significant_snps is None:
+        significant_snps = pd.read_csv(
+            DEFAULT_SNPS_PATH, sep=' ', skipinitialspace=True
+        )
+
+    print(f'iteration = {iteration}')
+    print(f'idx = {idx}')
+    esnps_to_test = (
+        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
+        .groupby('geneid')
+        .apply(lambda group: group.iloc[1:, 1:])
+        .reset_index()
+    )
+
+    sample_ids = residual_df.loc[:, ['sampleid']]
+    genotype_df = get_genotype_df(significant_snps, sample_ids)
+
     # Spearman's rank correlation
     def spearman_correlation(df):
         """get Spearman rank correlation"""
         gene = df.geneid
         snp = df.snpid
-        res_val = adjusted_residual_mat[['sampleid', gene]]
+        res_val = residual_df[['sampleid', gene]]
         genotype_val = genotype_df[['sampleid', snp]]
         test_df = res_val.merge(genotype_val, on='sampleid', how='left')
         test_df.columns = ['sampleid', 'residual', 'SNP']
         coef, p = spearmanr(test_df['SNP'], test_df['residual'])
         return (gene, snp, coef, p)
 
-    esnps_to_test = esnps_to_test[
-        esnps_to_test.geneid.isin(adjusted_residual_mat.columns)
-    ]
+    esnp1 = (
+        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
+        .groupby('geneid')
+        .first()
+        .reset_index()
+    )
+    gene_ids = esnp1['geneid'][esnp1['geneid'].isin(residual_df.columns)]
+
+    esnps_to_test = esnps_to_test[esnps_to_test.geneid.isin(residual_df.columns)]
     gene_snp_test_df = esnps_to_test[['snpid', 'geneid']]
     gene_snp_test_df = gene_snp_test_df[
         gene_snp_test_df['geneid'] == gene_ids.iloc[idx]
@@ -151,7 +175,7 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     #     chromosome,
     #     position,
     # ]
-    adjusted_spearman_df['round'] = 2
+    adjusted_spearman_df['round'] = iteration
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
     # adjusted_spearman_df.to_csv(f'adjusted_spearman_df.csv')
@@ -170,29 +194,18 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     # adjusted_spearman_df = pd.read_csv('adjusted_spearman_df_annotated.tsv', sep='\t')
 
     # set variables for next iteration of loop
-    residual_df = adjusted_residual_mat
     significant_snps = adjusted_spearman_df
 
-    # the order of this is important
-    return [residual_df, significant_snps]
+    return significant_snps
 
 
-def function_that_merges_lists_of_dataframes(*df_list):
+def merge_significant_snps_dfs(*df_list):
     """
-    Merge list of list of dataframes
-    df_list = [
-        (residual_df_1, significant_snps_1),
-        (residual_df_2, significant_snps_2),
-        ...
-    ]
-    returns [merged_residual_df, merged_significant_snps]
-
+    Merge list of list of sig_snps dataframes
     """
-
-    sig_snps_dfs = [d[1] for d in df_list]
 
     # merged sig_snps
-    merged_sig_snps = pd.concat(sig_snps_dfs)
+    merged_sig_snps = pd.concat(df_list)
     pvalues = merged_sig_snps['p.value']
     fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
     merged_sig_snps = merged_sig_snps.assign(FDR=fdr_values)
@@ -218,34 +231,42 @@ N_GENES = 5
 # N_GENES = get_number_of_scatters()
 # for i in range(get_number_of_scatters()):
 
-result = None  # pylint: disable=invalid-name
-for _ in range(5):
-    residual_and_sig_snps_dfs = []
-    for i in range(N_GENES):
-        j = b.new_python_job(name=f'process_{i}')
-        # result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i, result) # noqa: E501; pylint: disable=line-too-long
-        gene_result: hb.resource.PythonResult = j.call(
-            run_computation_in_scatter, i, result
-        )
-        residual_and_sig_snps_dfs.append(gene_result)
+previous_sig_snps_result = None  # pylint: disable=invalid-name
+previous_residual_result = None  # pylint: disable=invalid-name
+for iteration in range(5):
 
-    merge_job = b.new_python_job(name='merge_scatters')
-    result = merge_job.call(
-        function_that_merges_lists_of_dataframes, *residual_and_sig_snps_dfs
+    calc_resid_df_job = b.new_python_job(f'calculate-resid-df-iter-{iteration}')
+    previous_residual_result = calc_resid_df_job.call(
+        calculate_residual_df, previous_residual_result, previous_sig_snps_result
     )
 
+    sig_snps_dfs = []
+    for i in range(N_GENES):
+        j = b.new_python_job(name=f'process_iter_{iteration}_job_{i}')
+        # result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i, result) # noqa: E501; pylint: disable=line-too-long
+        gene_result: hb.resource.PythonResult = j.call(
+            run_computation_in_scatter,
+            iteration,
+            i,
+            previous_residual_result,
+            previous_sig_snps_result,
+        )
+        sig_snps_dfs.append(gene_result)
 
-def get_last_element_of_list_and_convert_to_text(element):
+    merge_job = b.new_python_job(name='merge_scatters')
+    previous_sig_snps_result = merge_job.call(merge_significant_snps_dfs, *sig_snps_dfs)
+
+
+def convert_dataframe_to_text(df):
     """
-    the result array is of format [residual_df, significant_snps]
-    so get LAST element and convert to string
+    convert to string
     """
-    return element[-1].to_string()
+    return df.to_string()
 
 
 get_sig_snps_job = b.new_python_job('get_significant_snps')
 sig_snps_as_string = get_sig_snps_job.call(
-    get_last_element_of_list_and_convert_to_text, result
+    convert_dataframe_to_text, previous_sig_snps_result
 )
 
 b.write_output(
