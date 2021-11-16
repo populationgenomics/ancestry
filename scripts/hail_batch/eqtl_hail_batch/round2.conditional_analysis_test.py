@@ -1,7 +1,8 @@
 """Perform conditional analysis on SNPs and expression residuals"""
 
 import os
-import hail as hl
+
+# import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import statsmodels.api as sm
@@ -142,18 +143,18 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     )
     adjusted_spearman_df.columns = ['geneid', 'snpid', 'coef', 'p.value']
     # add in global position and round
-    locus = adjusted_spearman_df.snpid.str.split('_', expand=True)[0]
+    # locus = adjusted_spearman_df.snpid.str.split('_', expand=True)[0]
     # chromosome = 'chr' + locus.str.split(':', expand=True)[0]
-    position = locus.str.split(':', expand=True)[1]
-    (
-        adjusted_spearman_df['locus'],
-        adjusted_spearman_df['chromosome'],
-        adjusted_spearman_df['position'],
-    ) = [
-        locus,
-        chromosome,
-        position,
-    ]
+    # position = locus.str.split(':', expand=True)[1]
+    # (
+    #     adjusted_spearman_df['locus'],
+    #     adjusted_spearman_df['chromosome'],
+    #     adjusted_spearman_df['position'],
+    # ) = [
+    #     locus,
+    #     chromosome,
+    #     position,
+    # ]
     adjusted_spearman_df['round'] = 2
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
@@ -164,7 +165,7 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     #     delimiter=',',
     #     types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
     # )
-    # t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position())
+    # t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position()) # noqa: E501; pylint: disable=line-too-long
     # get alleles
     # mt.rows()[c.liftover].alleles
     # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
@@ -223,7 +224,7 @@ for _ in range(5):
     residual_and_sig_snps_dfs = []
     for i in range(N_GENES):
         j = b.new_python_job(name=f'process_{i}')
-        # result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i, result)
+        # result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i, result) # noqa: E501; pylint: disable=line-too-long
         gene_result: hb.resource.PythonResult = j.call(
             run_computation_in_scatter, i, result
         )
