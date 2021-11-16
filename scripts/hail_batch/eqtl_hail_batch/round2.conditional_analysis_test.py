@@ -143,7 +143,7 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     adjusted_spearman_df.columns = ['geneid', 'snpid', 'coef', 'p.value']
     # add in global position and round
     locus = adjusted_spearman_df.snpid.str.split('_', expand=True)[0]
-    chromosome = 'chr' + locus.str.split(':', expand=True)[0]
+    # chromosome = 'chr' + locus.str.split(':', expand=True)[0]
     position = locus.str.split(':', expand=True)[1]
     (
         adjusted_spearman_df['locus'],
@@ -157,20 +157,20 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     adjusted_spearman_df['round'] = 2
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
-    adjusted_spearman_df.to_csv(f'adjusted_spearman_df.csv')
-    hl.init(default_reference='GRCh38')
-    t = hl.import_table(
-        'adjusted_spearman_df.csv',
-        delimiter=',',
-        types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
-    )
-    t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position())
+    # adjusted_spearman_df.to_csv(f'adjusted_spearman_df.csv')
+    # hl.init(default_reference='GRCh38')
+    # t = hl.import_table(
+    #     'adjusted_spearman_df.csv',
+    #     delimiter=',',
+    #     types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
+    # )
+    # t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position())
     # get alleles
     # mt.rows()[c.liftover].alleles
     # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
     # because it doesn't work with the spark local backend
-    t.export('adjusted_spearman_df_annotated.tsv')
-    adjusted_spearman_df = pd.read_csv('adjusted_spearman_df_annotated.tsv', sep='\t')
+    # t.export('adjusted_spearman_df_annotated.tsv')
+    # adjusted_spearman_df = pd.read_csv('adjusted_spearman_df_annotated.tsv', sep='\t')
 
     # set variables for next iteration of loop
     residual_df = adjusted_residual_mat
