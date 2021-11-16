@@ -172,10 +172,6 @@ def run_computation_in_scatter(idx, inputs=None):  # pylint: disable=too-many-lo
     # set variables for next iteration of loop
     residual_df = adjusted_residual_mat
     significant_snps = adjusted_spearman_df
-    print('residual_df:')
-    print(residual_df)
-    print('significant_snps:')
-    print(significant_snps)
 
     # the order of this is important
     return [residual_df, significant_snps]
@@ -192,15 +188,18 @@ def function_that_merges_lists_of_dataframes(*df_list):
     returns [merged_residual_df, merged_significant_snps]
 
     """
-    merged_dfs = []
-    for idx in range(len(df_list[0])):
-        merged_df = pd.concat([i[idx] for i in df_list])
-        pvalues = merged_df['p.value']
-        fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
-        merged_df = merged_df.assign(FDR=fdr_values)
-        merged_df['FDR'] = merged_df.FDR.astype(float)
-        merged_dfs.append(merged_df)
-    return merged_dfs
+
+    sig_snps_dfs = [d[1] for d in df_list]
+
+    # merged sig_snps
+    merged_sig_snps = pd.concat(sig_snps_dfs)
+    pvalues = merged_sig_snps['p.value']
+    fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
+    merged_sig_snps = merged_sig_snps.assign(FDR=fdr_values)
+    merged_sig_snps['FDR'] = merged_sig_snps.FDR.astype(float)
+    merged_sig_snps.append(merged_sig_snps)
+
+    return merged_sig_snps
 
 
 backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test')
