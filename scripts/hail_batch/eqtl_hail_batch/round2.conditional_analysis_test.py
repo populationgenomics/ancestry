@@ -230,15 +230,6 @@ def convert_dataframe_to_text(df):
 backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test')
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
-# significants_snps = []
-# iteratively, do 5 times:
-#       For each gene:
-#           find residuals
-#           find spearman rank correlation
-#       merge(residuals)
-#       merge significant_snps
-#       ^ feed those two into next iteration
-
 N_GENES = 5
 # N_GENES = get_number_of_scatters()
 # for i in range(get_number_of_scatters()):
@@ -255,7 +246,6 @@ for iteration in range(5):
     sig_snps_dfs = []
     for i in range(N_GENES):
         j = b.new_python_job(name=f'process_iter_{iteration}_job_{i}')
-        # result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i, result) # noqa: E501; pylint: disable=line-too-long
         gene_result: hb.resource.PythonResult = j.call(
             run_computation_in_scatter,
             iteration,
