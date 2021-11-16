@@ -42,6 +42,7 @@ DEFAULT_SNPS_PATH = f'gs://{INPUT_BUCKET}/kat/test.csv'
 
 
 def get_genotype_df(significant_snps, sample_ids):
+    """load genotype df and filter"""
     genotype_df = pd.read_csv(
         f'gs://{INPUT_BUCKET}/kat/input/genotype_chr22.tsv', sep='\t'
     )
@@ -60,6 +61,7 @@ def get_genotype_df(significant_snps, sample_ids):
 
 
 def calculate_residual_df(residual_df, significant_snps):
+    """calculate residuals for gene list"""
     if residual_df is None:
         residual_df = pd.read_csv(DEFAULT_RESIDUALS_PATH, sep='\t')
     if significant_snps is None:
@@ -112,8 +114,11 @@ def calculate_residual_df(residual_df, significant_snps):
 
 # Run Spearman rank in parallel by sending genes in a batches
 def run_computation_in_scatter(
-    iteration, idx, residual_df, significant_snps=None
-):  # pylint: disable=too-many-locals
+    iteration,  # pylint: disable=redefined-outer-name
+    idx,
+    residual_df,
+    significant_snps=None,
+):
     """Run genes in scatter"""
     # Input filenames
     if significant_snps is None:
@@ -215,6 +220,13 @@ def merge_significant_snps_dfs(*df_list):
     return merged_sig_snps
 
 
+def convert_dataframe_to_text(df):
+    """
+    convert to string
+    """
+    return df.to_string()
+
+
 backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test')
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
@@ -256,21 +268,14 @@ for iteration in range(5):
     merge_job = b.new_python_job(name='merge_scatters')
     previous_sig_snps_result = merge_job.call(merge_significant_snps_dfs, *sig_snps_dfs)
 
+    # convert sig snps to string for output
+    sig_snps_as_string = previous_sig_snps_result.call(
+        convert_dataframe_to_text, previous_sig_snps_result
+    )
+    # output sig snps for each iteration
+    b.write_output(
+        sig_snps_as_string.as_str(),
+        f'gs://{OUTPUT_BUCKET}/kat/test_conditional_analysis-round-{iteration+1}.csv',
+    )
 
-def convert_dataframe_to_text(df):
-    """
-    convert to string
-    """
-    return df.to_string()
-
-
-get_sig_snps_job = b.new_python_job('get_significant_snps')
-sig_snps_as_string = get_sig_snps_job.call(
-    convert_dataframe_to_text, previous_sig_snps_result
-)
-
-b.write_output(
-    sig_snps_as_string.as_str(),
-    f'gs://{OUTPUT_BUCKET}/kat/test_conditional_analysis.csv',
-)
-b.run(wait=True)
+b.run(wait=False)
