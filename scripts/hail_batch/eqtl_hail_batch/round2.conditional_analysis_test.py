@@ -223,7 +223,7 @@ for _ in range(5):
     residual_and_sig_snps_dfs = []
     for i in range(N_GENES):
         j = b.new_python_job(name=f'process_{i}')
-        result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i, result)
+        # result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i, result)
         gene_result: hb.resource.PythonResult = j.call(
             run_computation_in_scatter, i, result
         )
