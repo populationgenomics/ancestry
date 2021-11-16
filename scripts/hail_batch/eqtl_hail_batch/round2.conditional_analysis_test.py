@@ -60,9 +60,9 @@ def get_genotype_df(significant_snps, sample_ids):
 
 
 def calculate_residual_df(residual_df, significant_snps):
-    if not residual_df:
+    if residual_df is None:
         residual_df = pd.read_csv(DEFAULT_RESIDUALS_PATH, sep='\t')
-    if not significant_snps:
+    if significant_snps is None:
         significant_snps = pd.read_csv(
             DEFAULT_SNPS_PATH, sep=' ', skipinitialspace=True
         )
@@ -273,4 +273,4 @@ b.write_output(
     sig_snps_as_string.as_str(),
     f'gs://{OUTPUT_BUCKET}/kat/test_conditional_analysis.csv',
 )
-b.run()
+b.run(wait=True)
