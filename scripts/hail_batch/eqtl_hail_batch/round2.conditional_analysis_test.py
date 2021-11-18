@@ -230,7 +230,7 @@ def convert_dataframe_to_text(df):
 backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test')
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
-N_GENES = 5
+N_GENES = 20
 # N_GENES = get_number_of_scatters()
 # for i in range(get_number_of_scatters()):
 
