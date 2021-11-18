@@ -17,7 +17,7 @@ DRIVER_IMAGE = os.getenv(
     'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08',  # noqa: E501; pylint: disable=line-too-long
 )
 DEFAULT_RESIDUALS_PATH = f'gs://{INPUT_BUCKET}/kat/input/Plasma_chr22_log_residuals.tsv'
-DEFAULT_SNPS_PATH = f'gs://{INPUT_BUCKET}/kat/test.csv'
+DEFAULT_SNPS_PATH = f'gs://{INPUT_BUCKET}/kat/test_log.csv'
 
 # def get_number_of_scatters():
 #     """get index of total number of genes"""
@@ -71,7 +71,7 @@ def calculate_residual_df(residual_df, significant_snps):
 
     # Identify the top eSNP for each eGene and assign remaining to df
     esnp1 = (
-        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
+        significant_snps.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .first()
         .reset_index()
@@ -129,7 +129,7 @@ def run_computation_in_scatter(
     print(f'iteration = {iteration}')
     print(f'idx = {idx}')
     esnps_to_test = (
-        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
+        significant_snps.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
         .reset_index()
@@ -151,7 +151,7 @@ def run_computation_in_scatter(
         return (gene, snp, coef, p)
 
     esnp1 = (
-        significant_snps.sort_values(['geneid', 'p.value'], ascending=True)
+        significant_snps.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .first()
         .reset_index()
@@ -230,7 +230,7 @@ def convert_dataframe_to_text(df):
 backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test')
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
-N_GENES = 20
+N_GENES = 5
 # N_GENES = get_number_of_scatters()
 # for i in range(get_number_of_scatters()):
 
@@ -265,7 +265,7 @@ for iteration in range(5):
     # output sig snps for each iteration
     b.write_output(
         sig_snps_as_string.as_str(),
-        f'gs://{OUTPUT_BUCKET}/kat/test_conditional_analysis-round-{iteration+1}.csv',
+        f'gs://{OUTPUT_BUCKET}/kat/conditional_analysis_round_{iteration+1}.csv',
     )
 
 b.run(wait=False)
