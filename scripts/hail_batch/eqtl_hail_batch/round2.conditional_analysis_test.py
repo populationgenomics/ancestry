@@ -259,7 +259,7 @@ for iteration in range(5):
     previous_sig_snps_result = merge_job.call(merge_significant_snps_dfs, *sig_snps_dfs)
 
     # convert sig snps to string for output
-    sig_snps_as_string = previous_sig_snps_result.call(
+    sig_snps_as_string = merge_job.call(
         convert_dataframe_to_text, previous_sig_snps_result
     )
     # output sig snps for each iteration
