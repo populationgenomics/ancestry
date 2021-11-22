@@ -103,6 +103,9 @@ def query():
         'CPG273',
         #     'CPG3079',
         'HG01699',
+        'HGDP01396',
+        'HG01610',
+        'HG01509',
     ]
 
     mt = mt.filter_cols(hl.literal(outliers).contains(mt.s), keep=False)
