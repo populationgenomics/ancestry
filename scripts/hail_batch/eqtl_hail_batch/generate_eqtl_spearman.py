@@ -88,6 +88,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
+    geneloc_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_gene_SNP_pairs.tsv')
 
     to_log = expression_df.iloc[:, 1:].columns
     log_expression_df = expression_df[to_log].applymap(lambda x: np.log(x + 1))
@@ -111,7 +112,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     residual_df = pd.DataFrame(list(map(calculate_residuals, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-    # residual_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_log_residuals.tsv')
+    residual_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_log_residuals.tsv')
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
@@ -165,8 +166,8 @@ backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test'
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
 spearman_dfs_from_scatter = []
-for i in range(get_number_of_scatters()):
-    # for i in range(5):
+# for i in range(get_number_of_scatters()):
+for i in range(5):
     j = b.new_python_job(name=f'process_{i}')
     j.env('HAIL_QUERY_BACKEND', 'local')
     result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
