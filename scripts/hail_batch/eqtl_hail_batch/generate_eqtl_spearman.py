@@ -88,7 +88,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
-    geneloc_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_gene_SNP_pairs.tsv')
+    geneloc_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_gene_SNP_pairs_{idx}.tsv')
 
     to_log = expression_df.iloc[:, 1:].columns
     log_expression_df = expression_df[to_log].applymap(lambda x: np.log(x + 1))
@@ -112,7 +112,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     residual_df = pd.DataFrame(list(map(calculate_residuals, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-    residual_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_log_residuals.tsv')
+    residual_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_log_residuals_{idx}.tsv')
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
@@ -145,10 +145,10 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     spearman_df['round'] = 1
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
-    spearman_df.to_csv(f'spearman_df.csv')
+    spearman_df.to_csv(f'spearman_df_{idx}.csv')
     hl.init(default_reference='GRCh38')
     t = hl.import_table(
-        'spearman_df.csv',
+        f'spearman_df_{idx}.csv',
         delimiter=',',
         types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
     )
@@ -157,8 +157,8 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     # mt.rows()[c.liftover].alleles
     # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
     # because it doesn't work with the spark local backend
-    t.export('spearman_df_annotated.tsv')
-    spearman_df = pd.read_csv('spearman_df_annotated.tsv', sep='\t')
+    t.export(f'spearman_df_annotated_{idx}.tsv')
+    spearman_df = pd.read_csv(f'spearman_df_annotated_{idx}.tsv', sep='\t')
     return spearman_df
 
 
