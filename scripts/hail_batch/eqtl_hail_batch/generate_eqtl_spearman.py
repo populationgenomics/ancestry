@@ -166,8 +166,8 @@ backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test'
 b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
 spearman_dfs_from_scatter = []
-# for i in range(get_number_of_scatters()):
-for i in range(5):
+for i in range(get_number_of_scatters()):
+    # for i in range(5):
     j = b.new_python_job(name=f'process_{i}')
     j.env('HAIL_QUERY_BACKEND', 'local')
     result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
