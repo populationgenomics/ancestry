@@ -108,6 +108,9 @@ def calculate_residual_df(residual_df, significant_snps):
     ).T
     adjusted_residual_mat.columns = gene_ids
     adjusted_residual_mat.insert(loc=0, column='sampleid', value=sample_ids.sampleid)
+    adjusted_residual_mat.to_csv(
+        f'gs://{OUTPUT_BUCKET}/kat/eSNP1_adjusted_residuals.tsv'
+    )
 
     return adjusted_residual_mat
 
@@ -265,7 +268,7 @@ for iteration in range(5):
     # output sig snps for each iteration
     b.write_output(
         sig_snps_as_string.as_str(),
-        f'gs://{OUTPUT_BUCKET}/kat/conditional_analysis_round_{iteration+1}.csv',
+        f'gs://{OUTPUT_BUCKET}/kat/round{iteration+1}_significant_correlation_results.csv',  # noqa: E501; pylint: disable=line-too-long
     )
 
 b.run(wait=False)
