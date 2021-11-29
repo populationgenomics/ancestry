@@ -108,9 +108,9 @@ def calculate_residual_df(residual_df, significant_snps):
     ).T
     adjusted_residual_mat.columns = gene_ids
     adjusted_residual_mat.insert(loc=0, column='sampleid', value=sample_ids.sampleid)
-    adjusted_residual_mat.to_csv(
-        f'gs://{OUTPUT_BUCKET}/kat/eSNP1_adjusted_residuals.tsv'
-    )
+    # adjusted_residual_mat.to_csv(
+    #     f'gs://{OUTPUT_BUCKET}/kat/eSNP1_adjusted_residuals.tsv'
+    # )
 
     return adjusted_residual_mat
 
