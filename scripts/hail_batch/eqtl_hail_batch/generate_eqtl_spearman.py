@@ -88,7 +88,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
-    geneloc_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_gene_SNP_pairs.tsv')
+    geneloc_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_gene_SNP_pairs_{idx}.tsv')
 
     to_log = expression_df.iloc[:, 1:].columns
     log_expression_df = expression_df[to_log].applymap(lambda x: np.log(x + 1))
