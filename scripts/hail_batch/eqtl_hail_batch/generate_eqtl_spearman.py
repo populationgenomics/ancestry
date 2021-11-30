@@ -88,7 +88,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
-    geneloc_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_gene_SNP_pairs_{idx}.tsv')
+    geneloc_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_gene_SNP_pairs.tsv')
 
     to_log = expression_df.iloc[:, 1:].columns
     log_expression_df = expression_df[to_log].applymap(lambda x: np.log(x + 1))
@@ -135,7 +135,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     spearman_df.columns = ['geneid', 'snpid', 'coef', 'p.value']
     # add in global position and round
     locus = spearman_df.snpid.str.split('_', expand=True)[0]
-    chromosome = 'chr' + locus.str.split(':', expand=True)[0]
+    chromosome = locus.str.split(':', expand=True)[0]
     position = locus.str.split(':', expand=True)[1]
     spearman_df['locus'], spearman_df['chromosome'], spearman_df['position'] = [
         locus,
@@ -146,7 +146,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
     spearman_df.to_csv(f'spearman_df_{idx}.csv')
-    hl.init(default_reference='GRCh38')
+    hl.init(default_reference='GRCh37')
     t = hl.import_table(
         f'spearman_df_{idx}.csv',
         delimiter=',',
