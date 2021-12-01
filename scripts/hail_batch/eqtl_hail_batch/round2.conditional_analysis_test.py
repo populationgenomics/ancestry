@@ -131,6 +131,11 @@ def run_computation_in_scatter(
 
     print(f'iteration = {iteration}')
     print(f'idx = {idx}')
+    # make sure 'geneid' is the first column
+    # otherwise, error thrown when using reset_index
+    cols = list(significant_snps)
+    cols.insert(0, cols.pop(cols.index('geneid')))
+    significant_snps = significant_snps.loc[:, cols]
     esnps_to_test = (
         significant_snps.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
