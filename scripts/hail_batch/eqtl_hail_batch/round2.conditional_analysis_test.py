@@ -17,7 +17,7 @@ DRIVER_IMAGE = os.getenv(
     'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08',  # noqa: E501; pylint: disable=line-too-long
 )
 DEFAULT_RESIDUALS_PATH = f'gs://{INPUT_BUCKET}/kat/input/Plasma_chr22_log_residuals.tsv'
-DEFAULT_SNPS_PATH = f'gs://{INPUT_BUCKET}/kat/test_log.csv'
+DEFAULT_SNPS_PATH = f'gs://{INPUT_BUCKET}/kat/correlation_results.csv'
 
 # def get_number_of_scatters():
 #     """get index of total number of genes"""
