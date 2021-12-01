@@ -140,7 +140,7 @@ def run_computation_in_scatter(
         significant_snps.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
-        .reset_index(drop=True)
+        .reset_index()
     )
 
     sample_ids = residual_df.loc[:, ['sampleid']]
