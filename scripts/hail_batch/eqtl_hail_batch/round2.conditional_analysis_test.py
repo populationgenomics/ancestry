@@ -1,8 +1,7 @@
 """Perform conditional analysis on SNPs and expression residuals"""
 
 import os
-
-# import hail as hl
+import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import statsmodels.api as sm
@@ -18,6 +17,9 @@ DRIVER_IMAGE = os.getenv(
 )
 DEFAULT_RESIDUALS_PATH = f'gs://{INPUT_BUCKET}/kat/input/Plasma_chr22_log_residuals.tsv'
 DEFAULT_SNPS_PATH = f'gs://{INPUT_BUCKET}/kat/correlation_results.csv'
+# HGDP1KG_TOBWGS = (
+#     'gs://cpg-tob-wgs-main-analysis/joint-calling/v7/ancestry/mt_union_hgdp.mt'
+# )
 
 # def get_number_of_scatters():
 #     """get index of total number of genes"""
@@ -176,35 +178,53 @@ def run_computation_in_scatter(
     )
     adjusted_spearman_df.columns = ['geneid', 'snpid', 'coef', 'p.value']
     # add in global position and round
-    # locus = adjusted_spearman_df.snpid.str.split('_', expand=True)[0]
-    # chromosome = 'chr' + locus.str.split(':', expand=True)[0]
-    # position = locus.str.split(':', expand=True)[1]
-    # (
-    #     adjusted_spearman_df['locus'],
-    #     adjusted_spearman_df['chromosome'],
-    #     adjusted_spearman_df['position'],
-    # ) = [
-    #     locus,
-    #     chromosome,
-    #     position,
-    # ]
+    locus = adjusted_spearman_df.snpid.str.split('_', expand=True)[0]
+    chromosome = locus.str.split(':', expand=True)[0]
+    position = locus.str.split(':', expand=True)[1]
+    (
+        adjusted_spearman_df['locus'],
+        adjusted_spearman_df['chromosome'],
+        adjusted_spearman_df['position'],
+    ) = [
+        locus,
+        chromosome,
+        position,
+    ]
     adjusted_spearman_df['round'] = iteration
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
-    # adjusted_spearman_df.to_csv(f'adjusted_spearman_df.csv')
-    # hl.init(default_reference='GRCh38')
-    # t = hl.import_table(
-    #     'adjusted_spearman_df.csv',
-    #     delimiter=',',
-    #     types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
-    # )
-    # t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position()) # noqa: E501; pylint: disable=line-too-long
-    # get alleles
-    # mt.rows()[c.liftover].alleles
+    adjusted_spearman_df.to_csv(f'adjusted_spearman_df.csv')
+    hl.init(default_reference='GRCh37')
+    t = hl.import_table(
+        'adjusted_spearman_df.csv',
+        delimiter=',',
+        types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
+    )
+    t = t.annotate(
+        global_position=hl.locus(t.chromosome, t.position).global_position()
+    )  # noqa: E501; pylint: disable=line-too-long
+    # get alleles and rsid
+    # mt = hl.read_matrix_table(HGDP1KG_TOBWGS)
+    t = t.annotate(locus=hl.locus(t.chromosome, t.position))
+    # mt.rows()[t.locus].alleles
+    # mt.rows()[t.locus].rsid
+    t = t.annotate(
+        id=hl.str(':').join(
+            [
+                hl.str(t.chromosome),
+                hl.str(t.position),
+                # result.A1,
+                # result.A2,
+                t.geneid,
+                # result.db_key, # cell_type_id (eg nk, mononc)
+                hl.str(t.round),
+            ]
+        )
+    )
     # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
     # because it doesn't work with the spark local backend
-    # t.export('adjusted_spearman_df_annotated.tsv')
-    # adjusted_spearman_df = pd.read_csv('adjusted_spearman_df_annotated.tsv', sep='\t')
+    t.export('adjusted_spearman_df_annotated.tsv')
+    adjusted_spearman_df = pd.read_csv('adjusted_spearman_df_annotated.tsv', sep='\t')
 
     # set variables for next iteration of loop
     significant_snps = adjusted_spearman_df
