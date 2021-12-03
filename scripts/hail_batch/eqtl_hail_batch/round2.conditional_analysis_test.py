@@ -271,6 +271,16 @@ for iteration in range(5):
         calculate_residual_df, previous_residual_result, previous_sig_snps_result
     )
 
+    # convert residual df to string for output
+    residual_as_str = calc_resid_df_job.call(
+        convert_dataframe_to_text, previous_residual_result
+    )
+    # output residual df for each iteration
+    b.write_output(
+        residual_as_str.as_str(),
+        f'gs://{OUTPUT_BUCKET}/kat/round{iteration+1}_residual_results.csv',  # noqa: E501; pylint: disable=line-too-long
+    )
+
     sig_snps_dfs = []
     for i in range(N_GENES):
         j = b.new_python_job(name=f'process_iter_{iteration}_job_{i}')
@@ -295,5 +305,6 @@ for iteration in range(5):
         sig_snps_as_string.as_str(),
         f'gs://{OUTPUT_BUCKET}/kat/round{iteration+1}_significant_correlation_results.csv',  # noqa: E501; pylint: disable=line-too-long
     )
+
 
 b.run(wait=False)
