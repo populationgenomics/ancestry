@@ -18,6 +18,13 @@ g = 1.0 * (random.rand(n, 1) < 0.2)  # SNP vector
 
 W = concatenate([W, g], axis=1)
 
+# fit null model (association test)
+crm0 = CellRegMap(y, W, C, hK=hK)
+
+# Association test
+pv0 = crm0.scan_association(g)[0]
+print(f'Association test p-value: {pv0}')
+
 # get eigendecomposition of CCt
 [U, S, _] = economic_svd(C)
 us = U * S
@@ -27,6 +34,7 @@ Ls = [ddot(us[:,i], hK) for i in range(us.shape[1])]
 
 # fit null model (interaction test)
 crm = CellRegMap(y, W, C, Ls)
+
 # Interaction test
 pv = crm.scan_interaction(g)[0]
-print(pv)
+print(f'Interaction test p-value: {pv}')
