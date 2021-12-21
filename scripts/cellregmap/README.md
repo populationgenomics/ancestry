@@ -5,10 +5,10 @@ To run a first test, use conda/mamba to install the analysis-runner, then execut
 
 ```sh
 analysis-runner \
-   --dataset tob-wgs --access-level test \
-   --description 'first run of CellRegMap using small test inputs' \
-   --output-dir '2021-12-20-acuomo-testing/ar-test' \
-   python cellregmap_basic_usage.py
+--dataset tob-wgs --access-level test \
+--description 'first run of CellRegMap using small test inputs' \
+--output-dir '2021-12-20-acuomo-testing/ar-test' \
+python cellregmap_basic_usage.py
  ```
 
 ## Software
