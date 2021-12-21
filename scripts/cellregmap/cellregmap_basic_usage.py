@@ -1,9 +1,10 @@
 import numpy as np
+from numpy import ones, concatenate
 from numpy.random import RandomState
 from numpy_sugar import ddot
 from numpy_sugar.linalg import economic_svd
 
-import cellregmap as CellRegMap
+from cellregmap import CellRegMap
 
 random = RandomState(1)
 n = 30                               # number of samples (cells)
@@ -22,9 +23,10 @@ W = concatenate([W, g], axis=1)
 us = U * S
 
 # get decomposition of K \odot CCt
-Ls = [ddot(us[:,i], G) for i in range(us.shape[1])]
+Ls = [ddot(us[:,i], hK) for i in range(us.shape[1])]
 
 # fit null model (interaction test)
 crm = CellRegMap(y, W, C, Ls)
 # Interaction test
 pv = crm.scan_interaction(g)[0]
+print(pv)
