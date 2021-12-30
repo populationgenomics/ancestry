@@ -6,7 +6,7 @@ from numpy_sugar import ddot
 from numpy_sugar.linalg import economic_svd
 
 from cellregmap import CellRegMap
-from cellregmap import run_association, run_interaction
+from cellregmap import run_association, run_interaction, estimate_betas
 
 def get_L_values(K, E):
     """
@@ -25,14 +25,14 @@ def get_L_values(K, E):
     Ls = [ddot(us[:,i], hK) for i in range(us.shape[1])]
     return Ls
 
-random = RandomState(1)
+random = RandomState(0)
 n = 30                               # number of samples (cells)
 p = 5                                # number of individuals
 k = 4                                # number of contexts
 y = random.randn(n, 1)               # outcome vector (expression phenotype)
 C = random.randn(n, k)               # context matrix  
 W = ones((n, 1))                     # intercept (covariate matrix)
-hK = random.rand(n, p)              # decomposition of kinship matrix (K = hK @ hK.T)
+hK = random.rand(n, p)               # decomposition of kinship matrix (K = hK @ hK.T)
 g = 1.0 * (random.rand(n, 1) < 0.2)  # SNP vector
 
 # fit null model (association test)
@@ -78,3 +78,9 @@ print(f'Association test p-value try2: {pv0}')
 
 pv = run_interaction(y, W, C, g, K=K)[0]
 print(f'Interaction test p-value try2: {pv}')
+
+betas = estimate_betas(y, W, C, g, hK=hK)
+betaG = betas[0]
+betaGxC = betas[1][0]
+print(f'betaG: {betaG}')
+print(f'betaGxC: {betaGxC}')
