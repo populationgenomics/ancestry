@@ -1,3 +1,13 @@
+# optional:
+# set of a priori defined eQTLs 
+# this can be defined as a "filter file" with snp_id and gene_id as columns
+# for the OneK1K dataset, 
+# option 1: include union of all eQTLs identified in the flagship paper (in press) 
+# option 2: run association test on all cells from scratch (using CellRegMap)
+
+# this file is not necessary, and CellRegMap (interaction test) can be run
+# in principle for discovery, but as it is quite slow the 2-step approach may be best
+
 ################################################
 #### scRNA-seq data
 
