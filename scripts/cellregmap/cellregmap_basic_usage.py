@@ -35,6 +35,9 @@ W = ones((n, 1))                     # intercept (covariate matrix)
 hK = random.rand(n, p)               # decomposition of kinship matrix (K = hK @ hK.T)
 g = 1.0 * (random.rand(n, 1) < 0.2)  # SNP vector
 
+##################
+### Old approach 
+
 # fit null model (association test)
 crm0 = CellRegMap(y, W, C, hK=hK)
 
@@ -56,29 +59,42 @@ crm = CellRegMap(y, W, C, Ls)
 pv = crm.scan_interaction(g)[0]
 print(f'Interaction test p-value: {pv}')
 
+#############################
+### Slightly faster approach 
+
+# build K
 K = np.dot(hK,hK.T)
 K = K + np.diag(np.repeat(1e-5, n)) 
 
-### test  get L values function
-
+# test  get L values function
 Ls = get_L_values(K,C)
 
+# as before (fit null, then test)
 crm = CellRegMap(y, W, C, Ls)
 pv = crm.scan_interaction(g)[0]
 print(f'Interaction test p-value after Ls: {pv}')
 
+###################
+### Final approach (each time, check that p-values are consistent)
+
+# get L values function is incorporated
+# null fitting and testing are merged into a "run" function
+
+# which can take both hK (preferred)..
 pv0 = run_association(y, W, C, g, hK=hK)[0]
 print(f'Association test p-value try: {pv0}')
 
 pv = run_interaction(y, W, C, g, hK=hK)[0]
 print(f'Interaction test p-value try: {pv}')
 
+# ..or the full K as input
 pv0 = run_association(y, W, C, g, K=K)[0]
 print(f'Association test p-value try2: {pv0}')
 
 pv = run_interaction(y, W, C, g, K=K)[0]
 print(f'Interaction test p-value try2: {pv}')
 
+# also added faster estimate betas function
 betas = estimate_betas(y, W, C, g, hK=hK)
 betaG = betas[0]
 betaGxC = betas[1][0]
