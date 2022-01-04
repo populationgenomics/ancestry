@@ -8,23 +8,6 @@ from numpy_sugar.linalg import economic_svd
 from cellregmap import CellRegMap
 from cellregmap import run_association, run_interaction, estimate_betas
 
-def get_L_values(K, E):
-    """
-    As the definition of Ls is not particulatly intuitive,
-    function to extract list of L values given kinship K and 
-    cellular environments E
-    """
-    # decompose K into hK: hK @ hK.T = K
-    hK = cholesky(K)
-
-    # get eigendecomposition of EEt
-    [U, S, _] = economic_svd(E)
-    us = U * S
-
-    # get decomposition of K \odot EEt
-    Ls = [ddot(us[:,i], hK) for i in range(us.shape[1])]
-    return Ls
-
 random = RandomState(0)
 n = 30                               # number of samples (cells)
 p = 5                                # number of individuals
@@ -60,13 +43,33 @@ pv = crm.scan_interaction(g)[0]
 print(f'Interaction test p-value: {pv}')
 
 #############################
-### Slightly faster approach 
+### Slightly better approach 
+
+# add a get L values function 
+# this takes K and E as inputs, which have more obvious interpretation
+
+def get_L_values(K, E):
+    """
+    As the definition of Ls is not particulatly intuitive,
+    function to extract list of L values given kinship K and 
+    cellular environments E
+    """
+    # decompose K into hK: hK @ hK.T = K
+    hK = cholesky(K)
+
+    # get eigendecomposition of EEt
+    [U, S, _] = economic_svd(E)
+    us = U * S
+
+    # get decomposition of K \odot EEt
+    Ls = [ddot(us[:,i], hK) for i in range(us.shape[1])]
+    return Ls
 
 # build K
 K = np.dot(hK,hK.T)
 K = K + np.diag(np.repeat(1e-5, n)) 
 
-# test  get L values function
+# test get L values function
 Ls = get_L_values(K,C)
 
 # as before (fit null, then test)
@@ -75,9 +78,11 @@ pv = crm.scan_interaction(g)[0]
 print(f'Interaction test p-value after Ls: {pv}')
 
 ###################
-### Final approach (each time, check that p-values are consistent)
+### Final approach 
 
-# get L values function is incorporated
+# (each time, check that p-values are consistent)
+
+# "get L values" function is incorporated
 # null fitting and testing are merged into a "run" function
 
 # which can take both hK (preferred)..
