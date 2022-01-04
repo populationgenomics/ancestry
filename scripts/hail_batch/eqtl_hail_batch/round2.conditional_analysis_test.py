@@ -267,7 +267,7 @@ def run_driver_workflow(batch, access_level, memory=DEFAULT_DRIVER_MEMORY):
         job.command(f'cd {_cwd}')
 
     job.memory(memory)
-    args = ['python3', sys.argv[0], '--run-directly', sys.argv[1:]]
+    args = ['python3', sys.argv[0], '--run-directly', *sys.argv[1:]]
     print(f'Running command: {args}')
     job.command(' '.join(quote(s) for s in args))
 
