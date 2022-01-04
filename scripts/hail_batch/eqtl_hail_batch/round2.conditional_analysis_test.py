@@ -240,7 +240,7 @@ def convert_dataframe_to_text(dataframe):
 @click.option('--residuals', required=True, help='A TSV of gene residuals')
 @click.option('--genotype', required=True, help='A TSV of genotypes for each sample')
 @click.option(
-    '--output-prefix',
+    '--output_prefix',
     required=True,
     help='A path prefix of where to output files, eg: gs://MyBucket/output-folder/',
 )
@@ -248,7 +248,7 @@ def convert_dataframe_to_text(dataframe):
     '--iterations', type=int, default=5, help='Number of iterations to perform'
 )
 @click.option(
-    '--test-subset-genes',
+    '--test_subset_genes',
     type=int,
     help='Test with {test_subset_genes} genes, often = 5.',
 )
