@@ -233,10 +233,10 @@ def convert_dataframe_to_text(dataframe):
 
 @click.command()
 @click.option(
-    '--significant-snps', required=True, help='A space separated list of <insert here>'
+    '--significant_snps', required=True, help='A space separated list of SNPs'
 )
-@click.option('--residuals', required=True, help='A TSV of <insert here>')
-@click.option('--genotype', required=True, help='A TSV of <insert here>')
+@click.option('--residuals', required=True, help='A TSV of gene residuals')
+@click.option('--genotype', required=True, help='A TSV of genotypes for each sample')
 @click.option(
     '--output-prefix',
     required=True,
