@@ -31,7 +31,7 @@ def get_number_of_scatters(residual_df, significant_snps_df):
     return len(gene_ids)
 
 
-def get_genotype_df(genotype_df, significant_snps, sample_ids):
+def get_genotype_df(genotype_df, significant_snps_df, sample_ids):
     """load genotype df and filter"""
     # Subset genotype file for the significant SNPs
     genotype_df = genotype_df.loc[
@@ -41,18 +41,20 @@ def get_genotype_df(genotype_df, significant_snps, sample_ids):
         :,
     ]
     genotype_sampleid = genotype_df['sampleid']
-    genotype_df = genotype_df.loc[:, genotype_df.columns.isin(significant_snps.snpid)]
+    genotype_df = genotype_df.loc[
+        :, genotype_df.columns.isin(significant_snps_df.snpid)
+    ]
     genotype_df = genotype_df.assign(sampleid=genotype_sampleid)
 
     return genotype_df
 
 
-def calculate_residual_df(genotype_df, residual_df, significant_snps):
+def calculate_residual_df(genotype_df, residual_df, significant_snps_df):
     """calculate residuals for gene list"""
 
     # Identify the top eSNP for each eGene and assign remaining to df
     esnp1 = (
-        significant_snps.sort_values(['geneid', 'FDR'], ascending=True)
+        significant_snps_df.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .first()
         .reset_index()
@@ -63,7 +65,7 @@ def calculate_residual_df(genotype_df, residual_df, significant_snps):
     gene_ids = esnp1['geneid'][esnp1['geneid'].isin(residual_df.columns)]
     residual_df = residual_df.loc[:, residual_df.columns.isin(gene_ids)]
     residual_df['sampleid'] = sample_ids
-    genotype_df = get_genotype_df(genotype_df, significant_snps, sample_ids)
+    genotype_df = get_genotype_df(genotype_df, significant_snps_df, sample_ids)
 
     # Find residuals after adjustment of lead SNP
     def calculate_adjusted_residuals(gene_id):
@@ -105,7 +107,7 @@ def run_computation_in_scatter(
     idx,
     genotype_df,
     residual_df,
-    significant_snps,
+    significant_snps_df,
 ):
     """Run genes in scatter"""
     # Input filenames
@@ -115,18 +117,18 @@ def run_computation_in_scatter(
 
     # make sure 'geneid' is the first column
     # otherwise, error thrown when using reset_index
-    cols = list(significant_snps)
+    cols = list(significant_snps_df)
     cols.insert(0, cols.pop(cols.index('geneid')))
-    significant_snps = significant_snps.loc[:, cols]
+    significant_snps_df = significant_snps_df.loc[:, cols]
     esnps_to_test = (
-        significant_snps.sort_values(['geneid', 'FDR'], ascending=True)
+        significant_snps_df.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
         .reset_index()
     )
 
     sample_ids = residual_df.loc[:, ['sampleid']]
-    genotype_df = get_genotype_df(genotype_df, significant_snps, sample_ids)
+    genotype_df = get_genotype_df(genotype_df, significant_snps_df, sample_ids)
 
     # Spearman's rank correlation
     def spearman_correlation(df):
@@ -141,7 +143,7 @@ def run_computation_in_scatter(
         return (gene, snp, coef, p)
 
     esnp1 = (
-        significant_snps.sort_values(['geneid', 'FDR'], ascending=True)
+        significant_snps_df.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .first()
         .reset_index()
@@ -203,9 +205,9 @@ def run_computation_in_scatter(
     adjusted_spearman_df = pd.read_csv('adjusted_spearman_df_annotated.tsv', sep='\t')
 
     # set variables for next iteration of loop
-    significant_snps = adjusted_spearman_df
+    significant_snps_df = adjusted_spearman_df
 
-    return significant_snps
+    return significant_snps_df
 
 
 def merge_significant_snps_dfs(*df_list):
@@ -268,15 +270,15 @@ def main(
 
     genotype_df = pd.read_csv(genotype, sep='\t')
     significant_snps_df = pd.read_csv(significant_snps, sep=' ', skipinitialspace=True)
-    residuals_df = pd.read_csv(residuals, sep='\t')
+    residual_df = pd.read_csv(residuals, sep='\t')
 
     # test with 5 genes
     n_genes = test_subset_genes or get_number_of_scatters(
-        residuals_df, significant_snps_df
+        residual_df, significant_snps_df
     )
 
     previous_sig_snps_result = significant_snps_df  # pylint: disable=invalid-name
-    previous_residual_result = residuals_df  # pylint: disable=invalid-name
+    previous_residual_result = residual_df  # pylint: disable=invalid-name
     for iteration in range(iterations):
 
         calc_resid_df_job = batch.new_python_job(f'calculate-resid-df-iter-{iteration}')
