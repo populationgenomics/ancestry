@@ -1,6 +1,7 @@
 """Perform conditional analysis on SNPs and expression residuals"""
 
 import os
+import sys
 
 import hail as hl
 import hailtop.batch as hb
@@ -12,6 +13,8 @@ from scipy.stats import spearmanr
 
 import click
 
+
+DEFAULT_DRIVER_MEMORY = '4G'
 DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08'  # noqa: E501; pylint: disable=line-too-long
 DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
@@ -231,6 +234,44 @@ def convert_dataframe_to_text(dataframe):
     return dataframe.to_string()
 
 
+def run_driver_workflow(batch, access_level, memory=DEFAULT_DRIVER_MEMORY):
+    from shlex import quote
+    from analysis_runner.git import (
+        prepare_git_job,
+        get_repo_name_from_remote,
+        get_git_commit_ref_of_current_repository,
+        get_git_default_remote,
+        get_relative_path_from_git_root,
+    )
+
+    job = batch.new_job('run eQTL analysis')
+    job.image(DRIVER_IMAGE)
+
+    _cwd = get_relative_path_from_git_root()
+    _repository = get_repo_name_from_remote(get_git_default_remote())
+    _commit_ref = get_git_commit_ref_of_current_repository()
+    prepare_git_job(
+        job=job,
+        repo_name=_repository,
+        commit=_commit_ref,
+        is_test=access_level == 'test',
+    )
+
+    # forwards env_vars from parent environment
+    for e in os.environ:
+        job.env(e, os.getenv(e))
+
+    if _cwd and _cwd != '.':
+        job.command(f'cd {_cwd}')
+
+    job.memory(memory)
+    args = ['python3', sys.argv[0], '--run-directly', sys.argv[1:]]
+    print(f'Running command: {args}')
+    job.command(' '.join(quote(s) for s in args))
+
+    return batch.run(wait=False)
+
+
 @click.command()
 @click.option(
     '--significant-snps', required=True, help='A space separated list of <insert here>'
@@ -250,6 +291,14 @@ def convert_dataframe_to_text(dataframe):
     type=int,
     help='Test with {test_subset_genes} genes, often = 5.',
 )
+@click.option(
+    '--run-directly',
+    is_flag=True,
+    help=(
+        'Not including this option will create a hail batch wrapper '
+        'for submitting this workflow to ensure enough memory'
+    ),
+)
 def main(
     significant_snps: str,
     residuals,
@@ -257,14 +306,22 @@ def main(
     output_prefix: str,
     iterations=5,
     test_subset_genes=None,
+    run_directly=False,
 ):
     """
     Creates a Hail Batch pipeline for calculating EQTL using {iterations} iterations,
     scattered across the number of genes
     """
-
-    backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test')
+    dataset = os.getenv('DATASET')
+    access_level = os.getenv('ACCESS_LEVEL')
+    backend = hb.ServiceBackend(
+        billing_project=dataset, bucket=f'cpg-{dataset}-{access_level}'
+    )
     batch = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
+
+    if not run_directly:
+        run_driver_workflow(batch, access_level=access_level)
+        return
 
     genotype_df = pd.read_csv(genotype, sep='\t')
     significant_snps_df = pd.read_csv(significant_snps, sep=' ', skipinitialspace=True)
