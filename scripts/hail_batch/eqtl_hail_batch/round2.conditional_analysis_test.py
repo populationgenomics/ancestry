@@ -321,17 +321,28 @@ def main(
     )
     batch = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
-    if not run_directly:
-        run_driver_workflow(batch, access_level=access_level)
-        return
+    # if not run_directly:
+    #     run_driver_workflow(batch, access_level=access_level)
+    #     return
 
-    genotype_df = pd.read_csv(genotype, sep='\t')
-    significant_snps_df = pd.read_csv(significant_snps, sep=' ', skipinitialspace=True)
-    residual_df = pd.read_csv(residuals, sep='\t')
+    print(f'Loading residuals: {residuals}')
+    residual_df_literal = pd.read_csv(residuals, sep='\t')
+    print(f'Loading significant_snps: {significant_snps}')
+    significant_snps_df_literal = pd.read_csv(
+        significant_snps, sep=' ', skipinitialspace=True
+    )
 
+    print('Loaded data to prepare workflow')
     # test with 5 genes
     n_genes = test_subset_genes or get_number_of_scatters(
-        residual_df, significant_snps_df
+        residual_df_literal, significant_snps_df_literal
+    )
+
+    load_job = batch.new_python_job('load-data')
+    genotype_df = load_job.call(pd.read_csv, genotype, sep='\t')
+    residual_df = load_job.call(pd.read_csv, residuals, sep='\t')
+    significant_snps_df = load_job.call(
+        pd.read_csv, significant_snps, sep=' ', skipinitialspace=True
     )
 
     previous_sig_snps_result = significant_snps_df  # pylint: disable=invalid-name
