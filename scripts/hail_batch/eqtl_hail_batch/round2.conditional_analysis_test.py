@@ -103,7 +103,7 @@ def calculate_residual_df(genotype_df, residual_df, significant_snps_df):
     return adjusted_residual_mat
 
 
-# Run Spearman rank in parallel by sending genes in a batches
+# Run Spearman rank in parallel by sending genes in batches
 def run_computation_in_scatter(
     iteration,  # pylint: disable=redefined-outer-name
     idx,
@@ -112,7 +112,6 @@ def run_computation_in_scatter(
     significant_snps_df,
 ):
     """Run genes in scatter"""
-    # Input filenames
 
     print(f'iteration = {iteration}')
     print(f'idx = {idx}')
@@ -132,7 +131,6 @@ def run_computation_in_scatter(
     sample_ids = residual_df.loc[:, ['sampleid']]
     genotype_df = get_genotype_df(genotype_df, significant_snps_df, sample_ids)
 
-    # Spearman's rank correlation
     def spearman_correlation(df):
         """get Spearman rank correlation"""
         gene = df.geneid
@@ -217,7 +215,6 @@ def merge_significant_snps_dfs(*df_list):
     Merge list of list of sig_snps dataframes
     """
 
-    # merged sig_snps
     merged_sig_snps = pd.concat(df_list)
     pvalues = merged_sig_snps['p.value']
     fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
@@ -235,6 +232,7 @@ def convert_dataframe_to_text(dataframe):
     return dataframe.to_string()
 
 
+# Create click command line to enter dependency files
 @click.command()
 @click.option(
     '--significant_snps', required=True, help='A space separated list of SNPs'
@@ -250,7 +248,7 @@ def convert_dataframe_to_text(dataframe):
     '--iterations', type=int, default=5, help='Number of iterations to perform'
 )
 @click.option(
-    '--test_subset_genes',
+    '--test_subset_genes',  # pylint: disable=too-many-locals
     type=int,
     help='Test with {test_subset_genes} genes, often = 5.',
 )
