@@ -94,12 +94,6 @@ def calculate_residual_df(genotype_df, residual_df, significant_snps_df):
     adjusted_residual_mat.columns = gene_ids
     adjusted_residual_mat.insert(loc=0, column='sampleid', value=sample_ids.sampleid)
 
-    # mfranklin: I've commented this out, because iteration isn't defined
-    #             and it's written outside this loop. Maybe this could be removed?
-    # adjusted_residual_mat.to_csv(
-    #     f'gs://{OUTPUT_BUCKET}/kat/eSNP1_adjusted_residuals_{iteration}.tsv'
-    # )
-
     return adjusted_residual_mat
 
 
