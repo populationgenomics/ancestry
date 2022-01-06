@@ -9,20 +9,15 @@ import statsmodels.api as sm
 import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
 from scipy.stats import spearmanr
+import click
 
-INPUT_BUCKET = 'cpg-tob-wgs-test'
-OUTPUT_BUCKET = 'cpg-tob-wgs-test'
-DRIVER_IMAGE = os.getenv(
-    'DRIVER_IMAGE',
-    'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08',  # noqa: E501; pylint: disable=line-too-long
-)
+DEFAULT_DRIVER_MEMORY = '4G'
+DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08'  # noqa: E501; pylint: disable=line-too-long
+DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
 
-def get_number_of_scatters():
+def get_number_of_scatters(expression_df, geneloc_df):
     """get index of total number of genes"""
-    expression_df = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/input/Plasma_expression.tsv', sep='\t'
-    )
     # Remove genes with 0 expression in all samples
     expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
     # Number of individuals with non-zero expression
@@ -37,33 +32,16 @@ def get_number_of_scatters():
     expression_df = expression_df[atleast10percent.index]
     expression_df.insert(loc=0, column='sampleid', value=sample_ids)
     gene_ids = list(expression_df.columns.values)[1:]
-    geneloc_df = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/input/geneloc_chr22.tsv', sep='\t'
-    )
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
 
     return len(geneloc_df.index)
 
 
 # Run Spearman rank in parallel by sending genes in a batches
-def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
+def run_computation_in_scatter(
+    idx, expression_df, genotype_df, geneloc_df, snploc_df, covariate_df
+):  # pylint: disable=too-many-locals
     """Run genes in scatter"""
-
-    expression_df = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/input/Plasma_expression.tsv', sep='\t'
-    )
-    genotype_df = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/input/genotype_chr22.tsv', sep='\t'
-    )
-    geneloc_df = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/input/geneloc_chr22.tsv', sep='\t'
-    )
-    snploc_df = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/input/snpsloc_chr22.tsv', sep='\t'
-    )
-    covariate_df = pd.read_csv(
-        f'gs://{INPUT_BUCKET}/kat/input/Plasma_peer_factors.tsv', sep='\t'
-    )
 
     # Remove genes with 0 expression in all samples
     expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
@@ -88,7 +66,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
-    geneloc_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_gene_SNP_pairs_{idx}.tsv')
+    geneloc_df.to_csv(os.path.join(output_prefix, f'chr22_gene_SNP_pairs_{idx}.tsv'))
 
     to_log = expression_df.iloc[:, 1:].columns
     log_expression_df = expression_df[to_log].applymap(lambda x: np.log(x + 1))
@@ -112,7 +90,7 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     residual_df = pd.DataFrame(list(map(calculate_residuals, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-    residual_df.to_csv(f'gs://{OUTPUT_BUCKET}/kat/chr22_log_residuals_{idx}.tsv')
+    residual_df.to_csv(os.path.join(output_prefix, f'chr22_log_residuals_{idx}.tsv'))
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
@@ -162,17 +140,6 @@ def run_computation_in_scatter(idx):  # pylint: disable=too-many-locals
     return spearman_df
 
 
-backend = hb.ServiceBackend(billing_project='tob-wgs', bucket='cpg-tob-wgs-test')
-b = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
-
-spearman_dfs_from_scatter = []
-for i in range(get_number_of_scatters()):
-    # for i in range(5):
-    j = b.new_python_job(name=f'process_{i}')
-    result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
-    spearman_dfs_from_scatter.append(result)
-
-
 def function_that_merges_dataframes(*df_list):
     """Merge all Spearman dfs"""
     print(df_list)
@@ -185,11 +152,70 @@ def function_that_merges_dataframes(*df_list):
     return merged_df.to_string()
 
 
-merge_job = b.new_python_job(name='merge_scatters')
-result_second = merge_job.call(
-    function_that_merges_dataframes, *spearman_dfs_from_scatter
+# Create click command line to enter dependency files
+@click.command()
+@click.option(
+    '--expression', required=True, help='A sample x gene TSV of expression values'
 )
-b.write_output(
-    result_second.as_str(), f'gs://{OUTPUT_BUCKET}/kat/correlation_results.csv'
+@click.option('--genotype', required=True, help='A TSV of genotypes for each sample')
+@click.option(
+    '--geneloc', required=True, help='A TSV of start and end positions for each gene'
 )
-b.run()
+@click.option(
+    '--snploc',
+    required=True,
+    help='A TSV of snp IDs with chromsome and position values for each',
+)
+@click.option(
+    '--covariates', required=True, help='A TSV of covariates to calculate residuals'
+)
+@click.option(
+    '--output_prefix',
+    required=True,
+    help='A path prefix of where to output files, eg: gs://MyBucket/output-folder/',
+)
+def main(
+    expression: str,
+    genotype,
+    geneloc,
+    snploc,
+    covariates,
+    output_prefix: str,
+):
+    """
+    Creates a Hail Batch pipeline for calculating EQTLs
+    """
+    dataset = os.getenv('DATASET')
+    access_level = os.getenv('ACCESS_LEVEL')
+    backend = hb.ServiceBackend(
+        billing_project=dataset, bucket=f'cpg-{dataset}-{access_level}'
+    )
+    batch = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
+
+    # load files into a python job to avoid memory issues during a submission
+    load_job = batch.new_python_job('load-data')
+    expression_df = load_job.call(pd.read_csv, expression, sep='\t')
+    genotype_df = load_job.call(pd.read_csv, genotype, sep='\t')
+    geneloc_df = load_job.call(pd.read_csv, geneloc, sep='\t')
+    snploc_df = load_job.call(pd.read_csv, snploc, sep='\t')
+    covariate_df = load_job.call(pd.read_csv, covariates, sep='\t')
+
+    spearman_dfs_from_scatter = []
+    for i in range(get_number_of_scatters()):
+        # for i in range(5):
+        j = batch.new_python_job(name=f'process_{i}')
+        result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
+        spearman_dfs_from_scatter.append(result)
+
+    merge_job = batch.new_python_job(name='merge_scatters')
+    result_second = merge_job.call(
+        function_that_merges_dataframes, *spearman_dfs_from_scatter
+    )
+    corr_result_output_path = os.path.join(output_prefix, f'correlation_results.csv')
+    batch.write_output(result_second.as_str(), corr_result_output_path)
+    batch.run()
+
+
+if __name__ == '__main__':
+    # pylint: disable=no-value-for-parameter
+    main()
