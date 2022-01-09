@@ -213,7 +213,7 @@ def main(
     )
     corr_result_output_path = os.path.join(output_prefix, f'correlation_results.csv')
     batch.write_output(result_second.as_str(), corr_result_output_path)
-    batch.run()
+    batch.run(wait=False)
 
 
 if __name__ == '__main__':
