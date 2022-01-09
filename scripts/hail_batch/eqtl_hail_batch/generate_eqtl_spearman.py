@@ -170,7 +170,7 @@ def function_that_merges_dataframes(*df_list):
     '--covariates', required=True, help='A TSV of covariates to calculate residuals'
 )
 @click.option(
-    '--output_prefix',
+    '--output-prefix',
     required=True,
     help='A path prefix of where to output files, eg: gs://MyBucket/output-folder/',
 )
