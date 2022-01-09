@@ -66,7 +66,7 @@ def run_computation_in_scatter(
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
-    geneloc_df.to_csv(os.path.join(output_prefix, f'chr22_gene_SNP_pairs_{idx}.tsv'))
+    geneloc_df.to_csv(output_prefix + '_gene_SNP_pairs_{idx}.tsv')
 
     to_log = expression_df.iloc[:, 1:].columns
     log_expression_df = expression_df[to_log].applymap(lambda x: np.log(x + 1))
@@ -140,10 +140,8 @@ def run_computation_in_scatter(
     return spearman_df
 
 
-def function_that_merges_dataframes(*df_list):
+def merge_df_and_convert_to_string(*df_list):
     """Merge all Spearman dfs"""
-    print(df_list)
-    print(type(df_list))
     merged_df: pd.DataFrame = pd.concat(df_list)
     pvalues = merged_df['p.value']
     fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
