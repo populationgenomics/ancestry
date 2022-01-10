@@ -16,7 +16,7 @@ DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/imag
 DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
 
-def get_number_of_scatters(expression_df, geneloc_df):
+def get_number_of_scatters(expression_df_literal, geneloc_df_literal):
     """get index of total number of genes"""
     # Remove genes with 0 expression in all samples
     expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
@@ -189,6 +189,10 @@ def main(
         billing_project=dataset, bucket=f'cpg-{dataset}-{access_level}'
     )
     batch = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
+
+    # load in files literally to do the get_number of scatters
+    expression_df_literal = pd.read_csv(expression, sep='\t')
+    geneloc_df_literal = pd.read_csv(geneloc, sep='\t')
 
     # load files into a python job to avoid memory issues during a submission
     load_job = batch.new_python_job('load-data')
