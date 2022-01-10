@@ -203,18 +203,18 @@ def main(
     covariate_df = load_job.call(pd.read_csv, covariates, sep='\t')
 
     spearman_dfs_from_scatter = []
-    for i in range(get_number_of_scatters(expression_df_literal, geneloc_df_literal)):
+    for idx in range(get_number_of_scatters(expression_df_literal, geneloc_df_literal)):
         # for i in range(5):
-        j = batch.new_python_job(name=f'process_{i}')
+        j = batch.new_python_job(name=f'process_{idx}')
         result: hb.resource.PythonResult = j.call(
             run_computation_in_scatter,
-            i,
+            idx,
             expression_df,
             genotype_df,
             geneloc_df,
             snploc_df,
             covariate_df,
-            output_prefix
+            output_prefix,
         )
         spearman_dfs_from_scatter.append(result)
 
