@@ -206,7 +206,15 @@ def main(
     for i in range(get_number_of_scatters(expression_df_literal, geneloc_df_literal)):
         # for i in range(5):
         j = batch.new_python_job(name=f'process_{i}')
-        result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
+        result: hb.resource.PythonResult = j.call(
+            run_computation_in_scatter,
+            i,
+            expression_df,
+            genotype_df,
+            geneloc_df,
+            snploc_df,
+            covariate_df,
+        )
         spearman_dfs_from_scatter.append(result)
 
     merge_job = batch.new_python_job(name='merge_scatters')
