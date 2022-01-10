@@ -39,7 +39,7 @@ def get_number_of_scatters(expression_df, geneloc_df):
 
 # Run Spearman rank in parallel by sending genes in a batches
 def run_computation_in_scatter(
-    idx, expression_df, genotype_df, geneloc_df, snploc_df, covariate_df
+    idx, expression_df, genotype_df, geneloc_df, snploc_df, covariate_df, output_prefix
 ):  # pylint: disable=too-many-locals
     """Run genes in scatter"""
 
@@ -214,6 +214,7 @@ def main(
             geneloc_df,
             snploc_df,
             covariate_df,
+            output_prefix
         )
         spearman_dfs_from_scatter.append(result)
 
