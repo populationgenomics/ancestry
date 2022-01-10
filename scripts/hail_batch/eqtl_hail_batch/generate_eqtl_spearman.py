@@ -211,7 +211,7 @@ def main(
 
     merge_job = batch.new_python_job(name='merge_scatters')
     result_second = merge_job.call(
-        function_that_merges_dataframes, *spearman_dfs_from_scatter
+        merge_df_and_convert_to_string, *spearman_dfs_from_scatter
     )
     corr_result_output_path = os.path.join(output_prefix, f'correlation_results.csv')
     batch.write_output(result_second.as_str(), corr_result_output_path)
