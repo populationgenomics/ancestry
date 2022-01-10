@@ -16,10 +16,10 @@ DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/imag
 DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
 
-def get_number_of_scatters(expression_df_literal, geneloc_df_literal):
+def get_number_of_scatters(expression_df, geneloc_df):
     """get index of total number of genes"""
     # Remove genes with 0 expression in all samples
-    expression_df = expression_df_literal.loc[:, (expression_df != 0).any(axis=0)]
+    expression_df = expression_df.loc[:, (expression_df != 0).any(axis=0)]
     # Number of individuals with non-zero expression
     genes_not_equal_zero = expression_df.iloc[:, 1:].values != 0
     n_expr_over_zero = pd.DataFrame(genes_not_equal_zero.sum(axis=0))
@@ -32,7 +32,7 @@ def get_number_of_scatters(expression_df_literal, geneloc_df_literal):
     expression_df = expression_df[atleast10percent.index]
     expression_df.insert(loc=0, column='sampleid', value=sample_ids)
     gene_ids = list(expression_df.columns.values)[1:]
-    geneloc_df = geneloc_df_literal[geneloc_df_literal.geneid.isin(gene_ids)]
+    geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
 
     return len(geneloc_df.index)
 
@@ -203,7 +203,7 @@ def main(
     covariate_df = load_job.call(pd.read_csv, covariates, sep='\t')
 
     spearman_dfs_from_scatter = []
-    for i in range(get_number_of_scatters()):
+    for i in range(get_number_of_scatters(expression_df_literal, geneloc_df_literal)):
         # for i in range(5):
         j = batch.new_python_job(name=f'process_{i}')
         result: hb.resource.PythonResult = j.call(run_computation_in_scatter, i)
