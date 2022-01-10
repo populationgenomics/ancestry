@@ -66,7 +66,7 @@ def run_computation_in_scatter(
     geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
-    geneloc_df.to_csv(output_prefix + '_gene_SNP_pairs_{idx}.tsv')
+    geneloc_df.to_csv(output_prefix + f'_gene_SNP_pairs_{idx}.tsv')
 
     to_log = expression_df.iloc[:, 1:].columns
     log_expression_df = expression_df[to_log].applymap(lambda x: np.log(x + 1))
@@ -90,7 +90,7 @@ def run_computation_in_scatter(
     residual_df = pd.DataFrame(list(map(calculate_residuals, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-    residual_df.to_csv(output_prefix + 'log_residuals_{idx}.tsv')
+    residual_df.to_csv(output_prefix + f'log_residuals_{idx}.tsv')
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
