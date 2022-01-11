@@ -8,6 +8,7 @@ from numpy_sugar.linalg import economic_svd
 from cellregmap import CellRegMap
 from cellregmap import run_association, run_interaction, estimate_betas
 
+<<<<<<< HEAD
 def get_L_values(hK, E):
     """
     As the definition of Ls is not particulatly intuitive,
@@ -25,6 +26,8 @@ def get_L_values(hK, E):
     Ls = [ddot(us[:,i], hK) for i in range(us.shape[1])]
     return Ls
 
+=======
+>>>>>>> 8fcdf691cc2ce1dafc9d7a9f80dbf7fa1392db30
 random = RandomState(0)
 n = 30                               # number of samples (cells)
 p = 5                                # number of individuals
@@ -34,6 +37,9 @@ C = random.randn(n, k)               # context matrix
 W = ones((n, 1))                     # intercept (covariate matrix)
 hK = random.rand(n, p)               # decomposition of kinship matrix (K = hK @ hK.T)
 g = 1.0 * (random.rand(n, 1) < 0.2)  # SNP vector
+
+##################
+### Old approach 
 
 # fit null model (association test)
 crm0 = CellRegMap(y, W, C, hK=hK)
@@ -56,6 +62,7 @@ crm = CellRegMap(y, W, C, Ls)
 pv = crm.scan_interaction(g)[0]
 print(f'Interaction test p-value: {pv}')
 
+<<<<<<< HEAD
 # K = np.dot(hK,hK.T)
 # K = K + np.diag(np.repeat(1e-5, n)) 
 
@@ -63,24 +70,72 @@ print(f'Interaction test p-value: {pv}')
 
 # Ls = get_L_values(K,C)
 Ls = get_L_values(hK,C)
+=======
+#############################
+### Slightly better approach 
 
+# add a get L values function 
+# this takes K and E as inputs, which have more obvious interpretation
+
+def get_L_values(K, E):
+    """
+    As the definition of Ls is not particulatly intuitive,
+    function to extract list of L values given kinship K and 
+    cellular environments E
+    """
+    # decompose K into hK: hK @ hK.T = K
+    hK = cholesky(K)
+
+    # get eigendecomposition of EEt
+    [U, S, _] = economic_svd(E)
+    us = U * S
+
+    # get decomposition of K \odot EEt
+    Ls = [ddot(us[:,i], hK) for i in range(us.shape[1])]
+    return Ls
+
+# build K
+K = np.dot(hK,hK.T)
+K = K + np.diag(np.repeat(1e-5, n)) 
+
+# test get L values function
+Ls = get_L_values(K,C)
+>>>>>>> 8fcdf691cc2ce1dafc9d7a9f80dbf7fa1392db30
+
+# as before (fit null, then test)
 crm = CellRegMap(y, W, C, Ls)
 pv = crm.scan_interaction(g)[0]
 print(f'Interaction test p-value after Ls: {pv}')
 
+###################
+### Final approach 
+
+# (each time, check that p-values are consistent)
+
+# "get L values" function is incorporated
+# null fitting and testing are merged into a "run" function
+
+# which can take both hK (preferred)..
 pv0 = run_association(y, W, C, g, hK=hK)[0]
 print(f'Association test p-value try: {pv0}')
 
 pv = run_interaction(y, W, C, g, hK=hK)[0]
 print(f'Interaction test p-value try: {pv}')
 
+<<<<<<< HEAD
 # Note that K should not be accepted as an input anymore
 # pv0 = run_association(y, W, C, g, K=K)[0]
 # print(f'Association test p-value try2: {pv0}')
+=======
+# ..or the full K as input
+pv0 = run_association(y, W, C, g, K=K)[0]
+print(f'Association test p-value try2: {pv0}')
+>>>>>>> 8fcdf691cc2ce1dafc9d7a9f80dbf7fa1392db30
 
 # pv = run_interaction(y, W, C, g, K=K)[0]
 # print(f'Interaction test p-value try2: {pv}')
 
+# also added faster estimate betas function
 betas = estimate_betas(y, W, C, g, hK=hK)
 betaG = betas[0]
 betaGxC = betas[1][0]
