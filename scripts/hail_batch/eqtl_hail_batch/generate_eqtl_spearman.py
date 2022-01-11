@@ -38,7 +38,7 @@ def get_number_of_scatters(expression_df, geneloc_df):
 
 
 # Run Spearman rank in parallel by sending genes in a batches
-def run_computation_in_scatter(
+def run_spearman_correlation_scatter(
     idx, expression_df, genotype_df, geneloc_df, snploc_df, covariate_df, output_prefix
 ):  # pylint: disable=too-many-locals
     """Run genes in scatter"""
@@ -141,7 +141,7 @@ def run_computation_in_scatter(
 
 
 def merge_df_and_convert_to_string(*df_list):
-    """Merge all Spearman dfs"""
+    """Merge all Spearman dfs and convert to string using .to_string() on df"""
     merged_df: pd.DataFrame = pd.concat(df_list)
     pvalues = merged_df['p.value']
     fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
@@ -207,7 +207,7 @@ def main(
         # for i in range(5):
         j = batch.new_python_job(name=f'process_{idx}')
         result: hb.resource.PythonResult = j.call(
-            run_computation_in_scatter,
+            run_spearman_correlation_scatter,
             idx,
             expression_df,
             genotype_df,
@@ -222,7 +222,7 @@ def main(
     result_second = merge_job.call(
         merge_df_and_convert_to_string, *spearman_dfs_from_scatter
     )
-    corr_result_output_path = os.path.join(output_prefix, f'correlation_results.csv')
+    corr_result_output_path = output_prefix + 'correlation_results.csv'
     batch.write_output(result_second.as_str(), corr_result_output_path)
     batch.run(wait=False)
 
