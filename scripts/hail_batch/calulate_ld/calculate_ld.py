@@ -1,6 +1,7 @@
 """Calculate ld using the ld_matrix function"""
 
 import hail as hl
+from hail.linalg import BlockMatrix
 
 TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
 
@@ -14,7 +15,7 @@ def query():
     tob_wgs = hl.experimental.densify(tob_wgs)
     print('Starting ld calculation')
     ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
-    ld.to_numpy()
+    BlockMatrix.write(ld, 'gs://cpg-tob-wgs-test/kat/v0/ld_matrix.bm')
 
 
 if __name__ == '__main__':
