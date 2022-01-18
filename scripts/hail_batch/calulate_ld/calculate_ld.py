@@ -2,8 +2,9 @@
 
 import hail as hl
 import pandas as pd
+from analysis_runner import bucket_path, output_path
 
-TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
+TOB_WGS = bucket_path('mt/v7.mt/')
 
 
 def query():
@@ -15,27 +16,12 @@ def query():
     tob_wgs = hl.experimental.densify(tob_wgs)
     # filter out constant variants
     tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
-    tob_wgs = tob_wgs.head(40000)
+    tob_wgs = tob_wgs.head(30000)
     ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
-    ld = ld.to_numpy()
-    ld = pd.DataFrame(ld)
+    ld = pd.DataFrame(ld.to_numpy())
     # save pandas df
-    ld.to_csv('gs://cpg-tob-wgs-test/kat/v1/ld_matrix_40k.csv')
-    # get number of non-zero, non na values across rows
-    nonzero_values = ld.fillna(0).astype(bool).sum(axis=1)
-    nonzero_values.to_csv(
-        'gs://cpg-tob-wgs-test/kat/v1/nonzero_nona_values_2M_radius_40k.csv'
-    )
-    # get number of positive values (including 1's) across rows
-    positive_values = ld.fillna(0).gt(0).sum(axis=1)
-    positive_values.to_csv(
-        'gs://cpg-tob-wgs-test/kat/v1/positive_values_2M_radius_40k.csv'
-    )
-    # get number of negative values across rows
-    negative_values = ld.fillna(0).lt(0).sum(axis=1)
-    negative_values.to_csv(
-        'gs://cpg-tob-wgs-test/kat/v1/negative_values_2M_radius_40k.csv'
-    )
+    ld_filename = output_path(f'ld_matrix.csv', 'analysis')
+    ld.to_csv(ld_filename, index=False)
 
 
 if __name__ == '__main__':
