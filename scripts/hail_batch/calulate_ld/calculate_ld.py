@@ -15,7 +15,7 @@ def query():
     tob_wgs = hl.experimental.densify(tob_wgs)
     # filter out constant variants
     tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
-    tob_wgs = tob_wgs.head(100000)
+    tob_wgs = tob_wgs.head(10000)
     ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
     ld = pd.DataFrame(ld.to_numpy())
     # save pandas ld dataframe
