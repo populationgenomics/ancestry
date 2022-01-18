@@ -17,7 +17,7 @@ def query():
     # filter out constant variants
     tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
     tob_wgs = tob_wgs.head(30000)
-    ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
+    ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=1e6)
     ld = pd.DataFrame(ld.to_numpy())
     # save pandas df
     ld_filename = output_path(f'ld_matrix.csv', 'analysis')
