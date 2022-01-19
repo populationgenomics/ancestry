@@ -13,18 +13,12 @@ import click
 
 
 @click.command()
-@click.option('--file', 'file', help='file to annotate')
 @click.option('--script', 'script', help='path to vep bash script')
-def main(file: str, script: str):
+def main(script: str):
     """
-    takes a given file argument,
-    :param file: str, the GCP path for a given input file
+    runs a small script inside dataproc to see if VEP exists/is usable
     :param script: str, the path to the VEP script
     """
-    dirname, filename = os.path.split(file)
-    new_vcf_path = os.path.join(dirname, f'anno_{filename}')
-
-    vep_cmd = f'{script} --infile {file} --outfile {new_vcf_path}'
 
     service_backend = hb.ServiceBackend(
         billing_project=os.getenv('HAIL_BILLING_PROJECT'),
@@ -36,7 +30,7 @@ def main(file: str, script: str):
 
     job = dataproc.hail_dataproc_job(
         batch=batch,
-        script=vep_cmd,
+        script=script,
         max_age='4h',
         job_name='annotate_vcf',
         num_secondary_workers=4,
