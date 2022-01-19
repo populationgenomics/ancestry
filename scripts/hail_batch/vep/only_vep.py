@@ -21,6 +21,7 @@ def main():
     hl.init(default_reference='GRCh38')
 
     tob_wgs = hl.read_matrix_table(TOB_WGS)
+    tob_wgs = tob_wgs.head(10)
     vep = hl.vep(tob_wgs)
     vep_filename = 'gs://cpg-tob-wgs-test/kat/v0/tobwgs_v7_vep.mt'
     vep.write(vep_filename)
