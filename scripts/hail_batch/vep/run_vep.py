@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 """
-create a dataproc cluster, and try to use VEP within that
+Use VEP using a dataproc cluster.
+Taken from Matt Welland's script, run_vep_help.py
 
 """
 
@@ -13,11 +14,11 @@ import click
 
 
 @click.command()
-@click.option('--script', 'script', help='path to vep bash script')
+@click.option('--script', 'script', help='path to VEP main script')
 def main(script: str):
     """
-    runs a small script inside dataproc to see if VEP exists/is usable
-    :param script: str, the path to the VEP script
+    runs a script inside dataproc to execute VEP
+    :param script: str, the path to the VEP main script
     """
 
     service_backend = hb.ServiceBackend(
@@ -32,13 +33,13 @@ def main(script: str):
         batch=batch,
         script=script,
         max_age='4h',
-        job_name='annotate_vcf',
+        job_name='run_vep',
         num_secondary_workers=4,
-        cluster_name='annotate_vcf with max-age=4h',
+        cluster_name='run vep',
         vep='GRCh38',
-    )  # noqa: F841
+    )
     job.cpu(2)
-    job.memory('standard')  # ~ 4G/core ~ 7.5G
+    job.memory('standard')
     job.storage('20G')
 
     batch.run(wait=False)
