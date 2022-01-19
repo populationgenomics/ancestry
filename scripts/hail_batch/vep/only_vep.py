@@ -8,9 +8,8 @@ python script to try and run vep
 
 import click
 import hail as hl
-from analysis_runner import bucket_path, output_path
 
-TOB_WGS = bucket_path('mt/v7.mt/')
+TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
 
 
 @click.command()
@@ -23,7 +22,7 @@ def main():
 
     tob_wgs = hl.read_matrix_table(TOB_WGS)
     vep = hl.vep(tob_wgs)
-    vep_filename = output_path(f'tobwgs_v7_vep.mt')
+    vep_filename = 'gs://cpg-tob-wgs-test/kat/v0/tobwgs_v7_vep.mt'
     vep.write(vep_filename)
 
 
