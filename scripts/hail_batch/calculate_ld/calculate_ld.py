@@ -15,10 +15,10 @@ def query():
     tob_wgs = hl.experimental.densify(tob_wgs)
     # filter out constant variants
     tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
-    tob_wgs = tob_wgs.head(50000)
+    tob_wgs = tob_wgs.head(100000)
     ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=1e6)
     # save block matrix
-    ld.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_1M_50k.bm')
+    ld.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_1M_100k.bm')
 
 
 if __name__ == '__main__':
