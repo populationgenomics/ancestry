@@ -21,6 +21,8 @@ def main():
     hl.init(default_reference='GRCh38')
 
     tob_wgs = hl.read_matrix_table(TOB_WGS)
+    # filter to biallelic loci only
+    tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
     tob_wgs = tob_wgs.head(10)
     vep = hl.vep(tob_wgs)
     vep_filename = 'gs://cpg-tob-wgs-test/kat/v0/tobwgs_v7_vep.mt'
