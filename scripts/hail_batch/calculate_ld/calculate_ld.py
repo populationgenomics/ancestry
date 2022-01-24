@@ -1,10 +1,11 @@
 """Calculate ld using the ld_matrix function"""
 
 import hail as hl
-from analysis_runner import bucket_path
+
+# from analysis_runner import bucket_path
 from hail.linalg import BlockMatrix
 
-TOB_WGS = bucket_path('mt/v7.mt/')
+# TOB_WGS = bucket_path('mt/v7.mt/')
 
 
 def query():
