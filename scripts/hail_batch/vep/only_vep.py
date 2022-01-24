@@ -9,7 +9,7 @@ python script to try and run vep
 import click
 import hail as hl
 
-TOB_WGS = 'gs://cpg-tob-wgs-test/mt/mt37.mt/'
+TOB_WGS = 'gs://cpg-tob-wgs-test/kat/v0/mt37.mt/'
 
 
 @click.command()
