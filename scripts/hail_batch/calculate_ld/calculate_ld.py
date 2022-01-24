@@ -20,7 +20,7 @@ def query():
     # ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
     # # save block matrix
     # ld.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_2Mradius_full.bm')
-    bm = BlockMatrix.read('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_2Mradius_full.bm/')
+    bm = BlockMatrix.read('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_1M_50k.bm/')
     ht = bm.entries().head(1000)
     # save block matrix
     ht.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_1k.ht')
