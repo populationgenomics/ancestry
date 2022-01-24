@@ -24,7 +24,7 @@ def main():
     # filter to biallelic loci only
     tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
     tob_wgs = tob_wgs.filter_rows(tob_wgs.alleles[1] != '*')
-    vep = hl.vep(tob_wgs, 'gs://hail-us-vep/vep85-loftee-gcloud.json')
+    vep = hl.vep(tob_wgs)
     vep_filename = 'gs://cpg-tob-wgs-test/kat/v0/tobwgs_v7_vep_grch37.mt'
     vep.write(vep_filename)
 

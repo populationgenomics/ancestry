@@ -36,7 +36,7 @@ def main(script: str):
         job_name='run_vep',
         num_secondary_workers=4,
         cluster_name='run vep',
-        vep='GRCh38',
+        vep='GRCh37',
     )
     job.cpu(2)
     job.memory('standard')
