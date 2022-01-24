@@ -2,6 +2,7 @@
 
 import hail as hl
 from analysis_runner import bucket_path
+from hail.linalg import BlockMatrix
 
 TOB_WGS = bucket_path('mt/v7.mt/')
 
@@ -11,14 +12,18 @@ def query():
 
     hl.init(default_reference='GRCh38')
 
-    tob_wgs = hl.read_matrix_table(TOB_WGS)
-    tob_wgs = hl.experimental.densify(tob_wgs)
-    # filter out constant variants
-    tob_wgs = tob_wgs.annotate_rows(stats=hl.agg.stats(tob_wgs.GT.n_alt_alleles()))
-    tob_wgs = tob_wgs.filter_rows(tob_wgs.stats.stdev != 0)
-    ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
+    # tob_wgs = hl.read_matrix_table(TOB_WGS)
+    # tob_wgs = hl.experimental.densify(tob_wgs)
+    # # filter out constant variants
+    # tob_wgs = tob_wgs.annotate_rows(stats=hl.agg.stats(tob_wgs.GT.n_alt_alleles()))
+    # tob_wgs = tob_wgs.filter_rows(tob_wgs.stats.stdev != 0)
+    # ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
+    # # save block matrix
+    # ld.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_2Mradius_full.bm')
+    bm = BlockMatrix.read('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_2Mradius_full.bm/')
+    ht = bm.entries().head(1000)
     # save block matrix
-    ld.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_2Mradius_full.bm')
+    ht.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_1k.ht')
 
 
 if __name__ == '__main__':
