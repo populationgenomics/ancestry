@@ -2,31 +2,30 @@
 
 
 """
-Run VEP on the TOB dataset
+Run VEP on the hail mt
 """
 
 
 import click
 import hail as hl
-from analysis_runner import bucket_path, output_path
-
-TOB_WGS = bucket_path('mt/v7.mt/')
+from analysis_runner import output_path
 
 
 @click.command()
-def main():
+@click.option('--input', required=True, help='Hail matrix table to run VEP on')
+def main(input: str):
     """
     Run vep using run_vep.py wrapper
     """
 
     hl.init(default_reference='GRCh38')
 
-    tob_wgs = hl.read_matrix_table(TOB_WGS)
+    mt = hl.read_matrix_table(input)
     # filter to biallelic loci only
-    tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
-    tob_wgs = tob_wgs.filter_rows(tob_wgs.alleles[1] != '*')
-    vep = hl.vep(tob_wgs)
-    vep_path = output_path('tobwgs_vep95_GRCh38.mt')
+    mt = mt.filter_rows(hl.len(mt.alleles) == 2)
+    mt = mt.filter_rows(mt.alleles[1] != '*')
+    vep = hl.vep(mt)
+    vep_path = output_path('vep95_GRCh38.mt')
     vep.write(vep_path)
 
 
