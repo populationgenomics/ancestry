@@ -32,11 +32,11 @@ def main(script: str):
     job = dataproc.hail_dataproc_job(
         batch=batch,
         script=script,
-        max_age='4h',
+        max_age='12h',
         job_name='run_vep',
-        num_secondary_workers=4,
+        num_secondary_workers=20,
         cluster_name='run vep',
-        vep='GRCh37',
+        vep='GRCh38',
     )
     job.cpu(2)
     job.memory('standard')
