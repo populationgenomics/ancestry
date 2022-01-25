@@ -15,7 +15,8 @@ import click
 
 @click.command()
 @click.option('--script', 'script', help='path to VEP main script')
-def main(script: str):
+@click.option('--mt', required=True, help='Hail matrix table to run VEP on')
+def main(script: str, mt: str):
     """
     runs a script inside dataproc to execute VEP
     :param script: str, the path to the VEP main script
@@ -31,7 +32,7 @@ def main(script: str):
 
     job = dataproc.hail_dataproc_job(
         batch=batch,
-        script=script,
+        script=f'{script} --mt {mt}',
         max_age='12h',
         job_name='run_vep',
         num_secondary_workers=20,

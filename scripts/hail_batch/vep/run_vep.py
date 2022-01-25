@@ -12,15 +12,15 @@ from analysis_runner import output_path
 
 
 @click.command()
-@click.option('--input', required=True, help='Hail matrix table to run VEP on')
-def main(input: str):
+@click.option('--mt', required=True, help='Hail matrix table to run VEP on')
+def main(mt: str):
     """
     Run vep using main.py wrapper
     """
 
     hl.init(default_reference='GRCh38')
 
-    mt = hl.read_matrix_table(input)
+    mt = hl.read_matrix_table(mt)
     # filter to biallelic loci only
     mt = mt.filter_rows(hl.len(mt.alleles) == 2)
     mt = mt.filter_rows(mt.alleles[1] != '*')
