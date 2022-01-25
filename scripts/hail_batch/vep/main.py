@@ -34,6 +34,7 @@ def main(script: str, mt: str):
         batch=batch,
         script=f'{script} --mt {mt}',
         max_age='12h',
+        init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
         job_name='run_vep',
         num_secondary_workers=20,
         cluster_name='run vep',
