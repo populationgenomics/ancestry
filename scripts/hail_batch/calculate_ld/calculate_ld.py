@@ -29,10 +29,10 @@ def query():
     tob_locus_info.write('gs://cpg-tob-wgs-test/kat/v0/tob_locus_info.ht')
     ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
     table = ld.entries()
-    # filter out entries with an LD score less than 0.1
-    table = table.filter(table.entry > 0.1)
+    # filter out entries with an LD score less than 0.2
+    table = table.filter(table.entry > 0.2)
     # save table
-    table.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_full_filtered.ht')
+    table.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_full_filtered02.ht')
 
 
 if __name__ == '__main__':
