@@ -23,10 +23,6 @@ def query():
     # collapse ht by variant and save
     ht_agg = ht.key_by('global_pos_i').drop('i', 'row_idx').collect_by_key()
     ht_agg.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_aggregated_table.ht')
-    min_val = ht_agg.aggregate(hl.agg.min(hl.len(ht_agg.values)))
-    max_val = ht_agg.aggregate(hl.agg.max(hl.len(ht_agg.values)))
-    median = ht_agg.aggregate(hl.agg.approx_quantiles(hl.len(ht_agg.values), 0.5))
-    print(f'The min is {min_val}, the max is {max_val}, and the median is {median}')
 
 
 if __name__ == '__main__':
