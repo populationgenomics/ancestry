@@ -25,8 +25,8 @@ def query():
     # turn tob matrix into table and save
     tob_wgs = tob_wgs.key_rows_by('locus', 'alleles', 'row_idx', 'global_position')
     tob_wgs = tob_wgs.select_rows().select_globals()
-    tob_locus_info = tob_wgs.rows()
-    tob_locus_info.write('gs://cpg-tob-wgs-test/kat/v0/tob_locus_info.ht')
+    # tob_locus_info = tob_wgs.rows()
+    # tob_locus_info.write('gs://cpg-tob-wgs-test/kat/v0/tob_locus_info.ht')
     ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
     table = ld.entries()
     # filter out entries with an LD score less than 0.2
