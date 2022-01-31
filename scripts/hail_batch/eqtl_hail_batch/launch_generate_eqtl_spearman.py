@@ -57,6 +57,6 @@ for cell_type in cell_types:
                 '--snploc',
                 snploc,
                 '--output-prefix',
-                f'gs://cpg-tob-wgs-test/kat/{cell_type}/chr{idx}_',
+                f'gs://cpg-tob-wgs-test/kat/{cell_type}/chr{idx}',
             ]
         )

@@ -56,8 +56,7 @@ for cell_type in cell_types:
                 '--genotype',
                 genotype,
                 '--output-prefix',
-                f'gs://cpg-tob-wgs-test/kat/{cell_type}/chr{idx}_'
-                '--test_subset_genes',
+                f'gs://cpg-tob-wgs-test/kat/{cell_type}/chr{idx}' '--test_subset_genes',
                 '5',
             ]
         )
