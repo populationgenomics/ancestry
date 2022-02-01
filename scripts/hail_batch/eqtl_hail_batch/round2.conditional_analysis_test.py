@@ -231,7 +231,7 @@ def convert_dataframe_to_text(dataframe):
 @click.option(
     '--significant_snps', required=True, help='A space separated list of SNPs'
 )
-@click.option('--residuals', required=True, help='A TSV of gene residuals')
+@click.option('--residuals', required=True, help='A CSV of gene residuals')
 @click.option('--genotype', required=True, help='A TSV of genotypes for each sample')
 @click.option(
     '--output_prefix',
@@ -285,7 +285,7 @@ def main(
     # load these in a python job to avoid memory issues during a submission
     load_job = batch.new_python_job('load-data')
     genotype_df = load_job.call(pd.read_csv, genotype, sep='\t')
-    residual_df = load_job.call(pd.read_csv, residuals, sep='\t')
+    residual_df = load_job.call(pd.read_csv, residuals)
     significant_snps_df = load_job.call(
         pd.read_csv, significant_snps, sep=' ', skipinitialspace=True
     )
