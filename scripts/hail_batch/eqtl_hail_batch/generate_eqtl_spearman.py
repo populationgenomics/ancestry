@@ -90,7 +90,7 @@ def run_spearman_correlation_scatter(
     residual_df = pd.DataFrame(list(map(calculate_residuals, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-    residual_df.to_csv(output_prefix + f'log_residuals_{idx}.tsv')
+    residual_df.to_csv(output_prefix + f'_log_residuals_{idx}.tsv')
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
