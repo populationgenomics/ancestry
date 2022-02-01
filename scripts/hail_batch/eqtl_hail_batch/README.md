@@ -8,7 +8,7 @@ analysis-runner --dataset tob-wgs \
     --description "eqtl batch job" \
     python3 round2.conditional_analysis_test.py \
         --output_prefix 'gs://cpg-tob-wgs-test/kat/plasma_chr22' \
-        --residuals 'gs://cpg-tob-wgs-test/kat/input/plasma_chr22_log_residuals.tsv' \
+        --residuals 'gs://cpg-tob-wgs-test/kat/plasma_chr22_log_residuals.tsv' \
         --significant_snps 'gs://cpg-tob-wgs-test/kat/correlation_results.csv' \
         --genotype 'gs://cpg-tob-wgs-test/kat/input/genotype_chr22.tsv' \
         --test_subset_genes 5 # test with 5 genes only
