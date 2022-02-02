@@ -13,10 +13,11 @@ INPUT_PATH = f'gs://{BUCKET_NAME}/full_data/{REFERENCE.lower()}/analysis_output/
 # get cell types
 cs_client = storage.Client()
 bucket = cs_client.get_bucket(BUCKET_NAME)
+bucket_path = INPUT_PATH.split(f'gs://{BUCKET_NAME}/')[-1]
 blobs = [
     f'gs://{BUCKET_NAME}/{b.name}'
-    for b in bucket.list_blobs()
-    if (INPUT_PATH.split(f'gs://{BUCKET_NAME}/')[-1] in b.name) and ('.tsv' in b.name)
+    for b in bucket.list_blobs(prefix=bucket_path, delimiter='/')
+    if b.name.endswith('.csv')
 ]
 cell_type_files = [
     str(path) for path in blobs if re.search(r'log_residuals', str(path))
