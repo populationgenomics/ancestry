@@ -20,7 +20,7 @@ blobs = [
     if b.name.endswith('.csv')
 ]
 cell_type_files = [
-    str(path) for path in blobs if re.search(r'log_residuals', str(path))
+    path for path in blobs if (log_residuals' in path)
 ]
 cell_types = set(
     map(lambda filename: os.path.basename(filename).split('_')[0], cell_type_files)
