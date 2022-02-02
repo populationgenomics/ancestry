@@ -88,7 +88,7 @@ def calculate_residuals(expression_df, covariate_df, output_prefix):
     residual_df = pd.DataFrame(list(map(calculate_gene_residual, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-    residual_df.to_csv(output_prefix + f'_log_residuals.tsv')
+    residual_df.to_csv(os.path.join(output_prefix, f'log_residuals.tsv'))
 
     return residual_df
 
@@ -252,7 +252,7 @@ def main(
     result_second = merge_job.call(
         merge_df_and_convert_to_string, *spearman_dfs_from_scatter
     )
-    corr_result_output_path = os.path.join(output_prefix + '_correlation_results.csv')
+    corr_result_output_path = os.path.join(output_prefix + 'correlation_results.csv')
     batch.write_output(result_second.as_str(), corr_result_output_path)
     batch.run(wait=False)
 
