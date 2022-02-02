@@ -23,7 +23,7 @@ cell_type_files = [
     path for path in blobs if (log_residuals' in path)
 ]
 cell_types = set(
-    map(lambda filename: os.path.basename(filename).split('_')[0], cell_type_files)
+    os.path.basename(filename).split('_')[0] for filename in cell_type_files
 )
 n_chromosomes = list(range(1, 23))
 
