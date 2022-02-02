@@ -88,7 +88,7 @@ def calculate_residuals(expression_df, covariate_df, output_prefix):
     residual_df = pd.DataFrame(list(map(calculate_gene_residual, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-    residual_df.to_csv(output_prefix + f'_log_residuals.tsv')
+    os.path.join(residual_df.to_csv(output_prefix + f'_log_residuals.tsv'))
 
     return residual_df
 
