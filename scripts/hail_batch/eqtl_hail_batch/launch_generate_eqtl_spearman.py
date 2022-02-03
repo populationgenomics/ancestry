@@ -50,10 +50,18 @@ def submit_eqtl_jobs(cell_types, chromosomes_to_test, input_path, output_dir):
             genotype = f'gs://cpg-tob-wgs-test/kat/input/genotype_chr{idx}.tsv'
             geneloc = f'gs://cpg-tob-wgs-test/kat/input/geneloc_chr{idx}.tsv'
             snploc = f'gs://cpg-tob-wgs-test/kat/input/snpsloc_chr{idx}.tsv'
-            # if DRY_RUN: check that all the files exist
-            #     check_files_exists([expression, covariates,
-            # genotype, geneloc, snploc])
-            # else:
+            # check all files exist before running
+            # def file_exists(files):
+            #     file_status=storage.Blob(
+            #         bucket=bucket,
+            #         name=files.split(bucket_name)[-1].strip("/")).exists(cs_client)
+            #     return file_status
+
+            # check_files_exist = list(map(
+            #     file_exists,
+            #     [expression, covariates, genotype, geneloc, snploc]
+            #     ))
+            # if all(check_files_exist):
             run_analysis_runner(
                 script=[
                     '--dataset',
