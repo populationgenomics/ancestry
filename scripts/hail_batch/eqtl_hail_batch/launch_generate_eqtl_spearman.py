@@ -8,12 +8,12 @@ from google.cloud import storage
 
 @click.command()
 @click.option(
-    '--cell_types',
+    '--cell-types',
     default=None,
     help='List of cell types to test',
 )
 @click.option(
-    '--chromosomes_to_test',
+    '--chromosomes-to-test',
     required=True,
     help='List of chromosome numbers to run eQTL analysis on.',
 )
@@ -51,7 +51,7 @@ def submit_eqtl_jobs(cell_types, chromosomes_to_test, input_path, output_dir):
             geneloc = f'gs://cpg-tob-wgs-test/kat/input/geneloc_chr{idx}.tsv'
             snploc = f'gs://cpg-tob-wgs-test/kat/input/snpsloc_chr{idx}.tsv'
             # if DRY_RUN: check that all the files exist
-            #     check_files_exists([expression, covariates, 
+            #     check_files_exists([expression, covariates,
             # genotype, geneloc, snploc])
             # else:
             run_analysis_runner(
