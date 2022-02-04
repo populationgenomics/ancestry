@@ -32,11 +32,18 @@ def main(script: str, mt: str):
 
     job = dataproc.hail_dataproc_job(
         batch=batch,
+        worker_machine_type='n1-highmem-8',
+        worker_boot_disk_size=200,
+        secondary_worker_boot_disk_size=200,
         script=f'{script} --mt {mt}',
         max_age='12h',
-        init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+        init=[
+            'gs://cpg-reference/hail_dataproc/install_common.sh',
+            'gs://cpg-reference/vep/vep-GRCh38.sh',
+        ],
         job_name='run_vep',
-        num_secondary_workers=20,
+        num_secondary_workers=50,
+        num_workers=8,
         cluster_name='run vep',
         vep='GRCh38',
     )
