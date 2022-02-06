@@ -7,10 +7,12 @@ Reliant on output from
 
 import hail as hl
 import pandas as pd
-from analysis_runner import bucket_path, output_path
+from analysis_runner import output_path
 
 
-HGDP1KG_TOBWGS = bucket_path(f'joint-calling/v7/ancestry/mt_union_hgdp.mt', 'analysis')
+HGDP1KG_TOBWGS = (
+    'gs://cpg-tob-wgs-main-analysis/joint-calling/v7/ancestry/mt_union_hgdp.mt/'
+)
 
 
 def query():
