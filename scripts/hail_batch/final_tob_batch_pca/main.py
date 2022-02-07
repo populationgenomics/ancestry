@@ -20,4 +20,4 @@ dataproc.hail_dataproc_job(
     worker_boot_disk_size=200,
 )
 
-batch.run()
+batch.run(wait=False)
