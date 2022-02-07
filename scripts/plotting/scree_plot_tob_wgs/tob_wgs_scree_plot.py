@@ -12,7 +12,7 @@ from bokeh.embed import file_html
 from bokeh.plotting import figure
 from analysis_runner import bucket_path, output_path
 
-EIGENVALUES = bucket_path('kat/pca/nfe_feb22/v0/eigenvalues.ht')
+EIGENVALUES = bucket_path('kat/pca/nfe/v0/eigenvalues.ht')
 
 
 def query():  # pylint: disable=too-many-locals
