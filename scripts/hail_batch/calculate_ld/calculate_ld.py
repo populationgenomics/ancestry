@@ -19,8 +19,8 @@ def query():
         ).global_position(),
         stats=hl.agg.stats(tob_wgs.GT.n_alt_alleles()),
     )
-    # filter to biallelic loci only
-    tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
+    # filter for biallelic loci and only keep multiallelic sites
+    tob_wgs = tob_wgs.filter_rows(tob_wgs.n_unsplit_alleles == 2)
     # add row index to be able to remap
     tob_wgs = tob_wgs.add_row_index()
     # turn tob matrix into table and save
