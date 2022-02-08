@@ -19,20 +19,21 @@ def query():
         ).global_position(),
         stats=hl.agg.stats(tob_wgs.GT.n_alt_alleles()),
     )
-    tob_wgs = tob_wgs.filter_rows(tob_wgs.stats.stdev != 0)
+    # filter to biallelic loci only
+    tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) == 2)
     # add row index to be able to remap
     tob_wgs = tob_wgs.add_row_index()
     # turn tob matrix into table and save
     tob_wgs = tob_wgs.key_rows_by('locus', 'alleles', 'row_idx', 'global_position')
     tob_wgs = tob_wgs.select_rows().select_globals()
-    # tob_locus_info = tob_wgs.rows()
-    # tob_locus_info.write('gs://cpg-tob-wgs-test/kat/v0/tob_locus_info.ht')
+    tob_locus_info = tob_wgs.rows()
+    tob_locus_info.write('gs://cpg-tob-wgs-test/kat/v0/tob_locus_info_biallelic.ht')
     ld = hl.ld_matrix(tob_wgs.GT.n_alt_alleles(), tob_wgs.locus, radius=2e6)
     table = ld.entries()
     # filter out entries with an LD score less than 0.2
     table = table.filter(table.entry > 0.2)
     # save table
-    table.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_full_filtered02.ht')
+    table.write('gs://cpg-tob-wgs-test/kat/v0/ld_matrix_full_filtered02_biallelic.ht')
 
 
 if __name__ == '__main__':
