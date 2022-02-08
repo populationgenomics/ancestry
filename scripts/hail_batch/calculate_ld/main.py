@@ -12,7 +12,7 @@ batch = hb.Batch(name='calculate-ld', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
-    f'ld_exploration.py',
+    f'calculate_ld.py',
     max_age='12h',
     num_workers=20,
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
