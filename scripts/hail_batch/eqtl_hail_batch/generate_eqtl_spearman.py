@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Run Spearman rank correlation on SNPs and expression residuals"""
 
 import os
