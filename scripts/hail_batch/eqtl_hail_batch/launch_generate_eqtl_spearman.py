@@ -125,7 +125,7 @@ def submit_eqtl_jobs(
             else:
 
                 output_prefix = os.path.join(
-                    output_dir, f'eqtl_results_{cell_type}', 'chr{chromosome}'
+                    output_dir, f'eqtl_results_{cell_type}', f'chr{chromosome}'
                 )
                 # The analysis-runner output path doesn't want the BUCKET specified,
                 # so let's remove it from the output_prefix
@@ -133,7 +133,7 @@ def submit_eqtl_jobs(
                 run_analysis_runner(
                     description=f'eqtl_spearman_{cell_type}_chr{chromosome}',
                     dataset='tob-wgs',
-                    access_level='standard',
+                    access_level='test',
                     output_dir=analysis_runner_output_path,
                     # commit, sha and cwd can be inferred automatically
                     script=[
