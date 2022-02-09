@@ -14,13 +14,13 @@ import logging
 import os
 import click
 
-# from analysis_runner.cli_analysisrunner import run_analysis_runner
+from analysis_runner.cli_analysisrunner import run_analysis_runner
 from google.cloud import storage
 
 
-def run_analysis_runner(*args, **kwargs):
-    """Run analysis runner for all cell types and chromosomes"""
-    print(args, kwargs)
+# def run_analysis_runner(*args, **kwargs):
+#     """Run analysis runner for all cell types and chromosomes"""
+#     print(args, kwargs)
 
 
 @click.command()
