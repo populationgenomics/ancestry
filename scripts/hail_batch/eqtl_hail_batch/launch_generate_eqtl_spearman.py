@@ -6,8 +6,8 @@ For example:
     python3 scripts/hail_batch/eqtl_hail_batch/launch_generate_eqtl_spearman.py \
         --input-path "gs://cpg-tob-wgs-test/scrna_seq/grch38_association_files" \
         --dry-run \
-        --output-prefix gs://cpg-tob-wgs-test/eqtl_output \
-        --chromosomes-to-test '1 2 3 4'
+        --output-dir gs://cpg-tob-wgs-test/eqtl_output \
+        --chromosomes '1 2'
 """
 
 import logging
