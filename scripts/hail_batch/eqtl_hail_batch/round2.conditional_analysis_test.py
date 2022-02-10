@@ -107,7 +107,7 @@ def run_computation_in_scatter(
 ):
     """Run genes in scatter"""
 
-    print(f'iteration = {iteration}')
+    print(f'iteration = {iteration+2}')
     print(f'idx = {idx}')
 
     # make sure 'geneid' is the first column
@@ -161,7 +161,7 @@ def run_computation_in_scatter(
     adjusted_spearman_df['locus'] = locus
     adjusted_spearman_df['chromosome'] = chromosome
     adjusted_spearman_df['position'] = position
-    adjusted_spearman_df['round'] = iteration
+    adjusted_spearman_df['round'] = iteration + 2
 
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
@@ -239,7 +239,7 @@ def convert_dataframe_to_text(dataframe):
     help='A path prefix of where to output files, eg: gs://MyBucket/output-folder/',
 )
 @click.option(
-    '--iterations', type=int, default=5, help='Number of iterations to perform'
+    '--iterations', type=int, default=4, help='Number of iterations to perform'
 )
 @click.option(
     '--test_subset_genes',  # pylint: disable=too-many-locals
@@ -251,12 +251,13 @@ def main(
     residuals,
     genotype,
     output_prefix: str,
-    iterations=5,
+    iterations=4,
     test_subset_genes=None,
 ):
     """
     Creates a Hail Batch pipeline for calculating EQTL using {iterations} iterations,
-    scattered across the number of genes
+    scattered across the number of genes. Note, {iterations} iterations are run, however
+    iterations start at 2, since round 1 is completed in `generate_eqtl_spearan.py`.
     """
     dataset = os.getenv('DATASET')
     access_level = os.getenv('ACCESS_LEVEL')
@@ -294,7 +295,9 @@ def main(
     previous_residual_result = residual_df  # pylint: disable=invalid-name
     for iteration in range(iterations):
 
-        calc_resid_df_job = batch.new_python_job(f'calculate-resid-df-iter-{iteration}')
+        calc_resid_df_job = batch.new_python_job(
+            f'calculate-resid-df-iter-{iteration+2}'
+        )
         previous_residual_result = calc_resid_df_job.call(
             calculate_residual_df,
             genotype_df,
@@ -309,12 +312,12 @@ def main(
         # output residual df for each iteration
         batch.write_output(
             residual_as_str.as_str(),
-            os.path.join(output_prefix, f'round{iteration+1}_residual_results.csv'),
+            os.path.join(output_prefix, f'round{iteration+2}_residual_results.csv'),
         )
 
         sig_snps_dfs = []
         for gene_idx in range(n_genes):
-            j = batch.new_python_job(name=f'process_iter_{iteration}_job_{gene_idx}')
+            j = batch.new_python_job(name=f'process_iter_{iteration+2}_job_{gene_idx}')
             gene_result: hb.resource.PythonResult = j.call(
                 run_computation_in_scatter,
                 iteration,
@@ -336,7 +339,7 @@ def main(
         )
         # output sig snps for each iteration
         sig_snps_output_path = os.path.join(
-            output_prefix, f'round{iteration+1}_significant_correlation_results.csv'
+            output_prefix, f'esnp_round{iteration+2}_table.csv'
         )
         batch.write_output(sig_snps_as_string.as_str(), sig_snps_output_path)
 
