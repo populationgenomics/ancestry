@@ -17,6 +17,8 @@ DEFAULT_DRIVER_MEMORY = '4G'
 DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08'  # noqa: E501; pylint: disable=line-too-long
 DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
+TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
+
 
 def filter_lowly_expressed_genes(expression_df):
     """Remove genes with low expression in all samples"""
@@ -113,66 +115,95 @@ def run_spearman_correlation_scatter(
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
 
     # Get 1Mb sliding window around each gene
-    geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
+    geneloc_df = geneloc_df[geneloc_df.gene_name.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
     # geneloc_df.to_csv(output_prefix + f'_gene_SNP_pairs.tsv')
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
-        gene = df.geneid
+        gene_symbol = df.gene_symbol
+        gene_id = df.gene_id
         snp = df.snpid
-        res_val = residuals_df[['sampleid', gene]]
+        res_val = residuals_df[['sampleid', gene_symbol]]
         genotype_val = genotype_df[['sampleid', snp]]
         test_df = res_val.merge(genotype_val, on='sampleid', how='left')
         test_df.columns = ['sampleid', 'residual', 'SNP']
         coef, p = spearmanr(test_df['SNP'], test_df['residual'])
-        return (gene, snp, coef, p)
+        return (gene_symbol, gene_id, snp, coef, p)
 
     gene_info = geneloc_df.iloc[idx]
     snps_within_region = snploc_df[
         snploc_df['pos'].between(gene_info['left'], gene_info['right'])
     ]
     gene_snp_df = snploc_df.merge(pd.DataFrame(snps_within_region))
-    gene_snp_df = gene_snp_df.assign(geneid=gene_info.geneid)
+    gene_snp_df = gene_snp_df.assign(
+        gene_id=gene_info.gene_id, gene_symbol=gene_info.gene_name
+    )
     spearman_df = pd.DataFrame(list(gene_snp_df.apply(spearman_correlation, axis=1)))
-    spearman_df.columns = ['geneid', 'snpid', 'coef', 'p.value']
+    spearman_df.columns = [
+        'gene_symbol',
+        'gene_id',
+        'snpid',
+        'spearmans_rho',
+        'p_value',
+    ]
     # add in global position and round
-    locus = spearman_df.snpid.str.split('_', expand=True)[0]
-    chromosome = locus.str.split(':', expand=True)[0]
-    position = locus.str.split(':', expand=True)[1]
-    spearman_df['locus'], spearman_df['chromosome'], spearman_df['position'] = [
+    locus = spearman_df.snpid.str.split(':', expand=True)[[0, 1]].agg(':'.join, axis=1)
+    chrom = locus.str.split(':', expand=True)[0]
+    bp = locus.str.split(':', expand=True)[1]
+    spearman_df['locus'], spearman_df['chrom'], spearman_df['bp'] = [
         locus,
-        chromosome,
-        position,
+        chrom,
+        bp,
     ]
     spearman_df['round'] = 1
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
     spearman_df.to_csv(f'spearman_df_{idx}.csv')
-    hl.init(default_reference='GRCh37')
+    hl.init(default_reference='GRCh38')
     t = hl.import_table(
         f'spearman_df_{idx}.csv',
         delimiter=',',
-        types={'position': hl.tint32, 'coef': hl.tfloat64, 'p.value': hl.tfloat64},
+        types={'bp': hl.tint32, 'spearmans_rho': hl.tfloat64, 'p_value': hl.tfloat64},
     )
-    t = t.annotate(global_position=hl.locus(t.chromosome, t.position).global_position())
+    t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
+    t = t.annotate(locus=hl.locus(t.chrom, t.bp))
     # get alleles
-    # mt.rows()[c.liftover].alleles
+    mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
+    t = t.key_by('locus')
+    t = t.annotate(
+        alleles=mt.rows()[t.locus].alleles,
+        a1=mt.rows()[t.locus].alleles[0],
+        a2=mt.rows()[t.locus].alleles[1],
+    )
+    t = t.annotate(
+        id=hl.str(':').join(
+            [
+                hl.str(t.chrom),
+                hl.str(t.bp),
+                t.a1,
+                t.a2,
+                t.gene_symbol,
+                # result.db_key, # cell_type_id (eg nk, mononc)
+                hl.str(t.round),
+            ]
+        )
+    )
     # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
     # because it doesn't work with the spark local backend
-    t.export(f'spearman_df_annotated_{idx}.tsv')
-    spearman_df = pd.read_csv(f'spearman_df_annotated_{idx}.tsv', sep='\t')
+    t.export(f'adjusted_spearman_df_annotated_{idx}.tsv')
+    spearman_df = pd.read_csv(f'adjusted_spearman_df_annotated_{idx}.tsv', sep='\t')
     return spearman_df
 
 
 def merge_df_and_convert_to_string(*df_list):
     """Merge all Spearman dfs and convert to string using .to_string() on df"""
     merged_df: pd.DataFrame = pd.concat(df_list)
-    pvalues = merged_df['p.value']
+    pvalues = merged_df['p_value']
     fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
-    merged_df = merged_df.assign(FDR=fdr_values)
-    merged_df['FDR'] = merged_df.FDR.astype(float)
+    merged_df = merged_df.assign(fdr=fdr_values)
+    merged_df['fdr'] = merged_df.FDR.astype(float)
     return merged_df.to_string()
 
 
