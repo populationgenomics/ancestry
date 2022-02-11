@@ -203,7 +203,7 @@ def merge_df_and_convert_to_string(*df_list):
     pvalues = merged_df['p_value']
     fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
     merged_df = merged_df.assign(fdr=fdr_values)
-    merged_df['fdr'] = merged_df.FDR.astype(float)
+    merged_df['fdr'] = merged_df.fdr.astype(float)
     return merged_df.to_string()
 
 
