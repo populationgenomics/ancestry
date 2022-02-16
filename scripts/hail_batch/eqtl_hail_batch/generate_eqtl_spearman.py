@@ -277,6 +277,7 @@ def main(
     geneloc_df = load_job.call(pd.read_csv, geneloc, sep='\t')
     snploc_df = load_job.call(pd.read_csv, snploc, sep='\t')
     covariate_df = load_job.call(pd.read_csv, covariates, sep='\t')
+    sampleid_keys = load_job.call(pd.read_csv, keys, sep='\t')
     calculate_residuals_job = batch.new_python_job('load-data')
     residuals_df = calculate_residuals_job.call(
         calculate_residuals,
@@ -284,7 +285,6 @@ def main(
         covariate_df=covariate_df,
         output_prefix=output_prefix,
     )
-    sampleid_keys = load_job.call(pd.read_csv, keys, sep='\t')
 
     spearman_dfs_from_scatter = []
     for idx in range(get_number_of_scatters(expression_df_literal, geneloc_df_literal)):
