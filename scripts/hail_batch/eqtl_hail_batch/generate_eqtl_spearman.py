@@ -105,6 +105,7 @@ def run_spearman_correlation_scatter(
     geneloc_df,
     snploc_df,
     residuals_df,
+    sampleid_keys,
 ):  # pylint: disable=too-many-locals
     """Run genes in scatter"""
 
@@ -112,6 +113,16 @@ def run_spearman_correlation_scatter(
 
     # Prepare variables used to calculate Spearman's correlation
     gene_ids = list(log_expression_df.columns.values)[1:]
+    # change genotype df sampleids from CPG internal IDs to OneK1K IDs
+    genotype_df = pd.merge(
+        genotype_df,
+        sampleid_keys,
+        how='left',
+        left_on='sampleid',
+        right_on='InternalID',
+    ).drop(['InternalID', 'ExternalID', 'sampleid'], axis=1)
+    genotype_df = genotype_df.rename(columns={'OneK1K_ID': 'sampleid'})
+    genotype_df['sampleid'] = genotype_df.sampleid.str.split('_').str[0].astype(int)
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
 
     # Get 1Mb sliding window around each gene
@@ -175,7 +186,9 @@ def run_spearman_correlation_scatter(
     t = t.annotate(
         alleles=mt.rows()[t.locus].alleles,
         a1=mt.rows()[t.locus].alleles[0],
-        a2=mt.rows()[t.locus].alleles[1],
+        a2=hl.if_else(
+            hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
+        ),
     )
     t = t.annotate(
         id=hl.str(':').join(
@@ -224,7 +237,12 @@ def merge_df_and_convert_to_string(*df_list):
 @click.option(
     '--covariates', required=True, help='A TSV of covariates to calculate residuals'
 )
-@click.option(  # pylint: disable=too-many-locals
+@click.option(
+    '--keys',
+    required=False,
+    help='A TSV of sample ids to convert external to internal IDs',
+)  # pylint: disable=too-many-locals
+@click.option(
     '--output-prefix',
     required=True,
     help='A path prefix of where to output files, eg: gs://MyBucket/output-folder/',
@@ -235,6 +253,7 @@ def main(
     geneloc,
     snploc,
     covariates,
+    keys,
     output_prefix: str,
 ):
     """
@@ -265,6 +284,7 @@ def main(
         covariate_df=covariate_df,
         output_prefix=output_prefix,
     )
+    sampleid_keys = load_job.call(pd.read_csv, keys, sep='\t')
 
     spearman_dfs_from_scatter = []
     for idx in range(get_number_of_scatters(expression_df_literal, geneloc_df_literal)):
@@ -278,6 +298,7 @@ def main(
             geneloc_df=geneloc_df,
             snploc_df=snploc_df,
             residuals_df=residuals_df,
+            sampleid_keys=sampleid_keys,
         )
         spearman_dfs_from_scatter.append(result)
 
