@@ -273,7 +273,7 @@ def main(
 
     # load files into a python job to avoid memory issues during a submission
     load_job = batch.new_python_job('load-data')
-    load_job.memory('10Gi')
+    load_job.memory('20Gi')
     expression_df = load_job.call(pd.read_csv, expression, sep='\t')
     genotype_df = load_job.call(pd.read_csv, genotype, sep='\t')
     geneloc_df = load_job.call(pd.read_csv, geneloc, sep='\t')
