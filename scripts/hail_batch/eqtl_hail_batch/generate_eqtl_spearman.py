@@ -186,9 +186,9 @@ def run_spearman_correlation_scatter(
     t = t.annotate(
         alleles=mt.rows()[t.locus].alleles,
         a1=mt.rows()[t.locus].alleles[0],
-        a2=hl.if_else(
-            hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
-        ),
+        # a2=hl.if_else(
+        #     hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
+        # ),
     )
     t = t.annotate(
         id=hl.str(':').join(
@@ -196,7 +196,7 @@ def run_spearman_correlation_scatter(
                 hl.str(t.chrom),
                 hl.str(t.bp),
                 t.a1,
-                t.a2,
+                # t.a2,
                 t.gene_symbol,
                 # result.db_key, # cell_type_id (eg nk, mononc)
                 hl.str(t.round),
