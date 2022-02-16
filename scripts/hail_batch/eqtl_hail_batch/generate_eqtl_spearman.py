@@ -44,7 +44,7 @@ def get_number_of_scatters(expression_df, geneloc_df):
 
     expression_df = filter_lowly_expressed_genes(expression_df)
     gene_ids = list(expression_df.columns.values)[1:]
-    geneloc_df = geneloc_df[geneloc_df.geneid.isin(gene_ids)]
+    geneloc_df = geneloc_df[geneloc_df.gene_id.isin(gene_ids)]
 
     return len(geneloc_df.index)
 
