@@ -278,7 +278,7 @@ def main(
     load_expression.storage('2Gi')
     expression_df = load_expression.call(pd.read_csv, expression, sep='\t')
     load_genotype = batch.new_python_job('load-genotype')
-    load_genotype.cpu(10)
+    load_genotype.cpu(2)
     load_genotype.memory('60Gi')
     load_genotype.storage('20Gi')
     genotype_df = load_genotype.call(pd.read_csv, genotype, sep='\t')
