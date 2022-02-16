@@ -239,7 +239,7 @@ def merge_df_and_convert_to_string(*df_list):
 )
 @click.option(
     '--keys',
-    required=False,
+    required=True,
     help='A TSV of sample ids to convert external to internal IDs',
 )  # pylint: disable=too-many-locals
 @click.option(
