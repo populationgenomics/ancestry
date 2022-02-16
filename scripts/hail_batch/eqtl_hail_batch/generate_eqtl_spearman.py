@@ -44,7 +44,7 @@ def get_number_of_scatters(expression_df, geneloc_df):
 
     expression_df = filter_lowly_expressed_genes(expression_df)
     gene_ids = list(expression_df.columns.values)[1:]
-    geneloc_df = geneloc_df[geneloc_df.gene_id.isin(gene_ids)]
+    geneloc_df = geneloc_df[geneloc_df.gene_name.isin(gene_ids)]
 
     return len(geneloc_df.index)
 
@@ -278,8 +278,8 @@ def main(
     load_expression.storage('2Gi')
     expression_df = load_expression.call(pd.read_csv, expression, sep='\t')
     load_genotype = batch.new_python_job('load-genotype')
-    load_genotype.cpu(2)
-    load_genotype.memory('40Gi')
+    load_genotype.cpu(10)
+    load_genotype.memory('60Gi')
     load_genotype.storage('20Gi')
     genotype_df = load_genotype.call(pd.read_csv, genotype, sep='\t')
     load_small_files = batch.new_python_job('load-small-files')
