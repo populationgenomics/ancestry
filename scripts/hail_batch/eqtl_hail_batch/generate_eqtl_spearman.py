@@ -301,6 +301,9 @@ def main(
     for idx in range(get_number_of_scatters(expression_df_literal, geneloc_df_literal)):
         # for i in range(5):
         j = batch.new_python_job(name=f'process_{idx}')
+        j.cpu(2)
+        j.memory('8Gi')
+        j.storage('2Gi')
         result: hb.resource.PythonResult = j.call(
             run_spearman_correlation_scatter,
             idx=idx,
