@@ -17,7 +17,7 @@ DEFAULT_DRIVER_MEMORY = '4G'
 DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08'  # noqa: E501; pylint: disable=line-too-long
 DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
-TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
+# TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
 
 
 def filter_lowly_expressed_genes(expression_df):
@@ -182,11 +182,11 @@ def run_spearman_correlation_scatter(
     t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
     t = t.annotate(locus=hl.locus(t.chrom, t.bp))
     # get alleles
-    mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
+    # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
     t = t.key_by('locus')
     t = t.annotate(
-        alleles=mt.rows()[t.locus].alleles,
-        a1=mt.rows()[t.locus].alleles[0],
+        # alleles=mt.rows()[t.locus].alleles,
+        # a1=mt.rows()[t.locus].alleles[0],
         # a2=hl.if_else(
         #     hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
         # ),
@@ -196,7 +196,7 @@ def run_spearman_correlation_scatter(
             [
                 hl.str(t.chrom),
                 hl.str(t.bp),
-                t.a1,
+                # t.a1,
                 # t.a2,
                 t.gene_symbol,
                 # result.db_key, # cell_type_id (eg nk, mononc)
