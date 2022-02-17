@@ -177,7 +177,7 @@ def run_spearman_correlation_scatter(
     t = hl.import_table(
         f'spearman_df_{idx}.csv',
         delimiter=',',
-        types={'bp': hl.tint32, 'spearmans_rho': hl.tfloat64, 'p_value': hl.tfloat64},
+        types={'bp': hl.tint32, 'p_value': hl.tfloat64},
     )
     t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
     t = t.annotate(locus=hl.locus(t.chrom, t.bp))
