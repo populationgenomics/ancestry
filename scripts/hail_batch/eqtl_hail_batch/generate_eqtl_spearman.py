@@ -124,7 +124,7 @@ def run_spearman_correlation_scatter(
     ).drop(['InternalID', 'ExternalID', 'sampleid'], axis=1)
     genotype_df = genotype_df.rename(columns={'OneK1K_ID': 'sampleid'})
     # remove samples without an ID
-    genotype_df = genotype_df[genotype_df.sampleid.isna() is False]
+    genotype_df = genotype_df[genotype_df.sampleid.isna() == False]
     genotype_df['sampleid'] = genotype_df.sampleid.str.split('_').str[0].astype(int)
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
 
