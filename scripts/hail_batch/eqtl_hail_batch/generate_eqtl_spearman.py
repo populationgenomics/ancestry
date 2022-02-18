@@ -123,6 +123,8 @@ def run_spearman_correlation_scatter(
         right_on='InternalID',
     ).drop(['InternalID', 'ExternalID', 'sampleid'], axis=1)
     genotype_df = genotype_df.rename(columns={'OneK1K_ID': 'sampleid'})
+    # remove samples without an ID
+    genotype_df = genotype_df[genotype_df.sampleid.isna() is False]
     genotype_df['sampleid'] = genotype_df.sampleid.str.split('_').str[0].astype(int)
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
 
@@ -141,7 +143,9 @@ def run_spearman_correlation_scatter(
         genotype_val = genotype_df[['sampleid', snp]]
         test_df = res_val.merge(genotype_val, on='sampleid', how='left')
         test_df.columns = ['sampleid', 'residual', 'SNP']
-        coef, p = spearmanr(test_df['SNP'], test_df['residual'])
+        # set spearmanr calculation to perform the calculation ignoring nan values
+        # this should be removed after resolving why NA values are in the genotype file
+        coef, p = spearmanr(test_df['SNP'], test_df['residual'], nan_policy='omit')
         return (gene_symbol, gene_id, snp, coef, p)
 
     gene_info = geneloc_df.iloc[idx]
@@ -184,13 +188,13 @@ def run_spearman_correlation_scatter(
     # get alleles
     # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
     t = t.key_by('locus')
-    t = t.annotate(
-        # alleles=mt.rows()[t.locus].alleles,
-        # a1=mt.rows()[t.locus].alleles[0],
-        # a2=hl.if_else(
-        #     hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
-        # ),
-    )
+    #    t = t.annotate(
+    # alleles=mt.rows()[t.locus].alleles,
+    # a1=mt.rows()[t.locus].alleles[0],
+    # a2=hl.if_else(
+    #     hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
+    # ),
+    #    )
     t = t.annotate(
         id=hl.str(':').join(
             [
