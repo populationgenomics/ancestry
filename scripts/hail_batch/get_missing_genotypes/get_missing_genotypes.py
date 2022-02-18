@@ -15,6 +15,8 @@ def query():
     # densify the table and split multiallelics
     tob_wgs = hl.experimental.densify(tob_wgs)
     tob_wgs = hl.split_multi_hts(tob_wgs)
+    # only keep biallelic and multiallelic loci
+    tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) >= 2)
     # count number of rows before filtering and print
     nrows_pre = tob_wgs.count_rows()
     print(f'There are {nrows_pre} rows before filtering')
