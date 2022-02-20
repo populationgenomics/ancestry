@@ -17,13 +17,8 @@ def query():
     tob_wgs = hl.split_multi_hts(tob_wgs)
     # only keep biallelic and multiallelic loci
     tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) >= 2)
-    # count number of rows before filtering and print
-    nrows_pre = tob_wgs.count_rows()
-    print(f'There are {nrows_pre} rows before filtering')
-    # filter out rows with NA genotypes
-    tob_wgs = tob_wgs.filter_rows(hl.agg.any(hl.is_missing(tob_wgs.GT)))
-    nrows_post = tob_wgs.count_rows()
-    print(f'There are {nrows_post} rows after filtering')
+    # save file
+    tob_wgs.write('gs://cpg-tob-wgs-test/kat/v0/tob_wgs_densified_filtered.mt')
 
 
 if __name__ == '__main__':
