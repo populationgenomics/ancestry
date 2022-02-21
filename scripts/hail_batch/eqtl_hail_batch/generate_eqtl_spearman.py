@@ -305,7 +305,7 @@ def main(
     load_small_files.storage('2Gi')
     geneloc_df = load_small_files.call(pd.read_csv, geneloc, sep='\t')
     snploc_df = load_small_files.call(pd.read_csv, snploc, sep='\t')
-    covariate_df = load_small_files.call(pd.read_csv, covariates, sep='\t')
+    covariate_df = load_small_files.call(pd.read_csv, covariates, sep=',')
     sampleid_keys = load_small_files.call(pd.read_csv, keys, sep='\t')
     calculate_residuals_job = batch.new_python_job('calculate-residuals')
     residuals_df = calculate_residuals_job.call(
