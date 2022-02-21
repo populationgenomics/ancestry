@@ -66,6 +66,21 @@ def get_log_expression(expression_df):
     return log_expression_df
 
 
+def calculate_log_cpm(expression_df, output_prefix):
+    """Calculate log cpm for each cell type and chromosome"""
+
+    expression_df = filter_lowly_expressed_genes(expression_df)
+    sample_ids = expression_df.iloc[:, 0]
+    # remove sampleid column and get log expression
+    # this can only be done on integers
+    expression_df = expression_df.iloc[:, 1:]
+    cpm_df = expression_df.apply(lambda x: (x / sum(x)) * 1000000, axis=0)
+    log_cpm = np.log(cpm_df + 1)
+    # add sampleids back in
+    log_cpm = log_cpm.assign(sampleid=list(sample_ids))
+    log_cpm.to_csv(os.path.join(output_prefix, f'log_cpm.tsv'))
+
+
 def calculate_residuals(expression_df, covariate_df, output_prefix):
     """Calculate residuals for each gene in scatter"""
 
@@ -125,7 +140,6 @@ def run_spearman_correlation_scatter(
     genotype_df = genotype_df.rename(columns={'OneK1K_ID': 'sampleid'})
     # remove samples without an ID
     genotype_df = genotype_df[genotype_df.sampleid.isna() == False]
-    genotype_df['sampleid'] = genotype_df.sampleid.str.split('_').str[0].astype(int)
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
 
     # Get 1Mb sliding window around each gene
@@ -298,6 +312,12 @@ def main(
         calculate_residuals,
         expression_df=expression_df,
         covariate_df=covariate_df,
+        output_prefix=output_prefix,
+    )
+    calculate_log_cpm_job = batch.new_python_job('calculate-log-cpm')
+    calculate_log_cpm_job.call(
+        calculate_log_cpm,
+        expression_df=expression_df,
         output_prefix=output_prefix,
     )
 
