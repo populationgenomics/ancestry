@@ -56,9 +56,8 @@ def main(
 
     batch = hb.Batch(name='run-eqtl-association', backend=service_backend)
 
-    dataproc.hail_dataproc_job(
-        batch,
-        f'generate_eqtl_spearman.py',
+    job = dataproc.hail_dataproc_job(
+        batch=batch,
         max_age='12h',
         num_secondary_workers=20,
         init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
@@ -66,6 +65,7 @@ def main(
         script=f'{script} --expression {expression} --genotype {genotype} --geneloc {geneloc} --snploc {snploc} --covariates {covariates} --keys {keys} --output-prefix {output_prefix} ',
         worker_boot_disk_size=200,
     )
+    job.memory('standard')
 
     batch.run(wait=False)
 
