@@ -7,11 +7,9 @@ import click
 import hailtop.batch as hb
 from analysis_runner import dataproc
 
-from analysis_runner.constants import GCLOUD_ACTIVATE_AUTH
-
 
 @click.command()
-@click.option('--script', 'script', help='path to VEP main script')
+@click.option('--script', 'script', help='path to main script')
 @click.option(
     '--expression', required=True, help='A sample x gene TSV of expression values'
 )
@@ -68,8 +66,6 @@ def main(
         worker_boot_disk_size=200,
     )
     job.memory('standard')
-    job.command(GCLOUD_ACTIVATE_AUTH)
-
     batch.run(wait=False)
 
 
