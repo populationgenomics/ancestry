@@ -7,6 +7,8 @@ import click
 import hailtop.batch as hb
 from analysis_runner import dataproc
 
+from analysis_runner.constants import GCLOUD_ACTIVATE_AUTH
+
 
 @click.command()
 @click.option('--script', 'script', help='path to VEP main script')
@@ -66,6 +68,7 @@ def main(
         worker_boot_disk_size=200,
     )
     job.memory('standard')
+    job.command(GCLOUD_ACTIVATE_AUTH)
 
     batch.run(wait=False)
 
