@@ -32,7 +32,7 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path):
     Get covariate data by merging PCA scores with age and sex info.
     Only needs to be run once.
     """
-    scores_df = pd.read_csv(scores_path, sep='\t')
+    scores_df = pd.read_json(scores_path, sep='\t')
     sampleid = scores_df.s
     # only get the first 4 PCs, as indicated by scree plot
     scores = pd.DataFrame(scores_df['scores'].to_list()).iloc[:, 0:4]
