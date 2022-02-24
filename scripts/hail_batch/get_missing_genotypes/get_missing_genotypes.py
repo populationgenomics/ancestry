@@ -1,24 +1,29 @@
-"""Get number of variants with a MAF > 0.05"""
+"""Get GQ and GT for missing variants"""
 
 import hail as hl
 from analysis_runner import bucket_path
 
-TOB_WGS = bucket_path('mt/v5.1.mt/')
+NAGIM = bucket_path('mt/v1-3.mt/')
+
+
+def get_gt_and_gq(mt, locus, sample):
+    """Get GQ and GT scores for individual samples"""
+    na_locus = hl.parse_locus(locus, 'GRCh38')
+    parsed_locus = mt.filter_rows(mt.locus == na_locus, keep=True)
+    gt = parsed_locus.filter_cols(parsed_locus.s == sample).GT.collect()[0].alleles
+    gq = parsed_locus.filter_cols(parsed_locus.s == sample).GQ.collect()
+    print(f'The GT for sample {sample} is {gt} and the GQ score is {gq}')
 
 
 def query():
-    """Query script entry point."""
+    """Query script entry point"""
 
     hl.init(default_reference='GRCh38')
 
-    tob_wgs = hl.read_matrix_table(TOB_WGS)
-    # densify the table and split multiallelics
-    tob_wgs = hl.experimental.densify(tob_wgs)
-    tob_wgs = hl.split_multi_hts(tob_wgs)
-    # only keep biallelic and multiallelic loci
-    tob_wgs = tob_wgs.filter_rows(hl.len(tob_wgs.alleles) >= 2)
-    # save file
-    tob_wgs.write('gs://cpg-tob-wgs-test/kat/v0/tob_wgs_densified_filtered.mt')
+    nagim = hl.read_matrix_table(NAGIM)
+    get_gt_and_gq(mt=nagim, locus='chr1:28663', sample='CPG1107')
+    get_gt_and_gq(mt=nagim, locus='chr1:94725', sample='CPG1198')
+    get_gt_and_gq(mt=nagim, locus='chr1:588091', sample='CPG1081')
 
 
 if __name__ == '__main__':
