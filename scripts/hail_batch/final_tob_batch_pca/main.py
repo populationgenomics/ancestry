@@ -12,7 +12,7 @@ batch = hb.Batch(name='tob-pca', backend=service_backend)
 
 dataproc.hail_dataproc_job(
     batch,
-    f'generate_pca_no_outliers.py',
+    f'generate_pca_all_samples.py',
     max_age='4h',
     num_secondary_workers=20,
     init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
