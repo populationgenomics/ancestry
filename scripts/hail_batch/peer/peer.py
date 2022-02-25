@@ -13,12 +13,10 @@ Test run this with:
 
 import os
 import hailtop.batch as hb
-import hail as hl
-import click
 import pandas as pd
 
 DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:e6451763492b62ddfadc20c06b240234b20b6f2f-hail-0.2.73.devc6f6f09cec08'
-PEER_DOCKER = "australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3"
+PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.1'
 
 SCORES_PATH = 'gs://cpg-tob-wgs-test/kat/pca/nfe_feb22/v0/scores.json'
 COVARIATES_PATH = 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/covariates_files/covariates.tsv'
@@ -82,16 +80,16 @@ def run_peer(expression_file, covariates, factors_output_path):
 
     # Calculate and save the PEER factors
     factors = model.getX()
-    np.savetxt(factors_output_path, factors, delimiter=",")
+    np.savetxt(factors_output_path, factors, delimiter=',')
     # Calculate and save the weights for each factor
     weights = model.getW()
-    np.savetxt("weight.csv", weights, delimiter=",")
+    np.savetxt('weight.csv', weights, delimiter=',')
     # Calculate and save the precision values
     precision = model.getAlpha()
-    np.savetxt("precision.csv", precision, delimiter=",")
+    np.savetxt('precision.csv', precision, delimiter=',')
     # Calculate and save the residuals
     residuals = model.getResiduals()
-    np.savetxt("residuals.csv", residuals, delimiter=",")
+    np.savetxt('residuals.csv', residuals, delimiter=',')
 
     return (precision, weights, residuals, factors)
 
@@ -104,6 +102,9 @@ def main(
     covariates_path=COVARIATES_PATH,
     sample_id_keys_path=SAMPLE_ID_KEYS_PATH,
 ):
+    """
+    Run PEER calculation in hail batch
+    """
 
     dataset = os.getenv('DATASET', 'tob-wgs')
     access_level = os.getenv('ACCESS_LEVEL', 'test')
@@ -133,7 +134,7 @@ def main(
     batch.run(wait=False)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(
         expression_file='gs://cpg-tob-wgs-test/kat/expression.csv',
     )  # pylint: disable=no-value-for-parameter
