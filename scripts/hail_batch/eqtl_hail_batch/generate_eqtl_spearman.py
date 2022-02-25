@@ -20,6 +20,16 @@ DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 # TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
 
 
+def get_number_of_scatters(expression_df, geneloc_df):
+    """get index of total number of genes"""
+
+    expression_df = filter_lowly_expressed_genes(expression_df)
+    gene_ids = list(expression_df.columns.values)[1:]
+    geneloc_df = geneloc_df[geneloc_df.gene_name.isin(gene_ids)]
+
+    return len(geneloc_df.index)
+
+
 def filter_lowly_expressed_genes(expression_df):
     """Remove genes with low expression in all samples"""
 
@@ -37,16 +47,6 @@ def filter_lowly_expressed_genes(expression_df):
     expression_df.insert(loc=0, column='sampleid', value=sample_ids)
 
     return expression_df
-
-
-def get_number_of_scatters(expression_df, geneloc_df):
-    """get index of total number of genes"""
-
-    expression_df = filter_lowly_expressed_genes(expression_df)
-    gene_ids = list(expression_df.columns.values)[1:]
-    geneloc_df = geneloc_df[geneloc_df.gene_name.isin(gene_ids)]
-
-    return len(geneloc_df.index)
 
 
 def get_log_expression(expression_df):
@@ -139,6 +139,7 @@ def run_spearman_correlation_scatter(
     ).drop(['InternalID', 'ExternalID', 'sampleid'], axis=1)
     genotype_df = genotype_df.rename(columns={'OneK1K_ID': 'sampleid'})
     # remove samples without an ID
+    # note: sample CPG10157 has genotype data, but no scRNA data
     genotype_df = genotype_df[genotype_df.sampleid.isna() == False]
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
 
