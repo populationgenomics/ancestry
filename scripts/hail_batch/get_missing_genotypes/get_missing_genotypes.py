@@ -1,9 +1,8 @@
 """Get GQ and GT for missing variants"""
 
 import hail as hl
-from analysis_runner import bucket_path
 
-NAGIM = bucket_path('mt/v1-3.mt/')
+NAGIM = 'gs://cpg-nagim-test/mt/v1-3.mt/'
 
 
 def get_gt_and_gq(mt, locus, sample):
