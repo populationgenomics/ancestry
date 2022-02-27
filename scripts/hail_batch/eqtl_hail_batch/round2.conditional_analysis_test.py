@@ -17,7 +17,7 @@ DEFAULT_DRIVER_MEMORY = '4G'
 DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:d2a9c316d6d752edb27623542c8a062db4466842-hail-0.2.73.devc6f6f09cec08'  # noqa: E501; pylint: disable=line-too-long
 DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
-TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
+# TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
 
 
 def get_number_of_scatters(residual_df, significant_snps_df):
@@ -25,7 +25,7 @@ def get_number_of_scatters(residual_df, significant_snps_df):
 
     # Identify the top eSNP for each eGene and assign remaining to df
     esnp1 = (
-        significant_snps_df.sort_values(['geneid', 'p_value'], ascending=True)
+        significant_snps_df.sort_values(['geneid', 'p.value'], ascending=True)
         .groupby('geneid')
         .first()
         .reset_index()
@@ -58,7 +58,7 @@ def calculate_residual_df(genotype_df, residual_df, significant_snps_df):
 
     # Identify the top eSNP for each eGene and assign remaining to df
     esnp1 = (
-        significant_snps_df.sort_values(['geneid', 'fdr'], ascending=True)
+        significant_snps_df.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .first()
         .reset_index()
@@ -118,7 +118,7 @@ def run_computation_in_scatter(
     cols.insert(0, cols.pop(cols.index('geneid')))
     significant_snps_df = significant_snps_df.loc[:, cols]
     esnps_to_test = (
-        significant_snps_df.sort_values(['geneid', 'fdr'], ascending=True)
+        significant_snps_df.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .apply(lambda group: group.iloc[1:, 1:])
         .reset_index()
@@ -139,7 +139,7 @@ def run_computation_in_scatter(
         return (gene_symbol, snp, spearmans_rho, p)
 
     esnp1 = (
-        significant_snps_df.sort_values(['geneid', 'fdr'], ascending=True)
+        significant_snps_df.sort_values(['geneid', 'FDR'], ascending=True)
         .groupby('geneid')
         .first()
         .reset_index()
@@ -154,7 +154,7 @@ def run_computation_in_scatter(
     adjusted_spearman_df = pd.DataFrame(
         list(gene_snp_test_df.apply(spearman_correlation, axis=1))
     )
-    adjusted_spearman_df.columns = ['geneid', 'snpid', 'spearmans_rho', 'p_value']
+    adjusted_spearman_df.columns = ['geneid', 'snpid', 'spearmans_rho', 'p.value']
     # add in global position and round
     locus = adjusted_spearman_df.snpid.str.split('_', expand=True)[0]
     chromosome = locus.str.split(':', expand=True)[0]
@@ -171,24 +171,24 @@ def run_computation_in_scatter(
     t = hl.import_table(
         'adjusted_spearman_df.csv',
         delimiter=',',
-        types={'bp': hl.tint32, 'spearmans_rho': hl.tfloat64, 'p_value': hl.tfloat64},
+        types={'bp': hl.tint32, 'spearmans_rho': hl.tfloat64, 'p.value': hl.tfloat64},
     )
     t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
     # get alleles
-    mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
+    # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
     t = t.key_by('locus')
-    t = t.annotate(
-        alleles=mt.rows()[t.locus].alleles,
-        a1=mt.rows()[t.locus].alleles[0],
-        a2=mt.rows()[t.locus].alleles[1],
-    )
+    # t = t.annotate(
+    #     alleles=mt.rows()[t.locus].alleles,
+    #     a1=mt.rows()[t.locus].alleles[0],
+    #     a2=mt.rows()[t.locus].alleles[1],
+    # )
     t = t.annotate(
         id=hl.str(':').join(
             [
                 hl.str(t.chrom),
                 hl.str(t.bp),
-                t.a1,
-                t.a2,
+                # t.a1,
+                # t.a2,
                 t.gene_symbol,
                 # result.db_key, # cell_type_id (eg nk, mononc)
                 hl.str(t.round),
@@ -212,10 +212,10 @@ def merge_significant_snps_dfs(*df_list):
     """
 
     merged_sig_snps = pd.concat(df_list)
-    pvalues = merged_sig_snps['p_value']
+    pvalues = merged_sig_snps['p.value']
     fdr_values = pd.DataFrame(list(multi.fdrcorrection(pvalues))).iloc[1]
-    merged_sig_snps = merged_sig_snps.assign(fdr=fdr_values)
-    merged_sig_snps['fdr'] = merged_sig_snps.fdr.astype(float)
+    merged_sig_snps = merged_sig_snps.assign(FDR=fdr_values)
+    merged_sig_snps['FDR'] = merged_sig_snps.FDR.astype(float)
     merged_sig_snps.append(merged_sig_snps)
 
     return merged_sig_snps
