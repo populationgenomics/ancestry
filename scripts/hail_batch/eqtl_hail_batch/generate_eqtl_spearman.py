@@ -348,6 +348,9 @@ def main(
         spearman_dfs_from_scatter.append(result)
 
     merge_job = batch.new_python_job(name='merge_scatters')
+    merge_job.cpu(2)
+    merge_job.memory('8Gi')
+    merge_job.storage('2Gi')
     result_second = merge_job.call(
         merge_df_and_convert_to_string, *spearman_dfs_from_scatter
     )
