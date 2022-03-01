@@ -143,8 +143,10 @@ def run_spearman_correlation_scatter(
     genotype_df = genotype_df[genotype_df.sampleid.isna() == False]
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
     # Only keep columns where 90% of individuals have values
-    min_count = int(len(genotype_df.index) * .90)
+    min_count = int(len(genotype_df.index) * 0.90)
     genotype_df = genotype_df.dropna(axis='columns', thresh=min_count)
+    # filter snploc file to have the same snps as the genotype_df
+    snploc_df = snploc_df[snploc_df.snpid.isin(genotype_df.columns)]
 
     # Get 1Mb sliding window around each gene
     geneloc_df = geneloc_df[geneloc_df.gene_name.isin(gene_ids)]
