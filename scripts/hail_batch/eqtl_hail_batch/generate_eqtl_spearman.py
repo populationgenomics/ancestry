@@ -164,6 +164,7 @@ def run_spearman_correlation_scatter(
         return (gene_symbol, gene_id, snp, coef, p)
 
     gene_info = geneloc_df.iloc[idx]
+    print(gene_info)
     snps_within_region = snploc_df[
         snploc_df['pos'].between(gene_info['left'], gene_info['right'])
     ]
