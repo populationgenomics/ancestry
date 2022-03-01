@@ -142,8 +142,9 @@ def run_spearman_correlation_scatter(
     # note: sample CPG10157 has genotype data, but no scRNA data
     genotype_df = genotype_df[genotype_df.sampleid.isna() == False]
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
-    # remove columns with all NA values
-    genotype_df = genotype_df.dropna(axis='columns', how='all')
+    # Only keep columns where 90% of individuals have values
+    min_count = int(len(genotype_df.index) * .90)
+    genotype_df = genotype_df.dropna(axis='columns', thresh=min_count)
 
     # Get 1Mb sliding window around each gene
     geneloc_df = geneloc_df[geneloc_df.gene_name.isin(gene_ids)]
