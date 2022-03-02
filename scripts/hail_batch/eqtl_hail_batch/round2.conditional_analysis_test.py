@@ -73,6 +73,8 @@ def calculate_residual_df(genotype_df, residual_df, significant_snps_df, samplei
         .first()
         .reset_index()
     )
+    # FIXME
+    esnp1 = esnp1.drop_duplicates(subset=['gene_symbol'], keep='last')
 
     # Subset residuals for the genes to be tested
     sample_ids = residual_df.loc[:, ['sampleid']]
