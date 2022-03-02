@@ -357,6 +357,7 @@ def main(
             genotype_df,
             previous_residual_result,
             previous_sig_snps_result,
+            sampleid_keys,
         )
 
         # convert residual df to string for output
