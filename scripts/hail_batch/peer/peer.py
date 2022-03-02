@@ -25,10 +25,10 @@ SAMPLE_ID_KEYS_PATH = (
 )
 
 
-def get_covariates(scores_path, covariates_path, sample_id_keys_path):
+def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
     """
     Get covariate data by merging PCA scores with age and sex info.
-    Only needs to be run once.
+    Only needs to be run once. This returns a TSV (as a string)
     """
     scores_df = pd.read_json(scores_path)
     sampleid = scores_df.s
@@ -49,27 +49,34 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path):
         covariates, scores, how='left', left_on='InternalID', right_on='sampleid'
     ).drop(['OneK1K_ID', 'InternalID', 'ExternalID', 'sampleid_y'], axis=1)
 
-    return covariates.to_numpy()
+    return covariates.to_csv()
 
 
-def run_peer(expression_file, covariates, factors_output_path):
+def run_peer_job(b: hb.Batch, expression_file, covariates_file):
     """
+    Run peer analysis, except because peer is in Python2, we can't take
+    advantage of the python_job concept in Batch. Instead, we'll rely on
+    the two inputs `expression_file` and `covariates_file` to be TSV files.
+    """
+
+    j = b.new_job('peer')
+
+    # write python script to container
+    j.command(
+        """
+cat <<EOT >> run_peer.py
+
+import peer
+import numpy as np
+    
+def run_peer(expression_file, covariates_file, factors_output_path):
+    \"""
     Get covariate data for each cell type
-    """
-
-    # do peer import here, because this runs INSIDE the container
-    import peer
-    import numpy as np
-
-    # # get number of columns for expression and covariates
-    # with open(expression_file) as f:
-    #     ncols_expr = len(f.readline().split('\t'))
-    # with open(covariate_list_file) as f:
-    #     ncols_covs = len(f.readline().split('\t'))
+    \"""
 
     # load in data
     expr = np.loadtxt(expression_file, delimiter=',')
-    covs = covariates
+    covs = np.loadtxt(covariates_file, delimiter=',')
 
     # Set PEER paramaters as per the PEER website
     model = peer.PEER()
@@ -91,7 +98,20 @@ def run_peer(expression_file, covariates, factors_output_path):
     residuals = model.getResiduals()
     np.savetxt('residuals.csv', residuals, delimiter=',')
 
-    return (precision, weights, residuals, factors)
+
+if __name__ == "__main__":
+    import sys
+    run_peer(sys.argv[1], sys.argv[2], sys.argv[3])
+    
+EOT"""
+    )
+
+    j.command(
+        f'python run_peer.py {expression_file} {covariates_file} {j.factors_output_path}'
+    )
+    j.command('ls -l')
+
+    return j
 
 
 # @click.command()
@@ -113,25 +133,24 @@ def main(
     backend = hb.ServiceBackend(
         billing_project=dataset, bucket=f'cpg-{dataset}-{access_level}'
     )
+    backend=None
     batch = hb.Batch(name='PEER', backend=backend, default_python_image=driver_image)
     expression_f = batch.read_input(expression_file)
 
     load_covariates = batch.new_python_job('load covariates')
 
-    covariates_np_list = load_covariates.call(
+    covariates_tsv = load_covariates.call(
         get_covariates, scores_path, covariates_path, sample_id_keys_path
-    )
+    ).as_str()
 
-    peer_job = batch.new_python_job('run_peer')
-    peer_job.image(PEER_DOCKER)
-    peer_job_intermediates: hb.PythonResult = peer_job.call(
-        run_peer, expression_file=expression_f, covariates=covariates_np_list
-    )
+    peer_job = run_peer_job(batch, expression_f, covariates_tsv)
 
     second_job = batch.new_python_job('downstream tasks')
-    second_job.call(print, peer_job_intermediates)
+    second_job.call(print, peer_job.factors_output_path)
 
-    batch.run(wait=False)
+
+    batch.run(dry_run=True)
+    # batch.run(wait=False)
 
 
 if __name__ == '__main__':
