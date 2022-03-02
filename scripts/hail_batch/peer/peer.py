@@ -5,7 +5,7 @@ Test run this with:
     analysis-runner \
         --access-level test \
         --description 'Test run peer analysis' \
-        --output-dir 'kat/2022-02-23_peer' \
+        --output-dir 'kat/2022-03-2_peer' \
         --dataset tob-wgs \
         python peer.py
 """
@@ -60,6 +60,8 @@ def run_peer_job(b: hb.Batch, expression_file, covariates_file):
     """
 
     j = b.new_job('peer')
+
+    j.image(PEER_DOCKER)
 
     # write python script to container
     j.command(
