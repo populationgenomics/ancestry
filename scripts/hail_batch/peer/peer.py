@@ -83,7 +83,12 @@ def run_peer(expression_file, covariates_file, factors_output_path):
 
     # load in data
     expr = np.loadtxt(expression_file, delimiter=',')
-    covs = np.loadtxt(covariates_file, delimiter=',', dtype=(int, str, int, int, float, float, float, float))
+    dtypes = {
+        'names': ('ordinal','sampleid_x','sex','age','PC1','PC2','PC3','PC4'),
+        'formats': (np.int, np.str, np.int, np.int, np.float, np.float, np.float, np.float)
+    }
+
+    covs = np.genfromtxt(covariates_file, delimiter=',', dtype=dtypes, skip_header=True)
 
     print 'Loaded data'
 
