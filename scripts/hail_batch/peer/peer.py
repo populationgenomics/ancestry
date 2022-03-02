@@ -63,8 +63,8 @@ def run_peer_job(b: hb.Batch, expression_file, covariates_file):
 
     j.image(PEER_DOCKER)
 
-    j.command(f'cat {expression_file}')
-    j.command(f'cat {covariates_file}')
+    j.command(f'echo "expressions file:" && head {expression_file}')
+    j.command(f'echo "covariates file:" && head {covariates_file}')
 
     # write python script to container
     j.command(
@@ -83,7 +83,7 @@ def run_peer(expression_file, covariates_file, factors_output_path):
 
     # load in data
     expr = np.loadtxt(expression_file, delimiter=',')
-    covs = np.loadtxt(covariates_file, delimiter=',')
+    covs = np.loadtxt(covariates_file, delimiter=',', dtype=(int, str, int, int, float, float, float, float))
 
     print 'Loaded data'
 
