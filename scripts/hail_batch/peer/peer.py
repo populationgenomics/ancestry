@@ -91,6 +91,7 @@ def run_peer(expression_file, covariates_file, factors_output_path):
     covs = np.genfromtxt(covariates_file, delimiter=',', dtype=dtypes, skip_header=True)
 
     print 'Loaded data'
+    print covs
 
     # Set PEER paramaters as per the PEER website
     model = peer.PEER()
