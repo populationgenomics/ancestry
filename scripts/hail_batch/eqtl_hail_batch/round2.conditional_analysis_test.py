@@ -382,12 +382,12 @@ def main(
             j.storage('2Gi')
             gene_result: hb.resource.PythonResult = j.call(
                 run_computation_in_scatter,
-                iteration=iteration,
-                idx=gene_idx,
-                genotype_df=genotype_df,
-                previous_residual_result=previous_residual_result,
-                previous_sig_snps_result=previous_sig_snps_result,
-                sampleid_keys=sampleid_keys,
+                iteration,
+                gene_idx,
+                genotype_df,
+                previous_residual_result,
+                previous_sig_snps_result,
+                sampleid_keys,
             )
             sig_snps_dfs.append(gene_result)
 
