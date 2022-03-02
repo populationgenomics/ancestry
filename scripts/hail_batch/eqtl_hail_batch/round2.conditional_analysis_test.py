@@ -121,9 +121,9 @@ def run_computation_in_scatter(
     iteration,  # pylint: disable=redefined-outer-name
     idx,
     genotype_df,
-    sampleid_keys,
     residual_df,
     significant_snps_df,
+    sampleid_keys,
 ):
     """Run genes in scatter"""
 
@@ -383,7 +383,7 @@ def main(
             gene_result: hb.resource.PythonResult = j.call(
                 run_computation_in_scatter,
                 iteration=iteration,
-                gene_idx=gene_idx,
+                idx=gene_idx,
                 genotype_df=genotype_df,
                 previous_residual_result=previous_residual_result,
                 previous_sig_snps_result=previous_sig_snps_result,
