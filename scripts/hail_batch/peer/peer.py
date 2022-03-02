@@ -135,7 +135,7 @@ def main(
     backend = hb.ServiceBackend(
         billing_project=dataset, bucket=f'cpg-{dataset}-{access_level}'
     )
-    backend = None
+
     batch = hb.Batch(name='PEER', backend=backend, default_python_image=driver_image)
     expression_f = batch.read_input(expression_file)
 
