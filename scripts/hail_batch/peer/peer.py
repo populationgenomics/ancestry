@@ -135,7 +135,7 @@ def main(
     backend = hb.ServiceBackend(
         billing_project=dataset, bucket=f'cpg-{dataset}-{access_level}'
     )
-    backend=None
+    backend = None
     batch = hb.Batch(name='PEER', backend=backend, default_python_image=driver_image)
     expression_f = batch.read_input(expression_file)
 
@@ -150,9 +150,8 @@ def main(
     second_job = batch.new_python_job('downstream tasks')
     second_job.call(print, peer_job.factors_output_path)
 
-
-    batch.run(dry_run=True)
-    # batch.run(wait=False)
+    # batch.run(dry_run=True)
+    batch.run(wait=False)
 
 
 if __name__ == '__main__':
