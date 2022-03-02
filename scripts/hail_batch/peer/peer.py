@@ -63,6 +63,9 @@ def run_peer_job(b: hb.Batch, expression_file, covariates_file):
 
     j.image(PEER_DOCKER)
 
+    j.command(f'cat {expression_file}')
+    j.command(f'cat {covariates_file}')
+
     # write python script to container
     j.command(
         """
@@ -76,9 +79,13 @@ def run_peer(expression_file, covariates_file, factors_output_path):
     Get covariate data for each cell type
     \"""
 
+    print 'Loading data'
+
     # load in data
     expr = np.loadtxt(expression_file, delimiter=',')
     covs = np.loadtxt(covariates_file, delimiter=',')
+
+    print 'Loaded data'
 
     # Set PEER paramaters as per the PEER website
     model = peer.PEER()
