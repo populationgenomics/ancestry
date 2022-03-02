@@ -47,9 +47,11 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
     # merge together covariates df and scores
     covariates = pd.merge(
         covariates, scores, how='left', left_on='InternalID', right_on='sampleid'
-    ).drop(['OneK1K_ID', 'InternalID', 'ExternalID', 'sampleid_y'], axis=1)
+    ).drop(
+        ['sampleid_x', 'OneK1K_ID', 'InternalID', 'ExternalID', 'sampleid_y'], axis=1
+    )
 
-    return covariates.to_csv()
+    return covariates.to_csv(index=False)
 
 
 def run_peer_job(b: hb.Batch, expression_file, covariates_file):
@@ -73,7 +75,7 @@ cat <<EOT >> run_peer.py
 
 import peer
 import numpy as np
-    
+
 def run_peer(expression_file, covariates_file, factors_output_path):
     \"""
     Get covariate data for each cell type
@@ -84,8 +86,8 @@ def run_peer(expression_file, covariates_file, factors_output_path):
     # load in data
     expr = np.loadtxt(expression_file, delimiter=',')
     dtypes = {
-        'names': ('ordinal','sampleid_x','sex','age','PC1','PC2','PC3','PC4'),
-        'formats': (np.int, np.str, np.int, np.int, np.float, np.float, np.float, np.float)
+        'names': ('sex','age','PC1','PC2','PC3','PC4'),
+        'formats': (np.int, np.int, np.float, np.float, np.float, np.float)
     }
 
     covs = np.genfromtxt(covariates_file, delimiter=',', dtype=dtypes, skip_header=True)
@@ -117,7 +119,7 @@ def run_peer(expression_file, covariates_file, factors_output_path):
 if __name__ == "__main__":
     import sys
     run_peer(sys.argv[1], sys.argv[2], sys.argv[3])
-    
+
 EOT"""
     )
 
