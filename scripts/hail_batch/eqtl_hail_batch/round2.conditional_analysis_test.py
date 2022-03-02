@@ -139,6 +139,8 @@ def run_computation_in_scatter(
         .apply(lambda group: group.iloc[1:, 1:])
         .reset_index()
     )
+    # FIXME: remove the line below once gene_ids are used
+    esnps_to_test = esnps_to_test.drop_duplicates(subset=['gene_symbol'], keep='last')
 
     sample_ids = residual_df.loc[:, ['sampleid']]
     genotype_df = get_genotype_df(
