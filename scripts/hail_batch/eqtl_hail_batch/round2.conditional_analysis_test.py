@@ -133,16 +133,18 @@ def run_computation_in_scatter(
     # make sure 'geneid' is the first column
     # otherwise, error thrown when using reset_index
     cols = list(significant_snps_df)
-    cols.insert(0, cols.pop(cols.index('gene_id')))
+    cols.insert(0, cols.pop(cols.index('gene_symbol')))
     significant_snps_df = significant_snps_df.loc[:, cols]
     esnps_to_test = (
-        significant_snps_df.sort_values(['gene_id', 'fdr'], ascending=True)
-        .groupby('gene_id')
+        significant_snps_df.sort_values(['gene_symbol', 'fdr'], ascending=True)
+        .groupby('gene_symbol')
         .apply(lambda group: group.iloc[1:, 1:])
         .reset_index()
     )
+    print(f'loaded esnps_to_test')
     # FIXME: remove the line below once gene_ids are used
     esnps_to_test = esnps_to_test.drop_duplicates(subset=['gene_symbol'], keep='last')
+    print(f'filtered esnps_to_test')
 
     sample_ids = residual_df.loc[:, ['sampleid']]
     genotype_df = get_genotype_df(
@@ -151,6 +153,7 @@ def run_computation_in_scatter(
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
+        print(f'running spearman correlation')
         gene_symbol = df.gene_symbol
         gene_id = df.gene_id
         snp = df.snpid
@@ -169,9 +172,11 @@ def run_computation_in_scatter(
         .first()
         .reset_index()
     )
+    print(f'loaded esnp1')
     # filter out duplicated gene IDs
     # FIXME: remove the line below once gene_ids are used
     esnp1 = esnp1.drop_duplicates(subset=['gene_symbol'], keep='last')
+    print(f'filtered esnp1')
     gene_ids = esnp1['gene_symbol'][esnp1['gene_symbol'].isin(residual_df.columns)]
 
     esnps_to_test = esnps_to_test[esnps_to_test.gene_symbol.isin(residual_df.columns)]
@@ -182,6 +187,7 @@ def run_computation_in_scatter(
     adjusted_spearman_df = pd.DataFrame(
         list(gene_snp_test_df.apply(spearman_correlation, axis=1))
     )
+    print(f'completed spearman calculation')
     adjusted_spearman_df.columns = [
         'gene_symbol',
         'gene_id',
