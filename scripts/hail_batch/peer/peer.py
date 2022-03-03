@@ -50,6 +50,8 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
     ).drop(
         ['sampleid_x', 'OneK1K_ID', 'InternalID', 'ExternalID', 'sampleid_y'], axis=1
     )
+    # remove rows with no PC scores
+    covariates = covariates.dropna()
 
     return covariates.to_csv(index=False)
 
@@ -90,7 +92,7 @@ def run_peer(expression_file, covariates_file, factors_output_path):
         'formats': (np.int, np.int, np.float, np.float, np.float, np.float)
     }
 
-    covs = np.genfromtxt(covariates_file, delimiter=',', dtype=dtypes, skip_header=True, unpack=True)
+    covs = np.loadtxt(covariates_file, delimiter=',', dtype=dtypes, skiprows=1, unpack=True)
 
     print 'Loaded data'
     print covs
