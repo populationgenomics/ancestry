@@ -25,8 +25,8 @@ def get_number_of_scatters(residual_df, significant_snps_df):
 
     # Identify the top eSNP for each eGene and assign remaining to df
     esnp1 = (
-        significant_snps_df.sort_values(['gene_id', 'fdr'], ascending=True)
-        .groupby('gene_id')
+        significant_snps_df.sort_values(['gene_symbol', 'fdr'], ascending=True)
+        .groupby('gene_symbol')
         .first()
         .reset_index()
     )
@@ -68,17 +68,18 @@ def calculate_residual_df(genotype_df, residual_df, significant_snps_df, samplei
 
     # Identify the top eSNP for each eGene and assign remaining to df
     esnp1 = (
-        significant_snps_df.sort_values(['gene_id', 'fdr'], ascending=True)
-        .groupby('gene_id')
+        significant_snps_df.sort_values(['gene_symbol', 'fdr'], ascending=True)
+        .groupby('gene_symbol')
         .first()
         .reset_index()
     )
-    # FIXME
+    # FIXME: remove instances where there are teo ensembl IDs for the same gene
     esnp1 = esnp1.drop_duplicates(subset=['gene_symbol'], keep='last')
 
     # Subset residuals for the genes to be tested
     sample_ids = residual_df.loc[:, ['sampleid']]
     gene_ids = esnp1['gene_symbol'][esnp1['gene_symbol'].isin(residual_df.columns)]
+    # only keep residual df columns which have an eSNP
     residual_df = residual_df.loc[:, residual_df.columns.isin(gene_ids)]
     residual_df['sampleid'] = sample_ids
     genotype_df = get_genotype_df(
@@ -130,7 +131,7 @@ def run_computation_in_scatter(
     print(f'iteration = {iteration+2}')
     print(f'idx = {idx}')
 
-    # make sure 'geneid' is the first column
+    # make sure 'gene_symbol' is the first column
     # otherwise, error thrown when using reset_index
     cols = list(significant_snps_df)
     cols.insert(0, cols.pop(cols.index('gene_symbol')))
@@ -141,20 +142,14 @@ def run_computation_in_scatter(
         .apply(lambda group: group.iloc[1:, 1:])
         .reset_index()
     )
-    print(f'loaded esnps_to_test')
-    # FIXME: remove the line below once gene_ids are used
-    esnps_to_test = esnps_to_test.drop_duplicates(subset=['gene_symbol'], keep='last')
-    print(f'filtered esnps_to_test')
 
     sample_ids = residual_df.loc[:, ['sampleid']]
     genotype_df = get_genotype_df(
         genotype_df, significant_snps_df, sample_ids, sampleid_keys
     )
-    print(residual_df.head())
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
-        print(f'running spearman correlation')
         gene_symbol = df.gene_symbol
         gene_id = df.gene_id
         snp = df.snpid
@@ -168,18 +163,12 @@ def run_computation_in_scatter(
         return (gene_symbol, gene_id, snp, spearmans_rho, p)
 
     esnp1 = (
-        significant_snps_df.sort_values(['gene_id', 'fdr'], ascending=True)
-        .groupby('gene_id')
+        significant_snps_df.sort_values(['gene_symbol', 'fdr'], ascending=True)
+        .groupby('gene_symbol')
         .first()
         .reset_index()
     )
-    print(f'loaded esnp1')
-    # filter out duplicated gene IDs
-    # FIXME: remove the line below once gene_ids are used
-    esnp1 = esnp1.drop_duplicates(subset=['gene_symbol'], keep='last')
-    print(f'filtered esnp1')
     gene_ids = esnp1['gene_symbol'][esnp1['gene_symbol'].isin(residual_df.columns)]
-
     esnps_to_test = esnps_to_test[esnps_to_test.gene_symbol.isin(residual_df.columns)]
     gene_snp_test_df = esnps_to_test[['snpid', 'gene_symbol', 'gene_id']]
     gene_snp_test_df = gene_snp_test_df[
@@ -188,7 +177,6 @@ def run_computation_in_scatter(
     adjusted_spearman_df = pd.DataFrame(
         list(gene_snp_test_df.apply(spearman_correlation, axis=1))
     )
-    print(adjusted_spearman_df.head())
     adjusted_spearman_df.columns = [
         'gene_symbol',
         'gene_id',
@@ -223,13 +211,11 @@ def run_computation_in_scatter(
         delimiter=',',
         types={'bp': hl.tint32, 'spearmans_rho': hl.tfloat64, 'p_value': hl.tfloat64},
     )
-    t.show()
     t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
     t = t.annotate(locus=hl.locus(t.chrom, t.bp))
     # get alleles
     # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
     t = t.key_by('locus')
-    t.show()
     # t = t.annotate(
     #     alleles=mt.rows()[t.locus].alleles,
     #     a1=mt.rows()[t.locus].alleles[0],
@@ -248,7 +234,6 @@ def run_computation_in_scatter(
             ]
         )
     )
-    t.show()
     # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
     # because it doesn't work with the spark local backend
     t.export('adjusted_spearman_df_annotated.tsv')
