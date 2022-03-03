@@ -150,6 +150,7 @@ def run_computation_in_scatter(
     genotype_df = get_genotype_df(
         genotype_df, significant_snps_df, sample_ids, sampleid_keys
     )
+    print(residual_df.head())
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
@@ -187,7 +188,7 @@ def run_computation_in_scatter(
     adjusted_spearman_df = pd.DataFrame(
         list(gene_snp_test_df.apply(spearman_correlation, axis=1))
     )
-    print(f'completed spearman calculation')
+    print(adjusted_spearman_df.head())
     adjusted_spearman_df.columns = [
         'gene_symbol',
         'gene_id',
@@ -211,6 +212,7 @@ def run_computation_in_scatter(
         bp,
     ]
     adjusted_spearman_df['round'] = iteration + 2
+    print(adjusted_spearman_df.head())
 
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
@@ -221,11 +223,13 @@ def run_computation_in_scatter(
         delimiter=',',
         types={'bp': hl.tint32, 'spearmans_rho': hl.tfloat64, 'p_value': hl.tfloat64},
     )
+    t.show()
     t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
     t = t.annotate(locus=hl.locus(t.chrom, t.bp))
     # get alleles
     # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
     t = t.key_by('locus')
+    t.show()
     # t = t.annotate(
     #     alleles=mt.rows()[t.locus].alleles,
     #     a1=mt.rows()[t.locus].alleles[0],
@@ -244,6 +248,7 @@ def run_computation_in_scatter(
             ]
         )
     )
+    t.show()
     # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
     # because it doesn't work with the spark local backend
     t.export('adjusted_spearman_df_annotated.tsv')
