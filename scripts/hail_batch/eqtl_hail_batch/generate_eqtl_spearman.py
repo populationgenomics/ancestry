@@ -78,7 +78,7 @@ def calculate_log_cpm(expression_df, output_prefix):
     log_cpm = np.log(cpm_df + 1)
     # add sampleids back in
     log_cpm = log_cpm.assign(sampleid=list(sample_ids))
-    log_cpm.to_csv(os.path.join(output_prefix, f'log_cpm.tsv'))
+    log_cpm.to_csv(os.path.join(output_prefix, f'log_cpm.tsv'), index=False)
 
 
 def calculate_residuals(expression_df, covariate_df, output_prefix):
@@ -107,7 +107,7 @@ def calculate_residuals(expression_df, covariate_df, output_prefix):
     residual_df = pd.DataFrame(list(map(calculate_gene_residual, gene_ids))).T
     residual_df.columns = gene_ids
     residual_df = residual_df.assign(sampleid=list(sample_ids))
-    residual_df.to_csv(os.path.join(output_prefix, f'log_residuals.tsv'))
+    residual_df.to_csv(os.path.join(output_prefix, f'log_residuals.tsv'), index=False)
 
     return residual_df
 
@@ -129,20 +129,17 @@ def run_spearman_correlation_scatter(
     # Prepare variables used to calculate Spearman's correlation
     gene_ids = list(log_expression_df.columns.values)[1:]
     # change genotype df sampleids from CPG internal IDs to OneK1K IDs
-    sample_keys = sampleid_keys
-    genotype_df = pd.merge(
-        genotype_df,
-        sample_keys,
+    onek1k_id = pd.merge(
+        pd.DataFrame(genotype_df.sampleid),
+        sampleid_keys,
         how='left',
         left_on='sampleid',
         right_on='InternalID',
-    ).drop(['InternalID', 'ExternalID', 'sampleid'], axis=1)
-    genotype_df = genotype_df.rename(columns={'OneK1K_ID': 'sampleid'})
-    # remove samples without an ID
-    # note: sample CPG10157 has genotype data, but no scRNA data
-    genotype_df = genotype_df[genotype_df.sampleid.isna() == False]
+    ).OneK1K_ID
+    genotype_df.sampleid = onek1k_id
+    # only keep samples that have rna-seq expression data
     genotype_df = genotype_df[genotype_df.sampleid.isin(log_expression_df.sampleid)]
-    # Only keep columns where 90% of individuals have values
+    # FIXME: Only keep SNPs where 90% of individuals have values
     min_count = int(len(genotype_df.index) * 0.90)
     genotype_df = genotype_df.dropna(axis='columns', thresh=min_count)
     # filter snploc file to have the same snps as the genotype_df
@@ -152,7 +149,6 @@ def run_spearman_correlation_scatter(
     geneloc_df = geneloc_df[geneloc_df.gene_name.isin(gene_ids)]
     geneloc_df = geneloc_df.assign(left=geneloc_df.start - 1000000)
     geneloc_df = geneloc_df.assign(right=geneloc_df.end + 1000000)
-    # geneloc_df.to_csv(output_prefix + f'_gene_SNP_pairs.tsv')
 
     def spearman_correlation(df):
         """get Spearman rank correlation"""
@@ -197,7 +193,7 @@ def run_spearman_correlation_scatter(
     spearman_df['round'] = 1
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
-    spearman_df.to_csv(f'spearman_df_{idx}.csv')
+    spearman_df.to_csv(f'spearman_df_{idx}.csv', index=False)
     hl.init(default_reference='GRCh38')
     t = hl.import_table(
         f'spearman_df_{idx}.csv',
