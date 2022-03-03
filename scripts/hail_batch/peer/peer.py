@@ -37,14 +37,16 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
     scores.columns = ['PC1', 'PC2', 'PC3', 'PC4']
     scores.insert(loc=0, column='sampleid', value=sampleid)
 
-    # get age and sex from Seyhan's covariate file
+    # get age and sex from Seyhan's original covariate file
     covariates = pd.read_csv(covariates_path, sep='\t')
-    # load in keys file to convert sampleids in covariates file to CPG IDs
+    # load in keys file to convert onek1k in covariates file to CPG IDs
     sampleid_keys = pd.read_csv(sample_id_keys_path, sep='\t')
+    # change sampleIDs to CPG ids and remove Seyhan's PCA scores,
+    # which are based off of rna-seq data
     covariates = pd.merge(
         covariates, sampleid_keys, how='left', left_on='sampleid', right_on='OneK1K_ID'
     ).drop(['pc1', 'pc2', 'pc3', 'pc4'], axis=1)
-    # merge together covariates df and scores
+    # merge together covariates df and scores which were calculated on the genotype data
     covariates = pd.merge(
         covariates, scores, how='left', left_on='InternalID', right_on='sampleid'
     ).drop(
@@ -173,5 +175,5 @@ def main(
 
 if __name__ == '__main__':
     main(
-        expression_file='gs://cpg-tob-wgs-test/kat/expression.csv',
+        expression_file='gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/expression_files/B_intermediate_expression.tsv',
     )  # pylint: disable=no-value-for-parameter
