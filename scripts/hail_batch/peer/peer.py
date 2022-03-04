@@ -37,14 +37,14 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
     scores.insert(loc=0, column='sampleid', value=sampleid)
     # filter to only CPG samples
     scores = scores[scores.sampleid.str.contains('CPG')]
-    len(scores.index)
+    print(len(scores.index))
     # 1006
     # change CPG IDs to One1K1K IDs
-    sampleid_keys = pd.read_csv(sample_id_keys_path, sep='\t')
+    sampleid_keys = pd.read_csv(sample_id_keys_path, sep=',')
     scores = pd.merge(
         scores, sampleid_keys, how='left', left_on='sampleid', right_on='CPG_ID'
     )
-    len(scores.OneK1K_ID.dropna())
+    print(len(scores.OneK1K_ID.dropna()))
     # 937
     # 69 samples are missing RNA-seq data
     # remove samples which don't have a OneK1K ID and only keep PCA scores
@@ -70,7 +70,7 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
     merged_expr_covs = pd.merge(
         expression, covariates, how='right', left_on='sampleid', right_on='sampleid'
     )
-    merged_expr_covs.shape[0] - merged_expr_covs.dropna().shape[0]
+    print(merged_expr_covs.shape[0] - merged_expr_covs.dropna().shape[0])
     # 15 samples with no expression data, but do have covariate and genotype data
     # This differs per celltype
     # remove any rows with NA values

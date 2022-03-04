@@ -39,4 +39,4 @@ merged_cpg_onek1k = pd.merge(
 )
 # save
 output_path = f'{OUTPUT_DIR}/keys_metadata_sheet.csv'
-merged_cpg_onek1k.to_csv(output_path)
+merged_cpg_onek1k.to_csv(output_path, index=False)
