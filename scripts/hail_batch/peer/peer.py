@@ -20,9 +20,7 @@ PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.1'
 
 SCORES_PATH = 'gs://cpg-tob-wgs-test/kat/pca/nfe_feb22/v0/scores.json'
 COVARIATES_PATH = 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/covariates_files/covariates.tsv'
-SAMPLE_ID_KEYS_PATH = (
-    'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/OneK1K_CPG_IDs.tsv'
-)
+SAMPLE_ID_KEYS_PATH = 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/metadata/keys_metadata_sheet.csv'
 
 
 def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
@@ -30,31 +28,69 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
     Get covariate data by merging PCA scores with age and sex info.
     Only needs to be run once. This returns a TSV (as a string)
     """
+    # load in scores which have outliers removed
     scores_df = pd.read_json(scores_path)
     sampleid = scores_df.s
     # only get the first 4 PCs, as indicated by scree plot
     scores = pd.DataFrame(scores_df['scores'].to_list()).iloc[:, 0:4]
     scores.columns = ['PC1', 'PC2', 'PC3', 'PC4']
     scores.insert(loc=0, column='sampleid', value=sampleid)
-
-    # get age and sex from Seyhan's original covariate file
-    covariates = pd.read_csv(covariates_path, sep='\t')
-    # load in keys file to convert onek1k in covariates file to CPG IDs
+    # filter to only CPG samples
+    scores = scores[scores.sampleid.str.contains('CPG')]
+    len(scores.index)
+    # 1006
+    # change CPG IDs to One1K1K IDs
     sampleid_keys = pd.read_csv(sample_id_keys_path, sep='\t')
-    # change sampleIDs to CPG ids and remove Seyhan's PCA scores,
-    # which are based off of rna-seq data
-    covariates = pd.merge(
-        covariates, sampleid_keys, how='left', left_on='sampleid', right_on='OneK1K_ID'
-    ).drop(['pc1', 'pc2', 'pc3', 'pc4'], axis=1)
-    # merge together covariates df and scores which were calculated on the genotype data
-    covariates = pd.merge(
-        covariates, scores, how='left', left_on='InternalID', right_on='sampleid'
-    ).drop(
-        ['sampleid_x', 'OneK1K_ID', 'InternalID', 'ExternalID', 'sampleid_y'], axis=1
+    scores = pd.merge(
+        scores, sampleid_keys, how='left', left_on='sampleid', right_on='CPG_ID'
     )
-    # remove rows with no PC scores
-    covariates = covariates.dropna()
+    len(scores.OneK1K_ID.dropna())
+    # 937
+    # 69 samples are missing RNA-seq data
+    # remove samples which don't have a OneK1K ID and only keep PCA scores
+    scores = scores[scores.OneK1K_ID.isna() == False][
+        ['PC1', 'PC2', 'PC3', 'PC4', 'OneK1K_ID']
+    ]
+    # Merge PCA scores with Seyhan's covariate data and drop Seyhan's RNA-seq pca scores
+    # NB: these are the ones in lowercase (e.g., 'pc1')
+    covariates = pd.read_csv(covariates_path, sep='\t')
+    covariates = pd.merge(
+        scores, covariates, how='left', left_on='OneK1K_ID', right_on='sampleid'
+    ).drop(['pc1', 'pc2', 'pc3', 'pc4'], axis=1)
+    # check whether there's any missing data in the covariate data
+    covariates[covariates.sampleid.isna()]
+    # OneK1K ID 26_26 does not have any covariate data. Remove this sample and drop
+    # the OneK1K_ID, since it's redundant with sampleid
+    covariates = covariates[covariates.sampleid.isna() == False].drop(
+        ['OneK1K_ID'], axis=1
+    )
+    # Match expression data to covariate data, since PEER needs expr and covs
+    # dfs to be the same length
+    expression = pd.read_csv(expression_file, sep='\t')
+    merged_expr_covs = pd.merge(
+        expression, covariates, how='right', left_on='sampleid', right_on='sampleid'
+    )
+    merged_expr_covs.shape[0] - merged_expr_covs.dropna().shape[0]
+    # 15 samples with no expression data, but do have covariate and genotype data
+    # This differs per celltype
+    # remove any rows with NA values
+    merged_expr_covs = merged_expr_covs.dropna()
+    expression = merged_expr_covs.drop(
+        ['PC1', 'PC2', 'PC3', 'PC4', 'sex', 'age'], axis=1
+    )
+    covariates = merged_expr_covs[
+        ['sampleid', 'PC1', 'PC2', 'PC3', 'PC4', 'sex', 'age']
+    ]
+    # make sure samples in covariates and expression data are equal
+    expression.sampleid.equals(covariates.sampleid)
+    # True
+    # remove sampleid from both covariates and expression dfs
+    expression.drop('sampleid', axis=1, inplace=True)
+    covariates.drop('sampleid', axis=1, inplace=True)
+    # finally, make sure age and sex in covariate df are int
+    covariates[['sex', 'age']] = covariates[['sex', 'age']].astype(int)
 
+    # return expression data and covariates
     return covariates.to_csv(index=False)
 
 
@@ -88,12 +124,11 @@ def run_peer(expression_file, covariates_file, factors_output_path):
     print 'Loading data'
 
     # load in data
-    expr = np.loadtxt(expression_file, delimiter=',')
+    expr = np.loadtxt(expression_file, delimiter='\t', skiprows=1)
     dtypes = {
-        'names': ('sex','age','PC1','PC2','PC3','PC4'),
-        'formats': (np.int, np.int, np.float, np.float, np.float, np.float)
+        'names': ('PC1','PC2','PC3','PC4','sex','age'),
+        'formats': (np.float, np.float, np.float, np.float, np.int, np.int)
     }
-
     covs = np.loadtxt(covariates_file, delimiter=',', dtype=dtypes, skiprows=1, unpack=True)
 
     print 'Loaded data'
