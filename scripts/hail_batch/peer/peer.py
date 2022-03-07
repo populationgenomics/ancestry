@@ -23,7 +23,9 @@ COVARIATES_PATH = 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/cova
 SAMPLE_ID_KEYS_PATH = 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/metadata/keys_metadata_sheet.csv'
 
 
-def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
+def get_covariates(
+    scores_path, covariates_path, expression_file, sample_id_keys_path
+) -> str:
     """
     Get covariate data by merging PCA scores with age and sex info.
     Only needs to be run once. This returns a TSV (as a string)
@@ -91,7 +93,11 @@ def get_covariates(scores_path, covariates_path, sample_id_keys_path) -> str:
     covariates[['sex', 'age']] = covariates[['sex', 'age']].astype(int)
 
     # return expression data and covariates
-    return covariates.to_csv(index=False)
+    return covariates.to_csv(index=False), expression.to_csv(index=False)
+
+
+def get_at_index(obj, idx):
+    return obj[idx]
 
 
 def run_peer_job(b: hb.Batch, expression_file, covariates_file):
@@ -124,7 +130,7 @@ def run_peer(expression_file, covariates_file, factors_output_path):
     print 'Loading data'
 
     # load in data
-    expr = np.loadtxt(expression_file, delimiter='\t', skiprows=1)
+    expr = np.loadtxt(expression_file, delimiter=',', skiprows=1)
     dtypes = {
         'names': ('PC1','PC2','PC3','PC4','sex','age'),
         'formats': (np.float, np.float, np.float, np.float, np.int, np.int)
@@ -193,13 +199,16 @@ def main(
     batch = hb.Batch(name='PEER', backend=backend, default_python_image=driver_image)
     expression_f = batch.read_input(expression_file)
 
-    load_covariates = batch.new_python_job('load covariates')
+    load_data = batch.new_python_job('load covariates')
 
-    covariates_tsv = load_covariates.call(
-        get_covariates, scores_path, covariates_path, sample_id_keys_path
-    ).as_str()
+    intermediate_tuple = load_data.call(
+        get_covariates, scores_path, covariates_path, expression_f, sample_id_keys_path
+    )
 
-    peer_job = run_peer_job(batch, expression_f, covariates_tsv)
+    covariates_csv = load_data.call(get_at_index, intermediate_tuple, 0).as_str()
+    expression_csv = load_data.call(get_at_index, intermediate_tuple, 1).as_str()
+
+    peer_job = run_peer_job(batch, expression_csv, covariates_csv)
 
     second_job = batch.new_python_job('downstream tasks')
     second_job.call(print, peer_job.factors_output_path)
