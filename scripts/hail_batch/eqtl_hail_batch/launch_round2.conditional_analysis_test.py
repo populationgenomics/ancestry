@@ -3,7 +3,7 @@ Launch analysis runner for all cell types and chromosomes
 
 For example:
 
-    python3 scripts/hail_batch/eqtl_hail_batch/launch_generate_eqtl_spearman.py \
+    python3 scripts/hail_batch/eqtl_hail_batch/launch_round2.conditional_analysis_test.py \
         --input-path "gs://cpg-tob-wgs-test/scrna_seq/grch38_association_files" \
         --dry-run \
         --output-dir gs://cpg-tob-wgs-test/eqtl_output \
@@ -44,13 +44,32 @@ from google.cloud import storage
     ),
 )
 @click.option(
+    '--first-round-path',
+    required=True,
+    help=(
+        'A path prefix of where the output from the first round of esnp '
+        'results are located, eg: gs://MyBucket/folder/. '
+    ),
+)
+@click.option(
     '--output-dir',
     required=True,
     help='A path of where to output files, eg: gs://MyBucket/output-folder/',
 )
+@click.option(
+    '--test-subset-genes',  # pylint: disable=too-many-locals
+    type=int,
+    help='Test with {test_subset_genes} genes, often = 5.',
+)
 @click.option('--dry-run', is_flag=True, help='Just check if files exist')
 def submit_eqtl_jobs(
-    chromosomes, input_path, output_dir, dry_run=False, cell_types=None
+    chromosomes,
+    input_path,
+    first_round_path,
+    output_dir,
+    test_subset_genes,
+    dry_run=False,
+    cell_types=None,
 ):
     """Run association script for all chromosomes and cell types"""
 
@@ -104,19 +123,19 @@ def submit_eqtl_jobs(
                 logging.error(f'File {file} is missing')
 
         for chromosome in chromosomes:
+            residuals = os.path.join(
+                first_round_path, cell_type, chromosome, f'log_residuals.tsv'
+            )
+            significant_snps = os.path.join(
+                first_round_path, cell_type, chromosome, f'correlation_results.csv'
+            )
             genotype = os.path.join(
                 input_path, 'genotype_files', f'tob_genotype_chr{chromosome}.tsv'
-            )
-            geneloc = os.path.join(
-                input_path, 'gene_location_files', f'GRCh38_geneloc_chr{chromosome}.tsv'
-            )
-            snploc = os.path.join(
-                input_path, 'snp_location_files', f'snpsloc_chr{chromosome}.tsv'
             )
 
             if dry_run:
                 # check all files exist before running
-                files_to_check = [genotype, geneloc, snploc]
+                files_to_check = [genotype, residuals]
                 files_that_are_missing = filter(
                     lambda x: not file_exists(x), files_to_check
                 )
@@ -139,14 +158,13 @@ def submit_eqtl_jobs(
                     output_dir=analysis_runner_output_path,
                     # commit, sha and cwd can be inferred automatically
                     script=[
-                        'generate_eqtl_spearman.py',
-                        *('--expression', expression),
-                        *('--covariates', covariates),
+                        'round2.conditional_analysis_test.py',
+                        *('--residuals', residuals),
+                        *('--significant-snps', significant_snps),
                         *('--genotype', genotype),
-                        *('--geneloc', geneloc),
-                        *('--snploc', snploc),
-                        *('--keys', keys),
                         *('--output-prefix', output_prefix),
+                        *('--test-subset-genes', test_subset_genes),
+                        *('--keys', keys),
                     ],
                 )
 
