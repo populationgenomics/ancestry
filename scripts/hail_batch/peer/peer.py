@@ -16,7 +16,7 @@ import hailtop.batch as hb
 import pandas as pd
 
 DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:e6451763492b62ddfadc20c06b240234b20b6f2f-hail-0.2.73.devc6f6f09cec08'
-PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.1'
+PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.2'
 
 SCORES_PATH = 'gs://cpg-tob-wgs-test/kat/pca/nfe_feb22/v0/scores.json'
 COVARIATES_PATH = 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/covariates_files/covariates.tsv'
@@ -97,6 +97,10 @@ def get_covariates(
 
 
 def get_at_index(obj, idx):
+    """
+    get object index
+    """
+    
     return obj[idx]
 
 
@@ -121,6 +125,7 @@ cat <<EOT >> run_peer.py
 
 import peer
 import numpy as np
+import pandas as pd
 
 def run_peer(expression_file, covariates_file, factors_output_path):
     \"""
@@ -130,8 +135,8 @@ def run_peer(expression_file, covariates_file, factors_output_path):
     print 'Loading data'
 
     # load in data
-    expr = np.loadtxt(expression_file, delimiter=',', skiprows=1)
-    covs = np.genfromtxt(covariates_file, delimiter=',', dtype=None, names=True)
+    expr = pd.read_csv(expression_file, header=None, skiprows=1)
+    covs = pd.read_csv(covariates_file, header=None, skiprows=1)
 
     print 'Loaded data'
     print covs
