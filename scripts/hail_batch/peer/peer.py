@@ -60,7 +60,7 @@ def get_covariates(
         scores, covariates, how='left', left_on='OneK1K_ID', right_on='sampleid'
     ).drop(['pc1', 'pc2', 'pc3', 'pc4'], axis=1)
     # check whether there's any missing data in the covariate data
-    covariates[covariates.sampleid.isna()]
+    print(covariates[covariates.sampleid.isna()])
     # OneK1K ID 26_26 does not have any covariate data. Remove this sample and drop
     # the OneK1K_ID, since it's redundant with sampleid
     covariates = covariates[covariates.sampleid.isna() == False].drop(
@@ -100,7 +100,7 @@ def get_at_index(obj, idx):
     """
     get object index
     """
-    
+
     return obj[idx]
 
 
