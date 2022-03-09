@@ -211,8 +211,7 @@ def main(
 
     peer_job = run_peer_job(batch, expression_csv, covariates_csv)
 
-    second_job = batch.new_python_job('downstream tasks')
-    second_job.call(print, peer_job.factors_output_path)
+    # second_job = batch.new_python_job('downstream tasks')
 
     # batch.run(dry_run=True)
     batch.run(wait=False)
