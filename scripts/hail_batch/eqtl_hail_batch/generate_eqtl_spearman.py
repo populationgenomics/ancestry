@@ -345,6 +345,13 @@ def main(
         j.cpu(2)
         j.memory('8Gi')
         j.storage('2Gi')
+        j.env('HAIL_SHA', '057c2febbfd2189c2482d551f80c85c108dcf314')
+        j.env(
+            'HAIL_JAR_URL',
+            'gs://hail-query-daaf463550/jars/057c2febbfd2189c2482d551f80c85c108dcf314.jar',
+        )
+        j.env('HAIL_BILLING_PROJECT', os.getenv('HAIL_BILLING_PROJECT'))
+        j.env('HAIL_BUCKET', os.getenv('HAIL_BUCKET'))
         result: hb.resource.PythonResult = j.call(
             run_spearman_correlation_scatter,
             idx=idx,
