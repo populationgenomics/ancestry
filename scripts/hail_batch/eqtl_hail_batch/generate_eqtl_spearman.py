@@ -3,6 +3,7 @@
 """Run Spearman rank correlation on SNPs and expression residuals"""
 
 import os
+import asyncio
 import hail as hl
 import hailtop.batch as hb
 import pandas as pd
@@ -18,6 +19,19 @@ DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/imag
 DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
 # TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
+
+
+def init_hail_query_service():
+    """get query service to work through workaround function"""
+    billing_project = os.getenv('HAIL_BILLING_PROJECT')
+    hail_bucket = os.getenv('HAIL_BUCKET')
+    asyncio.get_event_loop().run_until_complete(
+        hl.init_service(
+            default_reference='GRCh38',
+            billing_project=billing_project,
+            remote_tmpdir=f'gs://{hail_bucket}/batch-tmp',
+        )
+    )
 
 
 def get_number_of_scatters(expression_df, geneloc_df):
@@ -194,7 +208,7 @@ def run_spearman_correlation_scatter(
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
     spearman_df.to_csv(f'spearman_df_{idx}.csv', index=False)
-    hl.init(default_reference='GRCh38')
+    init_hail_query_service()
     t = hl.import_table(
         f'spearman_df_{idx}.csv',
         delimiter=',',
