@@ -3,8 +3,9 @@
 """Run Spearman rank correlation on SNPs and expression residuals"""
 
 import os
+
 # import asyncio
-# import hail as hl
+import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import numpy as np
@@ -12,6 +13,7 @@ import statsmodels.api as sm
 import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
 from scipy.stats import spearmanr
+from cpg_utils.hail import copy_common_env, init_query_service
 import click
 
 DEFAULT_DRIVER_MEMORY = '4G'
@@ -19,19 +21,6 @@ DEFAULT_DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/imag
 DRIVER_IMAGE = os.getenv('DRIVER_IMAGE', DEFAULT_DRIVER_IMAGE)
 
 # TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
-
-
-# def init_hail_query_service():
-#     """get query service to work through workaround function"""
-#     billing_project = os.getenv('HAIL_BILLING_PROJECT')
-#     hail_bucket = os.getenv('HAIL_BUCKET')
-#     asyncio.get_event_loop().run_until_complete(
-#         hl.init_service(
-#             default_reference='GRCh38',
-#             billing_project=billing_project,
-#             remote_tmpdir=f'gs://{hail_bucket}/batch-tmp',
-#         )
-#     )
 
 
 def get_number_of_scatters(expression_df, geneloc_df):
@@ -207,42 +196,42 @@ def run_spearman_correlation_scatter(
     spearman_df['round'] = 1
     # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
     # because it doesnt' work with the spark local backend
-    # spearman_df.to_csv(f'spearman_df_{idx}.csv', index=False)
-    # init_hail_query_service()
-    # t = hl.import_table(
-    #     f'spearman_df_{idx}.csv',
-    #     delimiter=',',
-    #     types={'bp': hl.tint32, 'p_value': hl.tfloat64},
-    # )
-    # t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
-    # t = t.annotate(locus=hl.locus(t.chrom, t.bp))
-    # # get alleles
-    # # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
-    # t = t.key_by('locus')
-    # #    t = t.annotate(
-    # # alleles=mt.rows()[t.locus].alleles,
-    # # a1=mt.rows()[t.locus].alleles[0],
-    # # a2=hl.if_else(
-    # #     hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
-    # # ),
-    # #    )
-    # t = t.annotate(
-    #     id=hl.str(':').join(
-    #         [
-    #             hl.str(t.chrom),
-    #             hl.str(t.bp),
-    #             # t.a1,
-    #             # t.a2,
-    #             t.gene_symbol,
-    #             # result.db_key, # cell_type_id (eg nk, mononc)
-    #             hl.str(t.round),
-    #         ]
-    #     )
-    # )
-    # # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
-    # # because it doesn't work with the spark local backend
-    # t.export(f'adjusted_spearman_df_annotated_{idx}.tsv')
-    # spearman_df = pd.read_csv(f'adjusted_spearman_df_annotated_{idx}.tsv', sep='\t')
+    spearman_df.to_csv(f'spearman_df_{idx}.csv', index=False)
+    init_query_service()
+    t = hl.import_table(
+        f'spearman_df_{idx}.csv',
+        delimiter=',',
+        types={'bp': hl.tint32, 'p_value': hl.tfloat64},
+    )
+    t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
+    t = t.annotate(locus=hl.locus(t.chrom, t.bp))
+    # get alleles
+    # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
+    t = t.key_by('locus')
+    #    t = t.annotate(
+    # alleles=mt.rows()[t.locus].alleles,
+    # a1=mt.rows()[t.locus].alleles[0],
+    # a2=hl.if_else(
+    #     hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
+    # ),
+    #    )
+    t = t.annotate(
+        id=hl.str(':').join(
+            [
+                hl.str(t.chrom),
+                hl.str(t.bp),
+                # t.a1,
+                # t.a2,
+                t.gene_symbol,
+                # result.db_key, # cell_type_id (eg nk, mononc)
+                hl.str(t.round),
+            ]
+        )
+    )
+    # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
+    # because it doesn't work with the spark local backend
+    t.export(f'adjusted_spearman_df_annotated_{idx}.tsv')
+    spearman_df = pd.read_csv(f'adjusted_spearman_df_annotated_{idx}.tsv', sep='\t')
     return spearman_df
 
 
@@ -345,13 +334,7 @@ def main(
         j.cpu(2)
         j.memory('8Gi')
         j.storage('2Gi')
-        # j.env('HAIL_SHA', '057c2febbfd2189c2482d551f80c85c108dcf314')
-        # j.env(
-        #     'HAIL_JAR_URL',
-        #     'gs://hail-query-daaf463550/jars/057c2febbfd2189c2482d551f80c85c108dcf314.jar',
-        # )
-        j.env('HAIL_BILLING_PROJECT', os.getenv('HAIL_BILLING_PROJECT'))
-        j.env('HAIL_BUCKET', os.getenv('HAIL_BUCKET'))
+        copy_common_env(j)
         result: hb.resource.PythonResult = j.call(
             run_spearman_correlation_scatter,
             idx=idx,
