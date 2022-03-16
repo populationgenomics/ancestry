@@ -258,7 +258,7 @@ def convert_dataframe_to_text(dataframe):
 # Create click command line to enter dependency files
 @click.command()
 @click.option(
-    '--significant_snps', required=True, help='A space separated list of SNPs'
+    '--significant-snps', required=True, help='A space separated list of SNPs'
 )
 @click.option('--residuals', required=True, help='A CSV of gene residuals')
 @click.option('--genotype', required=True, help='A TSV of genotypes for each sample')
@@ -276,7 +276,7 @@ def convert_dataframe_to_text(dataframe):
     '--iterations', type=int, default=4, help='Number of iterations to perform'
 )
 @click.option(
-    '--test_subset_genes',  # pylint: disable=too-many-locals
+    '--test-subset-genes',  # pylint: disable=too-many-locals
     type=int,
     help='Test with {test_subset_genes} genes, often = 5.',
 )
