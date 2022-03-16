@@ -194,15 +194,8 @@ def run_spearman_correlation_scatter(
         bp,
     ]
     spearman_df['round'] = 1
-    # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
-    # because it doesnt' work with the spark local backend
-    spearman_df.to_csv(f'spearman_df_{idx}.csv', index=False)
     init_query_service()
-    t = hl.import_table(
-        f'spearman_df_{idx}.csv',
-        delimiter=',',
-        types={'bp': hl.tint32, 'p_value': hl.tfloat64},
-    )
+    t = hl.Table.from_pandas(spearman_df)
     t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
     t = t.annotate(locus=hl.locus(t.chrom, t.bp))
     # get alleles
@@ -228,10 +221,7 @@ def run_spearman_correlation_scatter(
             ]
         )
     )
-    # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
-    # because it doesn't work with the spark local backend
-    t.export(f'adjusted_spearman_df_annotated_{idx}.tsv')
-    spearman_df = pd.read_csv(f'adjusted_spearman_df_annotated_{idx}.tsv', sep='\t')
+    spearman_df = t.to_pandas()
     return spearman_df
 
 
