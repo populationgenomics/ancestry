@@ -57,7 +57,7 @@ from google.cloud import storage
     help='A path of where to output files, eg: gs://MyBucket/output-folder/',
 )
 @click.option(
-    '--test-subset-genes',  # pylint: disable=too-many-locals
+    '--test_subset_genes',  # pylint: disable=too-many-locals
     type=int,
     help='Test with {test_subset_genes} genes, often = 5.',
 )
@@ -163,7 +163,7 @@ def submit_eqtl_jobs(
                         *('--significant-snps', significant_snps),
                         *('--genotype', genotype),
                         *('--output-prefix', output_prefix),
-                        *('--test-subset-genes', test_subset_genes),
+                        *('--test_subset_genes', test_subset_genes),
                         *('--keys', keys),
                     ],
                 )
