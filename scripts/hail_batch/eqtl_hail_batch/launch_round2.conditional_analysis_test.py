@@ -67,7 +67,7 @@ def submit_eqtl_jobs(
     input_path,
     first_round_path,
     output_dir,
-    test_subset_genes,
+    test_subset_genes=None,
     dry_run=False,
     cell_types=None,
 ):
