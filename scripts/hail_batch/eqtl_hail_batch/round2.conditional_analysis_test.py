@@ -268,7 +268,7 @@ def convert_dataframe_to_text(dataframe):
     help='A TSV of sample ids to convert external to internal IDs',
 )
 @click.option(
-    '--output_prefix',
+    '--output-prefix',
     required=True,
     help='A path prefix of where to output files, eg: gs://MyBucket/output-folder/',
 )
