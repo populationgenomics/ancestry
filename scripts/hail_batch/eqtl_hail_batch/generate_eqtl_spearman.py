@@ -4,7 +4,7 @@
 
 import os
 
-# import hail as hl
+import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import numpy as np
@@ -193,34 +193,34 @@ def run_spearman_correlation_scatter(
         bp,
     ]
     spearman_df['round'] = 1
-    # init_query_service()
-    # t = hl.Table.from_pandas(spearman_df)
-    # t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
-    # t = t.annotate(locus=hl.locus(t.chrom, t.bp))
-    # # get alleles
-    # # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
-    # t = t.key_by('locus')
-    # #    t = t.annotate(
-    # # alleles=mt.rows()[t.locus].alleles,
-    # # a1=mt.rows()[t.locus].alleles[0],
-    # # a2=hl.if_else(
-    # #     hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
-    # # ),
-    # #    )
-    # t = t.annotate(
-    #     id=hl.str(':').join(
-    #         [
-    #             hl.str(t.chrom),
-    #             hl.str(t.bp),
-    #             # t.a1,
-    #             # t.a2,
-    #             t.gene_symbol,
-    #             # result.db_key, # cell_type_id (eg nk, mononc)
-    #             hl.str(t.round),
-    #         ]
-    #     )
-    # )
-    # spearman_df = t.to_pandas()
+    init_query_service()
+    t = hl.Table.from_pandas(spearman_df)
+    t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
+    t = t.annotate(locus=hl.locus(t.chrom, t.bp))
+    # get alleles
+    # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
+    t = t.key_by('locus')
+    #    t = t.annotate(
+    # alleles=mt.rows()[t.locus].alleles,
+    # a1=mt.rows()[t.locus].alleles[0],
+    # a2=hl.if_else(
+    #     hl.len(mt.rows()[t.locus].alleles) == 2, mt.rows()[t.locus].alleles[1], 'NA'
+    # ),
+    #    )
+    t = t.annotate(
+        id=hl.str(':').join(
+            [
+                hl.str(t.chrom),
+                hl.str(t.bp),
+                # t.a1,
+                # t.a2,
+                t.gene_symbol,
+                # result.db_key, # cell_type_id (eg nk, mononc)
+                hl.str(t.round),
+            ]
+        )
+    )
+    spearman_df = t.to_pandas()
     return spearman_df
 
 
