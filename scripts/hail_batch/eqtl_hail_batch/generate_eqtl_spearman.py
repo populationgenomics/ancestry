@@ -195,8 +195,8 @@ def run_spearman_correlation_scatter(
     spearman_df['round'] = 1
     init_query_service()
     t = hl.Table.from_pandas(spearman_df)
-    t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
-    t = t.annotate(locus=hl.locus(t.chrom, t.bp))
+    t = t.annotate(global_bp=hl.locus(t.chrom, hl.int32(t.bp)).global_position())
+    t = t.annotate(locus=hl.locus(t.chrom, hl.int32(t.bp)))
     # get alleles
     # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
     t = t.key_by('locus')
