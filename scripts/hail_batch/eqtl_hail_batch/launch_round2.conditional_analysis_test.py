@@ -56,24 +56,23 @@ from google.cloud import storage
     required=True,
     help='A path of where to output files, eg: gs://MyBucket/output-folder/',
 )
-# @click.option(
-#     '--test_subset_genes',  # pylint: disable=too-many-locals
-#     type=int,
-#     help='Test with {test_subset_genes} genes, often = 5.',
-# )
+@click.option(
+    '--test-subset-genes',  # pylint: disable=too-many-locals
+    type=int,
+    help='Test with {test_subset_genes} genes, often = 5.',
+)
 @click.option('--dry-run', is_flag=True, help='Just check if files exist')
 def submit_eqtl_jobs(
     chromosomes,
     input_path,
     first_round_path,
     output_dir,
-    # test_subset_genes=None,
+    test_subset_genes=None,
     dry_run=False,
     cell_types=None,
 ):
     """Run association script for all chromosomes and cell types"""
 
-    test_subset_genes = 5
     assert output_dir.startswith('gs://') and input_path.startswith('gs://')
     chromosomes = chromosomes.split(' ')
     assert isinstance(chromosomes, list)
@@ -164,7 +163,7 @@ def submit_eqtl_jobs(
                         *('--significant-snps', significant_snps),
                         *('--genotype', genotype),
                         *('--output-prefix', output_prefix),
-                        *('--test_subset_genes', test_subset_genes),
+                        *('--test-subset-genes', test_subset_genes),
                         *('--keys', keys),
                     ],
                 )
