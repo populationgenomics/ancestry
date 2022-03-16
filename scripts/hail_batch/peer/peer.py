@@ -7,7 +7,7 @@ Test run this with:
         --description 'Test run peer analysis' \
         --output-dir 'kat/2022-03-2_peer' \
         --dataset tob-wgs \
-        python peer.py
+        python3 peer.py
 """
 
 
@@ -211,7 +211,9 @@ def main(
     expression_csv = load_data.call(get_at_index, intermediate_tuple, 1).as_str()
 
     peer_job = run_peer_job(batch, expression_csv, covariates_csv)
-    batch.write_output(peer_job.factors_output_path, output_path('peer_factors_file.txt'))
+    batch.write_output(
+        peer_job.factors_output_path, output_path('peer_factors_file.txt')
+    )
     batch.write_output(peer_job.factors_output_path, output_path('weights_file.txt'))
     batch.write_output(peer_job.factors_output_path, output_path('precision_file.txt'))
     batch.write_output(peer_job.factors_output_path, output_path('residuals_file.txt'))
