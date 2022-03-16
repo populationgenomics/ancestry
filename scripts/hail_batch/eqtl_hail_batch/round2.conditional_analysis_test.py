@@ -2,13 +2,14 @@
 
 import os
 
-import hail as hl
+# import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
 from scipy.stats import spearmanr
+from cpg_utils.hail import copy_common_env, init_query_service
 
 import click
 
@@ -30,7 +31,6 @@ def get_number_of_scatters(residual_df, significant_snps_df):
         .first()
         .reset_index()
     )
-    # FIXME: should I use gene_ids or gene_symbol here
     gene_ids = esnp1['gene_symbol'][esnp1['gene_symbol'].isin(residual_df.columns)]
 
     return len(gene_ids)
@@ -73,7 +73,6 @@ def calculate_residual_df(genotype_df, residual_df, significant_snps_df, samplei
         .first()
         .reset_index()
     )
-    # FIXME: remove instances where there are teo ensembl IDs for the same gene
     esnp1 = esnp1.drop_duplicates(subset=['gene_symbol'], keep='last')
 
     # Subset residuals for the genes to be tested
@@ -87,7 +86,6 @@ def calculate_residual_df(genotype_df, residual_df, significant_snps_df, samplei
     )
 
     # Find residuals after adjustment of lead SNP
-    # FIXME: replace gene_symbols with gene_ids (or remove duplicate gene_symbols)
     def calculate_adjusted_residuals(gene_id):
         gene = gene_id
         print(gene)
@@ -200,44 +198,32 @@ def run_computation_in_scatter(
         bp,
     ]
     adjusted_spearman_df['round'] = iteration + 2
-    print(adjusted_spearman_df.head())
-
-    # convert to hail table. Can't call `hl.from_pandas(spearman_df)` directly
-    # because it doesnt' work with the spark local backend
-    adjusted_spearman_df.to_csv('adjusted_spearman_df.csv')
-    hl.init(default_reference='GRCh38')
-    t = hl.import_table(
-        'adjusted_spearman_df.csv',
-        delimiter=',',
-        types={'bp': hl.tint32, 'spearmans_rho': hl.tfloat64, 'p_value': hl.tfloat64},
-    )
-    t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
-    t = t.annotate(locus=hl.locus(t.chrom, t.bp))
-    # get alleles
-    # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
-    t = t.key_by('locus')
+    # init_query_service()
+    # t = hl.Table.from_pandas(adjusted_spearman_df)
+    # t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
+    # t = t.annotate(locus=hl.locus(t.chrom, t.bp))
+    # # get alleles
+    # # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
+    # t = t.key_by('locus')
+    # # t = t.annotate(
+    # #     alleles=mt.rows()[t.locus].alleles,
+    # #     a1=mt.rows()[t.locus].alleles[0],
+    # #     a2=mt.rows()[t.locus].alleles[1],
+    # # )
     # t = t.annotate(
-    #     alleles=mt.rows()[t.locus].alleles,
-    #     a1=mt.rows()[t.locus].alleles[0],
-    #     a2=mt.rows()[t.locus].alleles[1],
+    #     id=hl.str(':').join(
+    #         [
+    #             hl.str(t.chrom),
+    #             hl.str(t.bp),
+    #             # t.a1,
+    #             # t.a2,
+    #             t.gene_symbol,
+    #             # result.db_key, # cell_type_id (eg nk, mononc)
+    #             hl.str(t.round),
+    #         ]
+    #     )
     # )
-    t = t.annotate(
-        id=hl.str(':').join(
-            [
-                hl.str(t.chrom),
-                hl.str(t.bp),
-                # t.a1,
-                # t.a2,
-                t.gene_symbol,
-                # result.db_key, # cell_type_id (eg nk, mononc)
-                hl.str(t.round),
-            ]
-        )
-    )
-    # turn back into pandas df. Can't call `spearman_df = t.to_pandas()` directly
-    # because it doesn't work with the spark local backend
-    t.export('adjusted_spearman_df_annotated.tsv')
-    adjusted_spearman_df = pd.read_csv('adjusted_spearman_df_annotated.tsv', sep='\t')
+    # adjusted_spearman_df = t.to_pandas()
 
     # set variables for next iteration of loop
     significant_snps_df = adjusted_spearman_df
@@ -376,6 +362,7 @@ def main(
             j.cpu(2)
             j.memory('8Gi')
             j.storage('2Gi')
+            copy_common_env(j)
             gene_result: hb.resource.PythonResult = j.call(
                 run_computation_in_scatter,
                 iteration,
