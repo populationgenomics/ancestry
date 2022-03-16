@@ -14,6 +14,7 @@ Test run this with:
 import os
 import hailtop.batch as hb
 import pandas as pd
+from analysis_runner import output_path
 
 DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:e6451763492b62ddfadc20c06b240234b20b6f2f-hail-0.2.73.devc6f6f09cec08'
 PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.2'
@@ -127,7 +128,7 @@ import peer
 import numpy as np
 import pandas as pd
 
-def run_peer(expression_file, covariates_file, factors_output_path):
+def run_peer(expression_file, covariates_file, factors_output_path, weights_output_path, precision_output_path, residuals_output_path):
     \"""
     Get covariate data for each cell type
     \"""
@@ -153,24 +154,24 @@ def run_peer(expression_file, covariates_file, factors_output_path):
     np.savetxt(factors_output_path, factors, delimiter=',')
     # Calculate and save the weights for each factor
     weights = model.getW()
-    np.savetxt('weight.csv', weights, delimiter=',')
+    np.savetxt(weights_output_path, weights, delimiter=',')
     # Calculate and save the precision values
     precision = model.getAlpha()
-    np.savetxt('precision.csv', precision, delimiter=',')
+    np.savetxt(precision_output_path, precision, delimiter=',')
     # Calculate and save the residuals
     residuals = model.getResiduals()
-    np.savetxt('residuals.csv', residuals, delimiter=',')
+    np.savetxt(residuals_output_path, residuals, delimiter=',')
 
 
 if __name__ == "__main__":
     import sys
-    run_peer(sys.argv[1], sys.argv[2], sys.argv[3])
+    run_peer(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
 
 EOT"""
     )
 
     j.command(
-        f'python run_peer.py {expression_file} {covariates_file} {j.factors_output_path}'
+        f'python run_peer.py {expression_file} {covariates_file} {j.factors_output_path} {j.weights_output_path} {j.precision_output_path} {j.residuals_output_path}'
     )
     j.command('ls -l')
 
@@ -210,6 +211,10 @@ def main(
     expression_csv = load_data.call(get_at_index, intermediate_tuple, 1).as_str()
 
     peer_job = run_peer_job(batch, expression_csv, covariates_csv)
+    batch.write_output(peer_job.factors_output_path, output_path('peer_factors_file.txt'))
+    batch.write_output(peer_job.factors_output_path, output_path('weights_file.txt'))
+    batch.write_output(peer_job.factors_output_path, output_path('precision_file.txt'))
+    batch.write_output(peer_job.factors_output_path, output_path('residuals_file.txt'))
 
     # second_job = batch.new_python_job('downstream tasks')
 
