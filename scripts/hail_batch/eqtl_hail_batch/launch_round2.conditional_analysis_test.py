@@ -166,7 +166,11 @@ def submit_eqtl_jobs(
                         *('--significant-snps', significant_snps),
                         *('--genotype', genotype),
                         *('--output-prefix', output_prefix),
-                        *('--test-subset-genes', str(test_subset_genes)),
+                        *(
+                            ['--test-subset-genes', str(test_subset_genes)]
+                            if test_subset_genes
+                            else []
+                        ),
                         *('--keys', keys),
                     ],
                 )
