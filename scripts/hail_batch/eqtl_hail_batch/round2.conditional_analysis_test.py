@@ -10,7 +10,7 @@ import statsmodels.api as sm
 import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
 from scipy.stats import spearmanr
-from cpg_utils.hail import copy_common_env, init_query_service
+from cpg_utils.hail import copy_common_env, init_query_service, remote_tmpdir
 
 import click
 
@@ -294,10 +294,7 @@ def main(
     iterations start at 2, since round 1 is completed in `generate_eqtl_spearan.py`.
     """
     dataset = os.getenv('CPG_DATASET')
-    access_level = os.getenv('CPG_ACCESS_LEVEL')
-    backend = hb.ServiceBackend(
-        billing_project=dataset, remote_tmpdir=f'cpg-{dataset}-{access_level}'
-    )
+    backend = hb.ServiceBackend(billing_project=dataset, remote_tmpdir=remote_tmpdir())
     batch = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
     if test_subset_genes:
