@@ -14,7 +14,8 @@ Test run this with:
 import os
 import hailtop.batch as hb
 import pandas as pd
-from analysis_runner import output_path
+from cpg_utils import output_path
+from cpg_utils.hail import remote_tmp_dir
 
 DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:e6451763492b62ddfadc20c06b240234b20b6f2f-hail-0.2.73.devc6f6f09cec08'
 PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.2'
@@ -105,14 +106,12 @@ def get_at_index(obj, idx):
     return obj[idx]
 
 
-def run_peer_job(b: hb.Batch, expression_file, covariates_file):
+def run_peer_job(job: hb.batch.job.Job, expression_file, covariates_file):
     """
     Run peer analysis, except because peer is in Python2, we can't take
     advantage of the python_job concept in Batch. Instead, we'll rely on
     the two inputs `expression_file` and `covariates_file` to be TSV files.
     """
-
-    j = b.new_job('peer')
 
     j.image(PEER_DOCKER)
 
@@ -180,7 +179,9 @@ EOT"""
 
 # @click.command()
 # @click.option('--expression-file')
-def main(
+def process_cell_type_on_batch(
+    batch: hb.Batch,
+    cell_type_name: str,
     expression_file,
     scores_path=SCORES_PATH,
     covariates_path=COVARIATES_PATH,
@@ -189,19 +190,11 @@ def main(
     """
     Run PEER calculation in hail batch
     """
-
-    dataset = os.getenv('DATASET', 'tob-wgs')
-    access_level = os.getenv('ACCESS_LEVEL', 'test')
-    driver_image = os.getenv('DRIVER_IMAGE', DRIVER_IMAGE)
-
-    backend = hb.ServiceBackend(
-        billing_project=dataset, bucket=f'cpg-{dataset}-{access_level}'
-    )
-
-    batch = hb.Batch(name='PEER', backend=backend, default_python_image=driver_image)
     expression_f = batch.read_input(expression_file)
 
-    load_data = batch.new_python_job('load covariates')
+    job_prefix = f'{cell_type_name}: '
+
+    load_data = batch.new_python_job(job_prefix + 'load covariates')
 
     intermediate_tuple = load_data.call(
         get_covariates, scores_path, covariates_path, expression_f, sample_id_keys_path
@@ -210,7 +203,9 @@ def main(
     covariates_csv = load_data.call(get_at_index, intermediate_tuple, 0).as_str()
     expression_csv = load_data.call(get_at_index, intermediate_tuple, 1).as_str()
 
-    peer_job = run_peer_job(batch, expression_csv, covariates_csv)
+    peer_job = batch.new_job(job_prefix + 'peer')
+    run_peer_job(peer_job, expression_csv, covariates_csv)
+
     batch.write_output(
         peer_job.factors_output_path, output_path('peer_factors_file.txt')
     )
@@ -220,11 +215,36 @@ def main(
 
     # second_job = batch.new_python_job('downstream tasks')
 
-    # batch.run(dry_run=True)
+
+@click.command()
+@click.option('--path-to-cell-files')
+def main(path_to_cell_files):
+    """
+    This function finds all the cell types, and runs the inner
+    workflow for each cell_type, by constructing the path to the
+    expression files and the path to the covariates files.
+
+
+    """
+
+    dataset = os.getenv('DATASET', 'tob-wgs')
+    access_level = os.getenv('ACCESS_LEVEL', 'test')
+    driver_image = os.getenv('DRIVER_IMAGE', DRIVER_IMAGE)
+
+    backend = hb.ServiceBackend(billing_project=dataset, remote_tmpdir=remote_tmp_dir())
+
+    batch = hb.Batch(name='PEER', backend=backend, default_python_image=driver_image)
+
+    cell_types: List[str] = find_cell_types_from_path(path_to_cell_files)
+
+    for cell_type in cell_types:
+
+        expression_file = f'gs://{output_path}/{cell_type}_expression.txt'
+        process_cell_type_on_batch(batch, cell_type, expression_file=expression_file)
+
+        # batch.run(dry_run=True)
     batch.run(wait=False)
 
 
 if __name__ == '__main__':
-    main(
-        expression_file='gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/expression_files/B_intermediate_expression.tsv',
-    )  # pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter
