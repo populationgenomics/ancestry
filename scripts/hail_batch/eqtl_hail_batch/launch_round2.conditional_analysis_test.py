@@ -124,10 +124,13 @@ def submit_eqtl_jobs(
 
         for chromosome in chromosomes:
             residuals = os.path.join(
-                first_round_path, cell_type, chromosome, f'log_residuals.tsv'
+                first_round_path, cell_type, f'chr{chromosome}', f'log_residuals.tsv'
             )
             significant_snps = os.path.join(
-                first_round_path, cell_type, chromosome, f'correlation_results.csv'
+                first_round_path,
+                cell_type,
+                f'chr{chromosome}',
+                f'correlation_results.csv',
             )
             genotype = os.path.join(
                 input_path, 'genotype_files', f'tob_genotype_chr{chromosome}.tsv'
