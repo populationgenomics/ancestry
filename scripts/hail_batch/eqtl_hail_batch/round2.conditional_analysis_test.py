@@ -3,8 +3,7 @@
 """Perform conditional analysis on SNPs and expression residuals"""
 
 import os
-
-# import hail as hl
+import hail as hl
 import hailtop.batch as hb
 import pandas as pd
 import statsmodels.api as sm
@@ -200,32 +199,32 @@ def run_computation_in_scatter(
         bp,
     ]
     adjusted_spearman_df['round'] = iteration + 2
-    # init_query_service()
-    # t = hl.Table.from_pandas(adjusted_spearman_df)
-    # t = t.annotate(global_bp=hl.locus(t.chrom, t.bp).global_position())
-    # t = t.annotate(locus=hl.locus(t.chrom, t.bp))
-    # # get alleles
-    # # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
-    # t = t.key_by('locus')
-    # # t = t.annotate(
-    # #     alleles=mt.rows()[t.locus].alleles,
-    # #     a1=mt.rows()[t.locus].alleles[0],
-    # #     a2=mt.rows()[t.locus].alleles[1],
-    # # )
+    init_query_service()
+    t = hl.Table.from_pandas(adjusted_spearman_df)
+    t = t.annotate(global_bp=hl.locus(t.chrom, hl.int32(t.bp)).global_position())
+    t = t.annotate(locus=hl.locus(t.chrom, hl.int32(t.bp)))
+    # get alleles
+    # mt = hl.read_matrix_table(TOB_WGS).key_rows_by('locus')
+    t = t.key_by('locus')
     # t = t.annotate(
-    #     id=hl.str(':').join(
-    #         [
-    #             hl.str(t.chrom),
-    #             hl.str(t.bp),
-    #             # t.a1,
-    #             # t.a2,
-    #             t.gene_symbol,
-    #             # result.db_key, # cell_type_id (eg nk, mononc)
-    #             hl.str(t.round),
-    #         ]
-    #     )
+    #     alleles=mt.rows()[t.locus].alleles,
+    #     a1=mt.rows()[t.locus].alleles[0],
+    #     a2=mt.rows()[t.locus].alleles[1],
     # )
-    # adjusted_spearman_df = t.to_pandas()
+    t = t.annotate(
+        id=hl.str(':').join(
+            [
+                hl.str(t.chrom),
+                hl.str(t.bp),
+                # t.a1,
+                # t.a2,
+                t.gene_symbol,
+                # result.db_key, # cell_type_id (eg nk, mononc)
+                hl.str(t.round),
+            ]
+        )
+    )
+    adjusted_spearman_df = t.to_pandas()
 
     # set variables for next iteration of loop
     significant_snps_df = adjusted_spearman_df
@@ -306,7 +305,7 @@ def main(
     else:
         # load these literally to do the get_number of scatters
         print(f'Loading residuals: {residuals}')
-        residual_df_literal = pd.read_csv(residuals, sep='\t')
+        residual_df_literal = pd.read_csv(residuals)
         print(f'Loading significant_snps: {significant_snps}')
         significant_snps_df_literal = pd.read_csv(
             significant_snps, sep=' ', skipinitialspace=True
