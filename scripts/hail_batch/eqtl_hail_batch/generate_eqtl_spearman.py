@@ -273,10 +273,10 @@ def main(
     """
     Creates a Hail Batch pipeline for calculating EQTLs
     """
-    dataset = os.getenv('DATASET')
-    access_level = os.getenv('ACCESS_LEVEL')
+    dataset = os.getenv('CPG_DATASET')
+    access_level = os.getenv('CPG_ACCESS_LEVEL')
     backend = hb.ServiceBackend(
-        billing_project=dataset, bucket=f'cpg-{dataset}-{access_level}'
+        billing_project=dataset, remote_tmpdir=f'cpg-{dataset}-{access_level}'
     )
     batch = hb.Batch(name='eQTL', backend=backend, default_python_image=DRIVER_IMAGE)
 
