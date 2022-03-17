@@ -339,6 +339,9 @@ def main(
         calc_resid_df_job = batch.new_python_job(
             f'calculate-resid-df-iter-{iteration+2}'
         )
+        calc_resid_df_job.cpu(2)
+        calc_resid_df_job.memory('8Gi')
+        calc_resid_df_job.storage('2Gi')
         previous_residual_result = calc_resid_df_job.call(
             calculate_residual_df,
             genotype_df,
