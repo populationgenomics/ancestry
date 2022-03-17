@@ -23,9 +23,9 @@ analysis-runner --dataset tob-wgs \
     --access-level test --output-dir "kat/v0" \
     --description "eqtl batch job" \
     python3 round2.conditional_analysis_test.py \
-        --output_prefix 'gs://cpg-tob-wgs-test/kat/plasma/chr22/' \
+        --output-prefix 'gs://cpg-tob-wgs-test/kat/plasma/chr22/' \
         --residuals 'gs://cpg-tob-wgs-test/kat/plasma/chr22/log_residuals.tsv' \
-        --significant_snps 'gs://cpg-tob-wgs-test/kat/plasma/chr22/correlation_results.csv' \
+        --significant-snps 'gs://cpg-tob-wgs-test/kat/plasma/chr22/correlation_results.csv' \
         --genotype 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/genotype_files/tob_genotype_chr22.tsv' \
         --keys 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/OneK1K_CPG_IDs.tsv' \
         --test_subset_genes 5 # test with 5 genes only
@@ -36,7 +36,7 @@ To launch all cell types and chromosomes at once, run the following python wrapp
 ```sh
 python3 launch_generate_eqtl_spearman.py \
 --input-path "gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files" \
---output-dir 'gs://cpg-tob-wgs-test/eqtl_output'
+--output-dir 'gs://cpg-tob-wgs-test/eqtl_output' --chromosomes '22'
 ```
 
 For the conditional analysis (rounds 2-5), execute the following command:
@@ -44,5 +44,5 @@ For the conditional analysis (rounds 2-5), execute the following command:
 ```sh
 python3 launch_round2.conditional_analysis_test.py \
 --input-path "gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files" \
---output-dir 'gs://cpg-tob-wgs-test/eqtl_output'
+--output-dir 'gs://cpg-tob-wgs-test/eqtl_output' --chromosomes '22' --first-round-path 'gs://cpg-tob-wgs-test/kat/'
 ```
