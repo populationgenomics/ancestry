@@ -16,7 +16,8 @@ import click
 
 
 DEFAULT_DRIVER_MEMORY = '4G'
-DRIVER_IMAGE = os.getenv('CPG-DRIVER_IMAGE')
+DRIVER_IMAGE = os.getenv('CPG_DRIVER_IMAGE')
+assert DRIVER_IMAGE
 
 # TOB_WGS = 'gs://cpg-tob-wgs-test/mt/v7.mt/'
 
