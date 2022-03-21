@@ -12,14 +12,15 @@ Test run this with:
 
 
 import os
+import logging
+import click
 import hailtop.batch as hb
 import pandas as pd
 from cpg_utils import output_path
 from cpg_utils.hail import remote_tmp_dir
+from google.cloud import storage
 
-DRIVER_IMAGE = 'australia-southeast1-docker.pkg.dev/analysis-runner/images/driver:e6451763492b62ddfadc20c06b240234b20b6f2f-hail-0.2.73.devc6f6f09cec08'
 PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.2'
-
 SCORES_PATH = 'gs://cpg-tob-wgs-test/kat/pca/nfe_feb22/v0/scores.json'
 COVARIATES_PATH = 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/covariates_files/covariates.tsv'
 SAMPLE_ID_KEYS_PATH = 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/metadata/keys_metadata_sheet.csv'
@@ -113,13 +114,13 @@ def run_peer_job(job: hb.batch.job.Job, expression_file, covariates_file):
     the two inputs `expression_file` and `covariates_file` to be TSV files.
     """
 
-    j.image(PEER_DOCKER)
+    job.image(PEER_DOCKER)
 
-    j.command(f'echo "expressions file:" && head {expression_file}')
-    j.command(f'echo "covariates file:" && head {covariates_file}')
+    job.command(f'echo "expressions file:" && head {expression_file}')
+    job.command(f'echo "covariates file:" && head {covariates_file}')
 
     # write python script to container
-    j.command(
+    job.command(
         """
 cat <<EOT >> run_peer.py
 
@@ -169,12 +170,12 @@ if __name__ == "__main__":
 EOT"""
     )
 
-    j.command(
-        f'python run_peer.py {expression_file} {covariates_file} {j.factors_output_path} {j.weights_output_path} {j.precision_output_path} {j.residuals_output_path}'
+    job.command(
+        f'python run_peer.py {expression_file} {covariates_file} {job.factors_output_path} {job.weights_output_path} {job.precision_output_path} {job.residuals_output_path}'
     )
-    j.command('ls -l')
+    job.command('ls -l')
 
-    return j
+    return job
 
 
 # @click.command()
@@ -216,6 +217,31 @@ def process_cell_type_on_batch(
     # second_job = batch.new_python_job('downstream tasks')
 
 
+def find_cell_types_from_path(path_to_cell_files):
+    """
+    Get cell types from expression data path
+    """
+
+    assert path_to_cell_files.startswith('gs://')
+    cs_client = storage.Client()
+
+    bucket_name = path_to_cell_files.split('gs://')[1].split('/')[0]
+    bucket = cs_client.get_bucket(bucket_name)
+    bucket_path = path_to_cell_files.split(f'gs://{bucket_name}/')[-1]
+
+    logging.info(f'Going to fetch cell types from {bucket_path}')
+    blobs = bucket.list_blobs(prefix=bucket_path)
+
+    cell_types = [
+        os.path.basename(b.name)[:-15]
+        for b in blobs
+        if b.name.endswith('_expression.tsv')
+    ]
+    logging.info(f'Found {len(cell_types)} cell types: {cell_types}')
+
+    return cell_types
+
+
 @click.command()
 @click.option('--path-to-cell-files')
 def main(path_to_cell_files):
@@ -227,18 +253,13 @@ def main(path_to_cell_files):
 
     """
 
-    dataset = os.getenv('DATASET', 'tob-wgs')
-    access_level = os.getenv('ACCESS_LEVEL', 'test')
-    driver_image = os.getenv('DRIVER_IMAGE', DRIVER_IMAGE)
-
+    dataset = os.getenv('CPG_DATASET')
+    driver_image = os.getenv('CPG_DRIVER_IMAGE')
     backend = hb.ServiceBackend(billing_project=dataset, remote_tmpdir=remote_tmp_dir())
-
     batch = hb.Batch(name='PEER', backend=backend, default_python_image=driver_image)
-
-    cell_types: List[str] = find_cell_types_from_path(path_to_cell_files)
+    cell_types: list = find_cell_types_from_path(path_to_cell_files)
 
     for cell_type in cell_types:
-
         expression_file = f'gs://{output_path}/{cell_type}_expression.txt'
         process_cell_type_on_batch(batch, cell_type, expression_file=expression_file)
 
