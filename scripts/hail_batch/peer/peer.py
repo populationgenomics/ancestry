@@ -260,7 +260,7 @@ def main(path_to_cell_files):
     cell_types: list = find_cell_types_from_path(path_to_cell_files)
 
     for cell_type in cell_types:
-        expression_file = f'gs://{output_path}/{cell_type}_expression.txt'
+        expression_file = f'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/expression_files/{cell_type}_expression.txt'
         process_cell_type_on_batch(batch, cell_type, expression_file=expression_file)
 
         # batch.run(dry_run=True)
