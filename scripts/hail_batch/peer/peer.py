@@ -5,9 +5,10 @@ Test run this with:
     analysis-runner \
         --access-level test \
         --description 'Test run peer analysis' \
-        --output-dir 'kat/2022-03-2_peer' \
+        --output-dir 'peer/2022-03-21' \
         --dataset tob-wgs \
-        python3 peer.py
+        python3 peer.py \
+        --path-to-cell-files 'gs://cpg-tob-wgs-test/scrna-seq/grch38_association_files/expression_files/'
 """
 
 
