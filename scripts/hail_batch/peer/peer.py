@@ -17,8 +17,7 @@ import logging
 import click
 import hailtop.batch as hb
 import pandas as pd
-from cpg_utils import output_path
-from cpg_utils.hail import remote_tmp_dir
+from cpg_utils.hail import remote_tmp_dir, output_path
 from google.cloud import storage
 
 PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.2'
