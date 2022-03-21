@@ -17,7 +17,7 @@ import logging
 import click
 import hailtop.batch as hb
 import pandas as pd
-from cpg_utils.hail import remote_tmp_dir, output_path
+from cpg_utils.hail import remote_tmpdir, output_path
 from google.cloud import storage
 
 PEER_DOCKER = 'australia-southeast1-docker.pkg.dev/cpg-common/images/peer:1.3.2'
@@ -255,7 +255,7 @@ def main(path_to_cell_files):
 
     dataset = os.getenv('CPG_DATASET')
     driver_image = os.getenv('CPG_DRIVER_IMAGE')
-    backend = hb.ServiceBackend(billing_project=dataset, remote_tmpdir=remote_tmp_dir())
+    backend = hb.ServiceBackend(billing_project=dataset, remote_tmpdir=remote_tmpdir())
     batch = hb.Batch(name='PEER', backend=backend, default_python_image=driver_image)
     cell_types: list = find_cell_types_from_path(path_to_cell_files)
 
