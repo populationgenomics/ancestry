@@ -192,19 +192,15 @@ def process_cell_type_on_batch(
     Run PEER calculation in hail batch
     """
     expression_f = batch.read_input(expression_file)
-
     job_prefix = f'{cell_type_name}: '
-
     load_data = batch.new_python_job(job_prefix + 'load covariates')
-
     intermediate_tuple = load_data.call(
         get_covariates, scores_path, covariates_path, expression_f, sample_id_keys_path
     )
-
     covariates_csv = load_data.call(get_at_index, intermediate_tuple, 0).as_str()
     expression_csv = load_data.call(get_at_index, intermediate_tuple, 1).as_str()
-
     peer_job = batch.new_job(job_prefix + 'peer')
+    peer_job.cpu(4)
     run_peer_job(peer_job, expression_csv, covariates_csv)
 
     batch.write_output(
@@ -222,8 +218,6 @@ def process_cell_type_on_batch(
         peer_job.factors_output_path,
         output_path(f'{cell_type_name}_residuals_file.txt'),
     )
-
-    # second_job = batch.new_python_job('downstream tasks')
 
 
 def find_cell_types_from_path(path_to_cell_files):
