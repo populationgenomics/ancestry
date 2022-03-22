@@ -208,11 +208,20 @@ def process_cell_type_on_batch(
     run_peer_job(peer_job, expression_csv, covariates_csv)
 
     batch.write_output(
-        peer_job.factors_output_path, output_path(f'{cell_type_name}_peer_factors_file.txt')
+        peer_job.factors_output_path,
+        output_path(f'{cell_type_name}_peer_factors_file.txt'),
     )
-    batch.write_output(peer_job.factors_output_path, output_path(f'{cell_type_name}_weights_file.txt'))
-    batch.write_output(peer_job.factors_output_path, output_path(f'{cell_type_name}_precision_file.txt'))
-    batch.write_output(peer_job.factors_output_path, output_path(f'{cell_type_name}_residuals_file.txt'))
+    batch.write_output(
+        peer_job.factors_output_path, output_path(f'{cell_type_name}_weights_file.txt')
+    )
+    batch.write_output(
+        peer_job.factors_output_path,
+        output_path(f'{cell_type_name}_precision_file.txt'),
+    )
+    batch.write_output(
+        peer_job.factors_output_path,
+        output_path(f'{cell_type_name}_residuals_file.txt'),
+    )
 
     # second_job = batch.new_python_job('downstream tasks')
 
