@@ -121,7 +121,7 @@ def query():
     # turn eigenvalues into pandas df and rename columns
     eigenvalues = pd.DataFrame(eigenvalues)
     eigenvalues = eigenvalues.rename(columns={eigenvalues.columns[0]: 'eigenvalues'})
-    eigenvalues.export(eigenvalues_path)
+    hl.Table.from_pandas(eigenvalues).export(eigenvalues_path)
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
 
