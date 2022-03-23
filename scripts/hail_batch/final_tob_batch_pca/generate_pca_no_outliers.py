@@ -7,13 +7,10 @@ Reliant on output from
 
 import hail as hl
 import pandas as pd
-from cpg_utils.hail import output_path
+from cpg_utils.hail import dataset_path, output_path
 
 
-# HGDP1KG_TOBWGS = dataset_path(f'joint-calling/v7/ancestry/mt_union_hgdp.mt', 'analysis')
-HGDP1KG_TOBWGS = (
-    'gs://cpg-tob-wgs-main-analysis/joint-calling/v7/ancestry/mt_union_hgdp.mt/'
-)
+HGDP1KG_TOBWGS = dataset_path(f'joint-calling/v7/ancestry/mt_union_hgdp.mt', 'analysis')
 
 
 def query():
