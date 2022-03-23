@@ -7,10 +7,10 @@ Reliant on output from
 
 import hail as hl
 import pandas as pd
-from analysis_runner import bucket_path, output_path
+from cpg_utils.hail import dataset_path, output_path
 
 
-HGDP1KG_TOBWGS = bucket_path(f'joint-calling/v7/ancestry/mt_union_hgdp.mt', 'analysis')
+HGDP1KG_TOBWGS = dataset_path(f'joint-calling/v7/ancestry/mt_union_hgdp.mt', 'analysis')
 
 
 def query():
@@ -115,7 +115,10 @@ def query():
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         mt.GT, compute_loadings=True, k=20
     )
-    hl.Table.from_pandas(pd.DataFrame(eigenvalues)).export(eigenvalues_path)
+    # turn eigenvalues into pandas df and rename columns
+    eigenvalues = pd.DataFrame(eigenvalues)
+    eigenvalues = eigenvalues.rename(columns={eigenvalues.columns[0]: 'eigenvalues'})
+    hl.Table.from_pandas(eigenvalues).export(eigenvalues_path)
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
 
