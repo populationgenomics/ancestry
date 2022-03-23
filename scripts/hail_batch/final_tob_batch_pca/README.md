@@ -4,6 +4,6 @@ This runs a Hail query script in Dataproc using Hail Batch in order to generate 
 
 ```sh
 analysis-runner --dataset tob-wgs \
---access-level test --output-dir "kat/pca/nfe/v0" \
+--access-level standard --output-dir "tob_wgs_pca/nfe_no_outliers/v0" \
 --description "tob nfe pca" python3 main.py
 ```

@@ -118,7 +118,10 @@ def query():
     eigenvalues, scores, loadings = hl.hwe_normalized_pca(
         mt.GT, compute_loadings=True, k=20
     )
-    hl.Table.from_pandas(pd.DataFrame(eigenvalues)).export(eigenvalues_path)
+    # turn eigenvalues into pandas df and rename columns
+    eigenvalues = pd.DataFrame(eigenvalues)
+    eigenvalues = eigenvalues.rename(columns={eigenvalues.columns[0]: 'eigenvalues'})
+    eigenvalues.export(eigenvalues_path)
     scores.write(scores_path, overwrite=True)
     loadings.write(loadings_path, overwrite=True)
 
