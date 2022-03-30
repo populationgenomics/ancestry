@@ -12,7 +12,7 @@ import statsmodels.api as sm
 import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
 from scipy.stats import spearmanr
-from cpg_utils.hail import copy_common_env, init_query_service, remote_tmpdir
+from cpg_utils.hail import copy_common_env, init_batch, remote_tmpdir
 import click
 
 DEFAULT_DRIVER_MEMORY = '4G'
@@ -193,7 +193,7 @@ def run_spearman_correlation_scatter(
         bp,
     ]
     spearman_df['round'] = 1
-    init_query_service()
+    init_batch()
     t = hl.Table.from_pandas(spearman_df)
     t = t.annotate(global_bp=hl.locus(t.chrom, hl.int32(t.bp)).global_position())
     t = t.annotate(locus=hl.locus(t.chrom, hl.int32(t.bp)))
