@@ -90,14 +90,6 @@ def calculate_residuals(expression_df, covariate_df, output_prefix):
     # Prepare variables
     gene_ids = list(log_expression_df.columns.values)[1:]
     sample_ids = log_expression_df.iloc[:, 0]
-    # assign column names to headers
-    PCs = ['pc' + str(i) for i in range(1, 5)]
-    covs_other = ['age', 'sex']
-    peer_factors = ['pf' + str(i) for i in range(1, 11)]
-    covs_header = PCs + covs_other + peer_factors
-    covariate_df.columns = covs_header
-    # change age and sex to integers
-    covariate_df[['age', 'sex']] = covariate_df[['age', 'sex']].astype(int)
 
     # Calculate expression residuals
     def calculate_gene_residual(gene_id):
@@ -299,7 +291,7 @@ def main(
     load_genotype.cpu(2)
     load_genotype.memory('8Gi')
     load_genotype.storage('2Gi')
-    genotype_df = load_genotype.call(pd.read_parquet, genotype)
+    genotype_df = load_genotype.call(pd.read_csv, genotype, sep='\t')
     load_small_files = batch.new_python_job('load-small-files')
     load_small_files.memory('8Gi')
     load_small_files.storage('2Gi')
