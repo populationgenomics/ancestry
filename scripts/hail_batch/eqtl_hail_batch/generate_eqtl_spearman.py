@@ -12,7 +12,7 @@ import statsmodels.api as sm
 import statsmodels.stats.multitest as multi
 from patsy import dmatrices  # pylint: disable=no-name-in-module
 from scipy.stats import spearmanr
-from cpg_utils.hail import copy_common_env, init_batch, remote_tmpdir
+from cpg_utils.hail_batch import copy_common_env, init_batch, remote_tmpdir
 import click
 
 DEFAULT_DRIVER_MEMORY = '4G'
