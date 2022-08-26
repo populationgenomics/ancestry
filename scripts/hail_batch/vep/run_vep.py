@@ -8,7 +8,7 @@ Run VEP on the hail mt
 
 import click
 import hail as hl
-from analysis_runner import output_path
+from cpg_utils.hail_batch import output_path
 
 
 @click.command()
@@ -25,6 +25,7 @@ def main(mt: str):
     mt = mt.filter_rows(hl.len(mt.alleles) == 2)
     mt = mt.filter_rows(mt.alleles[1] != '*')
     vep = hl.vep(mt, config='file:///vep_data/vep-gcloud.json')
+    vep = vep.rows()
     vep_path = output_path('vep105_GRCh38.mt')
     vep.write(vep_path)
 
