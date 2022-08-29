@@ -25,7 +25,7 @@ def main(script: str, mt: str, vep_version: str):
     """
 
     # create a hail batch
-    b = get_batch('run_vep_in_dataproc_cluster')
+    batch = get_batch('run_vep_in_dataproc_cluster')
 
     job = dataproc.hail_dataproc_job(
         batch=batch,
