@@ -11,24 +11,21 @@ import os
 import hailtop.batch as hb
 from analysis_runner import dataproc
 import click
+from cpg_utils.workflows.batch import get_batch
 
 
 @click.command()
 @click.option('--script', 'script', help='path to VEP main script')
 @click.option('--mt', required=True, help='Hail matrix table to run VEP on')
-def main(script: str, mt: str):
+@click.option('--vep-version', help='Version of VEP', default='104.3')
+def main(script: str, mt: str, vep_version: str):
     """
     runs a script inside dataproc to execute VEP
     :param script: str, the path to the VEP main script
     """
 
-    service_backend = hb.ServiceBackend(
-        billing_project=os.getenv('HAIL_BILLING_PROJECT'),
-        bucket=os.getenv('HAIL_BUCKET'),
-    )
-
     # create a hail batch
-    batch = hb.Batch(name='run_vep_in_dataproc_cluster', backend=service_backend)
+    b = get_batch('run_vep_in_dataproc_cluster')
 
     job = dataproc.hail_dataproc_job(
         batch=batch,
@@ -39,7 +36,7 @@ def main(script: str, mt: str):
         max_age='12h',
         init=[
             'gs://cpg-reference/hail_dataproc/install_common.sh',
-            'gs://cpg-reference/vep/vep-GRCh38.sh',
+            'gs://cpg-reference/vep/{vep_version}/dataproc/init.sh',
         ],
         job_name='run_vep',
         num_secondary_workers=20,
