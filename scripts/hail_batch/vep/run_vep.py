@@ -8,7 +8,7 @@ Run VEP on the hail mt
 
 import click
 import hail as hl
-from analysis_runner import output_path
+from cpg_utils.hail_batch import output_path
 
 
 @click.command()

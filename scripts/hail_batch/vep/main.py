@@ -8,9 +8,9 @@ Taken from Matt Welland's script, run_vep_help.py
 
 
 import os
+import click
 import hailtop.batch as hb
 from analysis_runner import dataproc
-import click
 from cpg_utils.workflows.batch import get_batch
 
 
