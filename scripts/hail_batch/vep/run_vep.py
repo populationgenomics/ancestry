@@ -25,7 +25,7 @@ def main(mt: str):
     mt = mt.filter_rows(hl.len(mt.alleles) == 2)
     mt = mt.filter_rows(mt.alleles[1] != '*')
     vep = hl.vep(mt, config='file:///vep_data/vep-gcloud.json')
-    vep_path = output_path('vep105_GRCh38.mt')
+    vep_path = output_path('vep104_GRCh38.mt')
     vep.write(vep_path)
 
 
