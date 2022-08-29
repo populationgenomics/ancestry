@@ -35,8 +35,8 @@ def main(script: str, mt: str, vep_version: str):
         script=f'{script} --mt {mt}',
         max_age='12h',
         init=[
-            'gs://cpg-reference/hail_dataproc/install_common.sh',
-            'gs://cpg-reference/vep/{vep_version}/dataproc/init.sh',
+            f'gs://cpg-reference/hail_dataproc/install_common.sh',
+            f'gs://cpg-reference/vep/{vep_version}/dataproc/init.sh',
         ],
         job_name='run_vep',
         num_secondary_workers=20,
