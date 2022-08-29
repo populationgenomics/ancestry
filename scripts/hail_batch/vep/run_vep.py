@@ -13,7 +13,8 @@ from analysis_runner import output_path
 
 @click.command()
 @click.option('--mt', required=True, help='Hail matrix table to run VEP on')
-def main(mt: str):
+@click.option('--vep-version', help='Version of VEP', default='104.3')
+def main(mt: str, vep_version: str):
     """
     Run vep using main.py wrapper
     """
@@ -25,7 +26,7 @@ def main(mt: str):
     mt = mt.filter_rows(hl.len(mt.alleles) == 2)
     mt = mt.filter_rows(mt.alleles[1] != '*')
     vep = hl.vep(mt, config='file:///vep_data/vep-gcloud.json')
-    vep_path = output_path('vep104_GRCh38.mt')
+    vep_path = output_path(f'vep{vep_version}_GRCh38.mt')
     vep.write(vep_path)
 
 
