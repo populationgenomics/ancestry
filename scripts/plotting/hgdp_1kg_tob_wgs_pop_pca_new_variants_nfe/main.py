@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     f'hgdp_1kg_tob_wgs_plot_pca_nfe.py',
     max_age='1h',
     packages=['selenium'],
-    init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
     job_name='new-variants-plot-pca-nfe',
 )
 

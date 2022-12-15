@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     'plot_pca_and_loadings.py',
     max_age='2h',
     packages=['selenium'],
-    init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
     job_name='new-variants-plot-pca',
 )
 

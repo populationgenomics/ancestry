@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     'plot_tob_snp_chip_pca_only.py',
     max_age='1h',
     packages=['selenium'],
-    init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
     job_name=f'plot_snp_chip_pca',
 )
 

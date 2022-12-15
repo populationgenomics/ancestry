@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     f'calculate_ld.py',
     max_age='12h',
     num_secondary_workers=20,
-    init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
     job_name=f'calculate_ld',
     worker_boot_disk_size=200,
 )

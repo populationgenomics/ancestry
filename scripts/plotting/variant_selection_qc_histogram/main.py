@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     'variant_selection_qc_histogram.py',
     max_age='3h',
     packages=['click', 'selenium'],
-    init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
     job_name='variant-selection-histogram',
 )
 

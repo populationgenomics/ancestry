@@ -6,7 +6,7 @@ import click
 import hail as hl
 
 
-GNOMAD_LIFTOVER_LOADINGS = 'gs://cpg-reference/gnomad/gnomad_loadings_90k_liftover.ht'
+GNOMAD_LIFTOVER_LOADINGS = 'gs://cpg-common-main/references/gnomad/gnomad_loadings_90k_liftover.ht'
 
 GNOMAD_HGDP_1KG_MT = (
     'gs://gcp-public-data--gnomad/release/3.1/mt/genomes/'

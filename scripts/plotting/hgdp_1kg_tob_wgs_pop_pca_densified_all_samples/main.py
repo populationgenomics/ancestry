@@ -21,7 +21,7 @@ dataproc.hail_dataproc_job(
     f'hgdp_1kg_tob_wgs_plot_pca_all_samples.py --output={OUTPUT}',
     max_age='1h',
     packages=['click', 'selenium'],
-    init=['gs://cpg-reference/hail_dataproc/install_phantomjs.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_phantomjs.sh'],
     job_name=f'densified pca all samples',
 )
 
