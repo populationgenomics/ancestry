@@ -16,7 +16,7 @@ dataproc.hail_dataproc_job(
     'increase_snp_chip_partitions.py',
     max_age='2h',
     num_workers=20,
-    init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
     job_name=f'increase_partitions',
 )
 

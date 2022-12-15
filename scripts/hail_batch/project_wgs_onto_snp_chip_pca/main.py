@@ -18,7 +18,7 @@ dataproc.hail_dataproc_job(
     num_workers=20,
     worker_machine_type='n1-highmem-8',
     packages=['selenium'],
-    init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
     job_name=f'project_wgs_samples',
 )
 

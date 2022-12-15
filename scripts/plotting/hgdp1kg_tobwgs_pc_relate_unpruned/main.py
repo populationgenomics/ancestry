@@ -14,7 +14,7 @@ dataproc.hail_dataproc_job(
     batch,
     f'hgdp_1kg_tob_wgs_related_samples.py',
     max_age='2h',
-    init=['gs://cpg-reference/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
     job_name=f'related_samples-save',
 )
 

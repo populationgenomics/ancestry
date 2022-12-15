@@ -12,7 +12,7 @@ GNOMAD_HGDP_1KG_MT = (
 
 TOB_WGS = 'gs://cpg-tob-wgs-main/joint_vcf/v1/raw/genomes.mt'
 
-GNOMAD_LIFTOVER_LOADINGS = 'gs://cpg-reference/gnomad/gnomad_loadings_90k_liftover.ht'
+GNOMAD_LIFTOVER_LOADINGS = 'gs://cpg-common-main/references/gnomad/gnomad_loadings_90k_liftover.ht'
 
 
 @click.command()

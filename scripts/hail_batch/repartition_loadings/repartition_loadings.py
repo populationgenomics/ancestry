@@ -3,7 +3,7 @@
 import hail as hl
 from analysis_runner import output_path
 
-LOADINGS = 'gs://cpg-reference/gnomad/gnomad_loadings_90k_liftover.ht'
+LOADINGS = 'gs://cpg-common-main/references/gnomad/gnomad_loadings_90k_liftover.ht'
 
 
 def query():
