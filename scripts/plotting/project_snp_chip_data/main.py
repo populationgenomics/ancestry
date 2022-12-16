@@ -24,7 +24,7 @@ dataproc.hail_dataproc_job(
     f'project_snp_chip_data.py --output={OUTPUT} --pop {POP}',
     max_age='5h',
     packages=['click', 'selenium'],
-    init=['gs://cpg-common-main/references/hail_dataproc/install_phantomjs.sh'],
+    init=['gs://cpg-common-main/hail_dataproc/install_phantomjs.sh'],
     job_name=f'{POP}-project-snp-chip',
 )
 

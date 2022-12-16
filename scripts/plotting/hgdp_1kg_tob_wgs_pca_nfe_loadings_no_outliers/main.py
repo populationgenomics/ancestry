@@ -16,7 +16,7 @@ dataproc.hail_dataproc_job(
     max_age='4h',
     num_secondary_workers=20,
     packages=['selenium'],
-    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/hail_dataproc/install_common.sh'],
     job_name=f'plot-loadings-nfe-no-outliers',
 )
 

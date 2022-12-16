@@ -16,7 +16,7 @@ dataproc.hail_dataproc_job(
     'snp_chip_only_generate_pca.py',
     max_age='12h',
     num_secondary_workers=20,
-    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/hail_dataproc/install_common.sh'],
     job_name=f'snp_chip_only_pca',
 )
 

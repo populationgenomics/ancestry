@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     'tob_wgs_scree_plot.py',
     max_age='3h',
     packages=['selenium'],
-    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/hail_dataproc/install_common.sh'],
     job_name='tob-wgs-scree',
 )
 

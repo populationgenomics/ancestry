@@ -20,7 +20,7 @@ dataproc.hail_dataproc_job(
     max_age='4h',
     num_secondary_workers=20,
     packages=['click'],
-    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/hail_dataproc/install_common.sh'],
     job_name=f'{POP}-pca-new-variants',
     worker_boot_disk_size=200,
 )
