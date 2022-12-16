@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     f'hgdp_1kg_tob_wgs_pc_relate.py',
     max_age='4h',
     num_secondary_workers=20,
-    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/hail_dataproc/install_common.sh'],
     job_name=f'pc-relate',
     worker_boot_disk_size=200,
 )

@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     f"calculate_maf.py",
     max_age="12h",
     num_secondary_workers=20,
-    init=["gs://cpg-common-main/references/hail_dataproc/install_common.sh"],
+    init=["gs://cpg-common-main/hail_dataproc/install_common.sh"],
     job_name=f"calculate_maf",
     worker_boot_disk_size=200,
 )

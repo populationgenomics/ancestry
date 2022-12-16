@@ -15,7 +15,7 @@ dataproc.hail_dataproc_job(
     f'hgdp_1kg_tob_wgs_nfe_pca_no_outliers.py',
     max_age='4h',
     num_secondary_workers=20,
-    init=['gs://cpg-common-main/references/hail_dataproc/install_common.sh'],
+    init=['gs://cpg-common-main/hail_dataproc/install_common.sh'],
     job_name=f'nfe-pca-no-outliers',
     worker_boot_disk_size=200,
 )

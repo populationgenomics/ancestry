@@ -22,7 +22,7 @@ dataproc.hail_dataproc_job(
     max_age='12h',
     num_secondary_workers=20,
     packages=['click', 'selenium'],
-    init=['gs://cpg-common-main/references/hail_dataproc/install_phantomjs.sh'],
+    init=['gs://cpg-common-main/hail_dataproc/install_phantomjs.sh'],
     job_name='variant-selection-exploration',
 )
 
